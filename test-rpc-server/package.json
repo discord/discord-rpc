@@ -1,0 +1,9 @@
+{
+  "name": "test-rpc-server",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "server": "node rpc-server.js",
+    "client": "node test-client.js"
+  }
+}
