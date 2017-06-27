@@ -1,45 +1,18 @@
 #pragma once
 
-/* Requirements Overview
-*
- initialize the local IPC connection to Discord
-
- what we need for rich presence
- - send rich presence data to the client
- - start spectating a session
- - join a game party
- - request to send rich presence data ('on discord client connected')
-
-
- general usage
- - initialize the discord connection
- - determine if the user is a guest account
- - shutdown / support timing out
-*/
-
 struct DiscordRichPresence {
-    const char* name; // do we need this hear or can it be pulled from the app page?
-    uint64_t contextStartTimeUTC;
-    uint64_t contextEndTimeUTC;
+    uint64_t contextStartTimeUTC; // 0 means unspecified
+	uint64_t contextStopTimeUTC; // 0 means unspecified
+
+    ////
     const char* gameState;  // eg. In Game
     const char* gameMode;   // e.g. Summoner's Rift
     const char* gameModifier; // e.g. Ranked
     const char* choice; // e.g. Aatrox
-    const char* flavorImageKey; // e.g. The map background
-    const char* choiceImageKey; // e.g.  The character's portrait icon
-    const char* partyId;
-    uint16_t partySize; // e.g. 0 means ignored
-    uint16_t partyCapacity; // e.g. 0 means no limit
-    const char* contextSecret; // Required for the "notify me" feature
-    uint8_t isInstance; // Together with context_secret enables the "notify me" feature
-    const char* joinSecret; // Enables the "invite to join" feature
-    const char* spectateSecret; // Enables the "invite to spectate" feature    
-};
-
-struct DiscordRichPresence {
-    uint64_t contextStartTimeUTC; // 0 means unspecified
-	uint64_t contextStopTimeUTC; // 0 means unspecified
+    // or
 	const char* partyStatus[4]; // e.g. "In Game", "Summoner's Rift", "Ranked", "Aatrox"
+    ////
+
     const char* largeImageKey; // e.g. The map background
     const char* smallImageKey; // e.g. The character's portrait icon
     

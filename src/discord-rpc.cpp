@@ -1,4 +1,4 @@
-
+#include "discord-rpc.h"
 
 static DiscordEventHandlers Handlers;
 
