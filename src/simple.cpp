@@ -1,9 +1,12 @@
+#include <stdio.h>
 
-static const char* YOUR_APPLICATION_ID = "23984729347234";
+#include "discord-rpc.h"
+
+static const char* APPLICATION_ID = "12345678910";
 
 void updateDiscordPresence() {
-    DiscordRichPresence myPresence = {0};
-    myPresence.name = "League of Legends";
+    DiscordRichPresence myPresence{};
+    myPresence.name = "My Awesome Game";
     myPresence.gameState = "In Game";
     myPresence.gameMode = "Summoner's Rift";
     myPresence.gameModifier = "Ranked";
@@ -11,47 +14,45 @@ void updateDiscordPresence() {
     myPresence.flavorImageKey = "FLAVOR_SUMMONERS_RIFT";
     myPresence.choiceImageKey = "PORTRAIT_AATROX";
 
-    myPresence.partyId = GameEngine_GetMultiplayerPartyId();
-    myPresence.partySize = GameEngine_GetCurrentPartyCount();
-    myPresence.partyCapacity = PARTY_CAPACITY;
-    
-    myPresence.context = GameEngine_GetPartyAndMatchSecret();
-    myPresence.isInstance = true;
-
-    myPresence.joinSecret = GameEngine_GetPartyAndMatchSecret();
-    myPresence.spectateSecret = GameEngine_GetUserIdSecret();
-
     Discord_UpdatePresence(&myPresence);    
 }
 
-void handleDiscordDisconnected() {
-    // oh noes
+void handleDiscordReady() {
+    printf("discord ready\n");
 }
 
-void handleDiscordReady() {
-    updateDiscordPresence();
+void handleDiscordDisconnected() {
+    printf("discord disconnected\n");
 }
 
 void handleDiscordWantsPresence() {
+    printf("discord requests presence\n");
     updateDiscordPresence();
 }
 
-void handleDiscordJoinGame(const char* joinSecret) {
-    GameEngine_JoinParty(joinSecret);
-}
-    
-void handleDiscordSpectateGame(const char* spectateSecret) {
-    GameEngine_SpectateGame(spectateSecret);
+void gameLoop() {
+    char line[512];
+    while (fgets(line, 512, stdin)) {
+        line[511] = 0;
+        printf("line: %s\n", line);
+    }
 }
 
 int main() {
-    DiscordEventHandlers handlers = {0};
+    printf("Starting game client\n");
+
+    DiscordEventHandlers handlers{};
+
     handlers.ready = handleDiscordReady;
     handlers.disconnected = handleDiscordDisconnected;
     handlers.wantsPresence = handleDiscordWantsPresence;
-    handlers.joinGame = handleDiscordJoinGame;
-    handlers.spectateGame = handleDiscordSpectateGame;
 
-    Discord_Initialize(YOUR_APPLICATION_ID, handlers);
+    Discord_Initialize(APPLICATION_ID, handlers);
+
+    gameLoop();
+
+    Discord_Shutdown();
+
+    return 0;
 }
 
