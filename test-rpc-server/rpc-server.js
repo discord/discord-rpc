@@ -4,17 +4,20 @@ const RpcMessage = require('./rpc-message');
 console.log('Start up');
 
 let PipePrefix;
+let PipePostfix;
 if (process.platform == 'win32') {
-    PipePrefix = "\\\\.\\pipe\\";
+    PipePrefix = '\\\\.\\pipe\\';
+    PipePostfix = '';
 }
 else {
     PipePrefix = "/tmp";
+    PipePostfix = '.pipe';
 }
 
-const PipePath = PipePrefix + "DiscordRpcServer";
+const PipePath = PipePrefix + "DiscordRpcServer" + PipePostfix;
 
 var server = net.createServer(function(stream) {
-    console.log('Server: on connection')
+    console.log('Server: on connection');
 
     stream.on('data', function(data) {
         const msgObj = RpcMessage.deserialize(data);

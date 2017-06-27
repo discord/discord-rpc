@@ -1,10 +1,18 @@
 const net = require('net');
 const RpcMessage = require('./rpc-message');
 
-var PIPE_NAME = "DiscordRpcServer";
-var PIPE_PATH = "\\\\.\\pipe\\" + PIPE_NAME;
+let PipePrefix;
+let PipePostfix;
+if (process.platform == 'win32') {
+    PipePrefix = '\\\\.\\pipe\\';
+    PipePostfix = '';
+}
+else {
+    PipePrefix = "/tmp";
+    PipePostfix = '.pipe';
+}
 
-const msg = new RpcMessage();
+const PipePath = PipePrefix + "DiscordRpcServer" + PipePostfix;
 
 function sendMesg(testUpdatesToSend, stream) {
     const msgObj = {
@@ -24,7 +32,7 @@ function sendMessageLoop(testUpdatesToSend, interval, stream) {
     }
 }
 
-const client = net.connect(PIPE_PATH, function(stream) {
+const client = net.connect(PipePath, function(stream) {
     console.log('Client: on connection');
 
     sendMessageLoop(5, 3000, client);

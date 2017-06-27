@@ -18,7 +18,7 @@ module.exports = class RpcMessage {
         try {
             return JSON.parse(msg);
         } catch(e) {
-            return null;
+            return {};
         }
     }
 };
