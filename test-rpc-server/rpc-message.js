@@ -18,6 +18,8 @@ module.exports = class RpcMessage {
         try {
             return JSON.parse(msg);
         } catch(e) {
+            console.log(`failed to parse "${msg}"`);
+            console.error(e);
             return {};
         }
     }
