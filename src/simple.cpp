@@ -5,16 +5,19 @@
 static const char* APPLICATION_ID = "12345678910";
 
 void updateDiscordPresence() {
-    DiscordRichPresence myPresence{};
-    myPresence.name = "My Awesome Game";
-    myPresence.gameState = "In Game";
-    myPresence.gameMode = "Summoner's Rift";
-    myPresence.gameModifier = "Ranked";
-    myPresence.choice = "Aatrox";
-    myPresence.flavorImageKey = "FLAVOR_SUMMONERS_RIFT";
-    myPresence.choiceImageKey = "PORTRAIT_AATROX";
+    DiscordRichPresence discordPresence{};
 
-    Discord_UpdatePresence(&myPresence);    
+    discordPresence.state = "In a Group";
+    discordPresence.details = "Competitive\nIn a \"Match\"";
+    discordPresence.endTimestamp = time(nullptr) + ((60 * 5) + 23);
+    discordPresence.partyId = "12345";
+    discordPresence.partySize = 3;
+    discordPresence.partyMax = 6;
+    discordPresence.matchSecret = "4b2fdce12f639de8bfa7e3591b71a0d679d7c93f";
+    discordPresence.spectateSecret = "e7eb30d2ee025ed05c71ea495f770b76454ee4e0";
+    discordPresence.instance = true;
+
+    Discord_UpdatePresence(&discordPresence);
 }
 
 void handleDiscordReady() {
@@ -32,9 +35,14 @@ void handleDiscordWantsPresence() {
 
 void gameLoop() {
     char line[512];
+    printf("> ");
+    fflush(stdout);
     while (fgets(line, 512, stdin)) {
         line[511] = 0;
-        printf("line: %s\n", line);
+        printf("I don't understand that.\n> ");
+        fflush(stdout);
+
+        updateDiscordPresence();
     }
 }
 
@@ -47,7 +55,7 @@ int main() {
     handlers.disconnected = handleDiscordDisconnected;
     handlers.wantsPresence = handleDiscordWantsPresence;
 
-    Discord_Initialize(APPLICATION_ID, handlers);
+    Discord_Initialize(APPLICATION_ID, &handlers);
 
     gameLoop();
 
