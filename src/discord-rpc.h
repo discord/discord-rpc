@@ -1,11 +1,11 @@
 #pragma once
-#include <time.h>
+#include <stdint.h>
 
 struct DiscordRichPresence {
     const char* state;
     const char* details;
-    time_t startTimestamp;
-    time_t endTimestamp;
+    int64_t startTimestamp;
+    int64_t endTimestamp;
     const char* largeImageKey;
     const char* largeImageText;
     const char* smallImageKey;

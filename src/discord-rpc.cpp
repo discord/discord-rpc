@@ -1,18 +1,29 @@
 #include "discord-rpc.h"
 
-#include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 
 // todo: think about making per-platform versions of this whole file, or wrapping the platform specific parts -- win32 for first version
+
+// I just want the basics
+#define WIN32_LEAN_AND_MEAN
+#define NOMCX
+#define NOSERVICE
+#define NOIME
 #include <windows.h>
 
+namespace {
+
+struct RpcMessageFrame {
+    uint32_t length;
+    char message[64 * 1024 - sizeof(uint32_t)];
+};
+
 static const wchar_t* PipeName = L"\\\\.\\pipe\\DiscordRpcServer";
-static HANDLE PipeHandle{INVALID_HANDLE_VALUE};
+static HANDLE PipeHandle{ INVALID_HANDLE_VALUE };
 
 static char ApplicationId[64]{};
 static DiscordEventHandlers Handlers{};
-static char MessageBuffer[64 * 1024];
+static RpcMessageFrame Frame;
 
 // if only there was a standard library function for this
 size_t StringCopy(char* dest, const char* src, size_t maxBytes) {
@@ -52,19 +63,19 @@ void EscapeString(char*& dest, const char* src)
             *dest++ = '\\';
             *dest++ = 'b';
             break;
-        case '\f': // Form feed(ascii code 0C)
+        case '\f':
             *dest++ = '\\';
             *dest++ = 'f';
             break;
-        case '\n': // New line
+        case '\n':
             *dest++ = '\\';
             *dest++ = 'n';
             break;
-        case '\r': // Carriage return
+        case '\r':
             *dest++ = '\\';
             *dest++ = 'r';
             break;
-        case '\t': // Tab
+        case '\t':
             *dest++ = '\\';
             *dest++ = 't';
             break;
@@ -239,6 +250,8 @@ void CloseConnection()
     }
 }
 
+} // anonymous namespace
+
 void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
     StringCopy(ApplicationId, applicationId, sizeof(ApplicationId));
@@ -273,14 +286,12 @@ void Discord_UpdatePresence(const DiscordRichPresence* presence)
         }
     }
 
-    int32_t* totalLength = (int32_t*)MessageBuffer;
-    char* jsonStart = MessageBuffer + sizeof(int32_t);
-    char* jsonWrite = jsonStart;
+    char* jsonWrite = Frame.message;
 
     JsonWriteRichPresenceObj(jsonWrite, presence);
 
-    *totalLength = sizeof(int32_t) + (jsonWrite - jsonStart);
-    BOOL success = WriteFile(PipeHandle, MessageBuffer, *totalLength, nullptr, nullptr);
+    Frame.length = sizeof(uint32_t) + (jsonWrite - Frame.message);
+    BOOL success = WriteFile(PipeHandle, &Frame, Frame.length, nullptr, nullptr);
 
     if (!success) {
         CloseConnection();
