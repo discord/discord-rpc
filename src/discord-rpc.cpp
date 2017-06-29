@@ -26,7 +26,7 @@ static DiscordEventHandlers Handlers{};
 static RpcMessageFrame Frame;
 
 // if only there was a standard library function for this
-size_t StringCopy(char* dest, const char* src, size_t maxBytes) {
+size_t StringCopy(char* dest, const char* src, size_t maxBytes = UINT32_MAX) {
     if (!dest || !src || !maxBytes) {
         return 0;
     }
@@ -38,19 +38,7 @@ size_t StringCopy(char* dest, const char* src, size_t maxBytes) {
     return copied - 1;
 }
 
-size_t StringCopy(char* dest, const char* src) {
-    if (!dest || !src) {
-        return 0;
-    }
-    size_t copied;
-    for (copied = 1; *src; ++copied) {
-        *dest++ = *src++;
-    }
-    *dest = 0;
-    return copied - 1;
-}
-
-void EscapeString(char*& dest, const char* src)
+void JsonWriteEscapedString(char*& dest, const char* src)
 {
     for (char c = *src++; c; c = *src++) {
         switch (c) {
@@ -86,7 +74,7 @@ void EscapeString(char*& dest, const char* src)
     }
 }
 
-template<typename T> void NumberToString(char*& dest, T number)
+template<typename T> void JsonWriteNumber(char*& dest, T number)
 {
     if (!number) {
         *dest++ = '0';
@@ -128,7 +116,7 @@ void JsonWriteStringProp(char*& dest, const char* name, const char* value)
 {
     JsonWritePropName(dest, name);
     *dest++ = '"';
-    EscapeString(dest, value);
+    JsonWriteEscapedString(dest, value);
     *dest++ = '"';
     JsonWritePropSep(dest);
 }
@@ -138,7 +126,7 @@ void JsonWriteNumberAsStringProp(char*& dest, const char* name, T value)
 {
     JsonWritePropName(dest, name);
     *dest++ = '"';
-    NumberToString(dest, value);
+    JsonWriteNumber(dest, value);
     *dest++ = '"';
     JsonWritePropSep(dest);
 }
@@ -147,7 +135,7 @@ template<typename T>
 void JsonWriteNumberProp(char*& dest, const char* name, T value)
 {
     JsonWritePropName(dest, name);
-    NumberToString(dest, value);
+    JsonWriteNumber(dest, value);
     JsonWritePropSep(dest);
 }
 
@@ -221,11 +209,14 @@ void JsonWriteRichPresenceObj(char*& dest, const DiscordRichPresence* presence)
     *(dest - 1) = '}';
 }
 
-void OpenConnection()
+void ConnectionOpen()
 {
     for (;;) {
         PipeHandle = CreateFileW(PipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
         if (PipeHandle != INVALID_HANDLE_VALUE) {
+            if (Handlers.ready) {
+                Handlers.ready();
+            }
             break;
         }
 
@@ -241,12 +232,26 @@ void OpenConnection()
     }
 }
 
-void CloseConnection()
+void ConnectionClose()
 {
     CloseHandle(PipeHandle);
     PipeHandle = INVALID_HANDLE_VALUE;
     if (Handlers.disconnected) {
         Handlers.disconnected();
+    }
+}
+
+void ConnectionWrite(const void* data, size_t length)
+{
+    if (PipeHandle == INVALID_HANDLE_VALUE) {
+        ConnectionOpen();
+        if (PipeHandle == INVALID_HANDLE_VALUE) {
+            return;
+        }
+    }
+    BOOL success = WriteFile(PipeHandle, &Frame, Frame.length, nullptr, nullptr);
+    if (!success) {
+        ConnectionClose();
     }
 }
 
@@ -262,38 +267,22 @@ void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handler
         Handlers = {};
     }
 
-    OpenConnection();
-
-    if (PipeHandle != INVALID_HANDLE_VALUE) {
-        if (Handlers.ready) {
-            Handlers.ready();
-        }
-    }
+    ConnectionOpen();
 }
 
 void Discord_Shutdown()
 {
     Handlers = {};
-    CloseConnection();
+    ConnectionClose();
 }
 
 void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
-    if (PipeHandle == INVALID_HANDLE_VALUE) {
-        OpenConnection();
-        if (PipeHandle == INVALID_HANDLE_VALUE) {
-            return;
-        }
-    }
-
     char* jsonWrite = Frame.message;
 
     JsonWriteRichPresenceObj(jsonWrite, presence);
 
     Frame.length = sizeof(uint32_t) + (jsonWrite - Frame.message);
-    BOOL success = WriteFile(PipeHandle, &Frame, Frame.length, nullptr, nullptr);
 
-    if (!success) {
-        CloseConnection();
-    }
+    ConnectionWrite(&Frame, Frame.length);
 }
