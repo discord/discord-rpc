@@ -1,3 +1,2 @@
-add_library(discord-rpc discord-rpc.cpp)
-add_executable(test-client simple.cpp)
-target_link_libraries(test-client discord-rpc)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+add_library(discord-rpc STATIC discord-rpc.cpp)
