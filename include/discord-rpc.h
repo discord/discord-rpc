@@ -3,10 +3,6 @@
 
 #ifdef  __cplusplus
 extern "C" {
-#else
-
-
-
 #endif
 
 typedef struct {
