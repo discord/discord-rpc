@@ -1,24 +1,24 @@
+/*
+    This is a simple example in C of using the rich presence API syncronously.
+*/
 
-// ug
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS /* thanks Microsoft */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 
 #include "discord-rpc.h"
 
-/*
-    This is a C++ (but really mostly C) simple example of just using the rich presence API.
-*/
-
 static const char* APPLICATION_ID = "12345678910";
 static int FrustrationLevel = 0;
 
 static void updateDiscordPresence() {
-    DiscordRichPresence discordPresence{};
-    discordPresence.state = "West of House";
     char buffer[256];
+    DiscordRichPresence discordPresence;
+    memset(&discordPresence, 0, sizeof(discordPresence));
+    discordPresence.state = "West of House";
     sprintf(buffer, "Frustration level: %d", FrustrationLevel);
     discordPresence.details = buffer;
     Discord_UpdatePresence(&discordPresence);
@@ -37,12 +37,14 @@ static void handleDiscordWantsPresence() {
     updateDiscordPresence();
 }
 
-static bool prompt(char* line, size_t size) {
+static int prompt(char* line, size_t size) {
+    int res;
+    char* nl;
     printf("\n> ");
     fflush(stdout);
-    bool res = fgets(line, size, stdin) != nullptr;
+    res = fgets(line, size, stdin) ? 1 : 0;
     line[size - 1] = 0;
-    char* nl = strchr(line, '\n');
+    nl = strchr(line, '\n');
     if (nl) {
         *nl = 0;
     }
@@ -50,13 +52,15 @@ static bool prompt(char* line, size_t size) {
 }
 
 static void gameLoop() {
-    printf("You are standing in an open field west of a white house.\n");
     char line[512];
+    char* space;
+
+    printf("You are standing in an open field west of a white house.\n");
     while (prompt(line, sizeof(line))) {
         if (time(NULL) & 1) {
             printf("I don't understand that.\n");
         } else {
-            char* space = strchr(line, ' ');
+            space = strchr(line, ' ');
             if (space) {
                 *space = 0;
             }
@@ -70,7 +74,8 @@ static void gameLoop() {
 }
 
 int main() {
-    DiscordEventHandlers handlers{};
+    DiscordEventHandlers handlers;
+    memset(&handlers, 0, sizeof(handlers));
     handlers.ready = handleDiscordReady;
     handlers.disconnected = handleDiscordDisconnected;
     handlers.wantsPresence = handleDiscordWantsPresence;

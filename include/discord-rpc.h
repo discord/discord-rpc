@@ -1,7 +1,15 @@
 #pragma once
 #include <stdint.h>
 
-struct DiscordRichPresence {
+#ifdef  __cplusplus
+extern "C" {
+#else
+
+
+
+#endif
+
+typedef struct {
     const char* state;
     const char* details;
     int64_t startTimestamp;
@@ -16,19 +24,16 @@ struct DiscordRichPresence {
     const char* matchSecret;
     const char* joinSecret;
     const char* spectateSecret;
-    bool instance;
-};
+    int8_t instance;
+} DiscordRichPresence;
 
-struct DiscordEventHandlers {
-    // required.
+typedef struct {
     void (*ready)();
     void (*disconnected)();
-
-    // optional for rich presence
     void (*wantsPresence)();
     void (*joinGame)(const char* joinSecret);
     void (*spectateGame)(const char* spectateSecret);
-};
+} DiscordEventHandlers;
 
 void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers);
 void Discord_Shutdown();
@@ -59,3 +64,7 @@ void Discord_SelectTextChannel();
 void Discord_SendMessage();
 
 */
+
+#ifdef  __cplusplus
+} /* extern "C" */
+#endif
