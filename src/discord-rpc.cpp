@@ -1,7 +1,5 @@
 #include "discord-rpc.h"
 
-#include <stdio.h>
-
 #include "connection.h"
 #include "yolojson.h"
 
@@ -20,6 +18,8 @@ void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handler
     }
 
     MyConnection = RpcConnection::Create();
+    MyConnection->onConnect = Handlers.ready;
+    MyConnection->onDisconnect = Handlers.disconnected;
     MyConnection->Open();
 }
 

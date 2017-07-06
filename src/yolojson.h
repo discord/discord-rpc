@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+    This is as simple of a json writing thing as possible; does not try to keep you
+    from overflowing buffer, so make sure you have room.
+*/
+
 // if only there was a standard library function for this
 inline size_t StringCopy(char* dest, const char* src, size_t maxBytes = UINT32_MAX) {
     if (!dest || !src || !maxBytes) {
