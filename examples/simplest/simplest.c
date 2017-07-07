@@ -1,5 +1,5 @@
 /*
-    This is a simple example in C of using the rich presence API syncronously.
+    This is a simple example in C of using the rich presence API syncronously, just sending presence.
 */
 
 #define _CRT_SECURE_NO_WARNINGS /* thanks Microsoft */
@@ -22,19 +22,6 @@ static void updateDiscordPresence() {
     sprintf(buffer, "Frustration level: %d", FrustrationLevel);
     discordPresence.details = buffer;
     Discord_UpdatePresence(&discordPresence);
-}
-
-static void handleDiscordReady() {
-    printf("Discord: ready\n");
-}
-
-static void handleDiscordDisconnected() {
-    printf("Discord: disconnected\n");
-}
-
-static void handleDiscordWantsPresence() {
-    printf("Discord: requests presence\n");
-    updateDiscordPresence();
 }
 
 static int prompt(char* line, size_t size) {
@@ -76,9 +63,6 @@ static void gameLoop() {
 int main() {
     DiscordEventHandlers handlers;
     memset(&handlers, 0, sizeof(handlers));
-    handlers.ready = handleDiscordReady;
-    handlers.disconnected = handleDiscordDisconnected;
-    handlers.wantsPresence = handleDiscordWantsPresence;
     Discord_Initialize(APPLICATION_ID, &handlers);
 
     gameLoop();
