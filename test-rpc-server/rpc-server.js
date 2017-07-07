@@ -1,48 +1,59 @@
 const net = require('net');
-const RpcMessage = require('./rpc-message');
+const repl = require('repl');
+const {PipePath, RpcMessage} = require('./rpc-message');
 
-let PipePrefix;
-let PipePostfix;
-if (process.platform == 'win32') {
-    PipePrefix = '\\\\.\\pipe\\';
-    PipePostfix = '';
-}
-else {
-    PipePrefix = "/tmp";
-    PipePostfix = '.pipe';
-}
-const PipePath = PipePrefix + 'DiscordRpcServer' + PipePostfix;
-let connections = 0;
+let connectionNonce = 0;
+global.connections = {};
 
 const server = net.createServer(function(sock) {
-    connections += 1;
-    console.log('Server: on connection', connections);
-    let myConnection = connections;
+    connectionNonce += 1;
+    console.log('Server: on connection', connectionNonce);
+    let myConnection = connectionNonce;
+    let messages = 0;
+
+    global.connections[myConnection] = sock;
 
     sock.on('data', function(data) {
+        messages++;
         const msgObj = RpcMessage.deserialize(data);
         if (msgObj != null) {
-            console.log('Server: on data:', myConnection, msgObj);
+            const {opcode, data} = msgObj;
+            console.log(`\nServer (${myConnection}): got opcode: ${opcode}, data: ${JSON.stringify(data)}`);
         }
         else {
-            console.log('Server: got some data', data.toString());
+            console.log('\nServer: got some data', data.toString());
         }
     });
     
     sock.on('end', function() {
-        connections -= 1;
-        console.log('Server: on end', connections);
+        delete global.connections[myConnection];
+        console.log('\nServer: on end', myConnection);
     });
 });
 
 server.on('close', function(){
-    console.log('Server: on close');
-})
+    console.log('\nServer: on close');
+});
 
 try {
     server.listen(PipePath, function(){
-        console.log('Server: on listening');
+        console.log('\nServer: on listening');
     });
 } catch(e) {
-    console.error('could not start server:', e);
+    console.error('\nServer: could not start:', e);
 }
+
+const replServer = repl.start({prompt: '> ', useGlobal: true, breakEvalOnSigint: true});
+replServer.defineCommand('kill', {
+  help: 'Kill a client',
+  action(who) {
+    this.bufferedCommand = '';
+    who = parseInt(who, 10);
+    const sock = global.connections[who];
+    if (sock) {
+        sock.write(RpcMessage.sendClose(123, 'killed'));
+        sock.end();
+    }
+    this.displayPrompt();
+  }
+});

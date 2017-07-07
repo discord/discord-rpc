@@ -1,32 +1,27 @@
 const net = require('net');
-const RpcMessage = require('./rpc-message');
+const {OPCODES, PipePath, RpcMessage} = require('./rpc-message');
 
-let PipePrefix;
-let PipePostfix;
-if (process.platform == 'win32') {
-    PipePrefix = '\\\\.\\pipe\\';
-    PipePostfix = '';
-}
-else {
-    PipePrefix = "/tmp";
-    PipePostfix = '.pipe';
-}
-
-const PipePath = PipePrefix + "DiscordRpcServer" + PipePostfix;
+const APP_ID = '12345678910';
+global.isConnected = false;
+global.timeoutId = null;
 
 function sendMesg(testUpdatesToSend, stream) {
     const msgObj = {
-        name: 'My Awesome Game',
-        state: (testUpdatesToSend % 2 == 0) ? 'In a match' : 'In Lobby'
+        state: (testUpdatesToSend % 2 == 0) ? 'In a match' : 'In Lobby',
+        details: 'Excited'
     };
     console.log('Client: send update:', msgObj);
-    stream.write(RpcMessage.serialize(msgObj));
+    stream.write(RpcMessage.send(msgObj));
 }
 
 function sendMessageLoop(testUpdatesToSend, interval, stream) {
+    global.timeoutId = null;
+    if (!global.isConnected) {
+        return;
+    }
     sendMesg(testUpdatesToSend, stream);
     if (testUpdatesToSend > 1) {
-        setTimeout(() => {sendMessageLoop(testUpdatesToSend - 1, interval, stream)}, interval);
+        global.timeoutId = setTimeout(() => {sendMessageLoop(testUpdatesToSend - 1, interval, stream)}, interval);
     } else {
         shutdown();
     }
@@ -34,23 +29,35 @@ function sendMessageLoop(testUpdatesToSend, interval, stream) {
 
 const client = net.connect(PipePath, function(stream) {
     console.log('Client: on connection');
-
-    sendMessageLoop(5, 3000, client);
+    global.isConnected = true;
+    client.write(RpcMessage.handshake(APP_ID));
+    sendMessageLoop(10, 3000, client);
 });
 
 client.on('data', function(data) {
     const msgObj = RpcMessage.deserialize(data);
     if (msgObj != null) {
-        console.log('Client: got data:', msgObj);
+        const {opcode, data} = msgObj;
+        console.log(`Client: got opcode: ${opcode}, data: ${JSON.stringify(data)}`);
+
+        if (opcode == OPCODES.CLOSE) {
+            shutdown();
+        }
+
     } else {
-        console.log('Client: got some data');
+        console.log('Client: got some data', data);
     }
 });
 
 client.on('end', function() {
+    global.isConnected = false;
     console.log('Client: on end');
 });
 
 function shutdown() {
+    if (global.timeoutId !== null) {
+        clearTimeout(global.timeoutId);
+        global.timeoutId = null;
+    }
     client.end();
 }
