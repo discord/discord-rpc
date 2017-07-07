@@ -257,7 +257,7 @@ void ConnectionWrite(const void* data, size_t length)
 
 } // anonymous namespace
 
-void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
+extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
     StringCopy(ApplicationId, applicationId, sizeof(ApplicationId));
     if (handlers) {
@@ -270,13 +270,13 @@ void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handler
     ConnectionOpen();
 }
 
-void Discord_Shutdown()
+extern "C" void Discord_Shutdown()
 {
     Handlers = {};
     ConnectionClose();
 }
 
-void Discord_UpdatePresence(const DiscordRichPresence* presence)
+extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     char* jsonWrite = Frame.message;
 

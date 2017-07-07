@@ -9,7 +9,7 @@ static DiscordEventHandlers Handlers{};
 static bool wasJustConnected = false;
 static bool wasJustDisconnected = false;
 
-void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
+extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
     StringCopy(ApplicationId, applicationId, sizeof(ApplicationId));
     if (handlers) {
@@ -25,14 +25,14 @@ void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handler
     MyConnection->Open();
 }
 
-void Discord_Shutdown()
+extern "C" void Discord_Shutdown()
 {
     Handlers = {};
     MyConnection->Close();
     RpcConnection::Destroy(MyConnection);
 }
 
-void Discord_UpdatePresence(const DiscordRichPresence* presence)
+extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     auto frame = MyConnection->GetNextFrame();
     char* jsonWrite = frame->message;
@@ -41,7 +41,7 @@ void Discord_UpdatePresence(const DiscordRichPresence* presence)
     MyConnection->WriteFrame(frame);
 }
 
-void Discord_Update()
+extern "C" void Discord_Update()
 {
     // check for messages
     // todo
