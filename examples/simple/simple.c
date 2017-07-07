@@ -70,6 +70,7 @@ static void gameLoop() {
         ++FrustrationLevel;
         
         updateDiscordPresence();
+        Discord_Update();
     }
 }
 

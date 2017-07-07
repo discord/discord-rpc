@@ -6,6 +6,8 @@
 static RpcConnection* MyConnection = nullptr;
 static char ApplicationId[64]{};
 static DiscordEventHandlers Handlers{};
+static bool wasJustConnected = false;
+static bool wasJustDisconnected = false;
 
 void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
@@ -18,8 +20,8 @@ void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handler
     }
 
     MyConnection = RpcConnection::Create();
-    MyConnection->onConnect = Handlers.ready;
-    MyConnection->onDisconnect = Handlers.disconnected;
+    MyConnection->onConnect = []() { wasJustConnected = true; };
+    MyConnection->onDisconnect = []() { wasJustDisconnected = true; };
     MyConnection->Open();
 }
 
@@ -37,4 +39,21 @@ void Discord_UpdatePresence(const DiscordRichPresence* presence)
     JsonWriteRichPresenceObj(jsonWrite, presence);
     frame->length = sizeof(uint32_t) + (jsonWrite - frame->message);
     MyConnection->WriteFrame(frame);
+}
+
+void Discord_Update()
+{
+    // check for messages
+    // todo
+
+    // fire callbacks
+    if (wasJustDisconnected && Handlers.disconnected) {
+        wasJustDisconnected = false;
+        Handlers.disconnected();
+    }
+
+    if (wasJustConnected && Handlers.ready) {
+        wasJustConnected = false;
+        Handlers.ready();
+    }
 }

@@ -35,6 +35,9 @@ void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handler
 void Discord_Shutdown();
 void Discord_UpdatePresence(const DiscordRichPresence* presence);
 
+/* checks for incoming messages, dispatches callbacks */
+void Discord_Update();
+
 /* later
 
 struct DiscordChannelEventHandlers {
