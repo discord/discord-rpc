@@ -1,5 +1,8 @@
 #pragma once
 
+#include "connection.h"
+#include "discord-rpc.h"
+
 /*
     This is as simple of a json writing thing as possible; does not try to keep you
     from overflowing buffer, so make sure you have room.
@@ -188,3 +191,16 @@ inline void JsonWriteRichPresenceObj(char*& dest, const DiscordRichPresence* pre
     dest -= 1;
     *(dest - 1) = '}';
 }
+
+inline void JsonWriteHandshakeObj(char*& dest, int version, const char* applicationId)
+{
+    *dest++ = '{';
+
+    JsonWriteNumberProp(dest, "v", version);
+    JsonWriteStringProp(dest, "client_id", applicationId);
+
+    dest -= 1;
+    *(dest - 1) = '}';
+    *dest = 0;
+}
+

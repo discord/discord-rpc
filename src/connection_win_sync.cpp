@@ -8,16 +8,22 @@
 #define NOIME
 #include <windows.h>
 
+#include "yolojson.h"
+
+const int RpcVersion = 1;
+
 struct WinRpcConnection : public RpcConnection {
     HANDLE pipe{INVALID_HANDLE_VALUE};
     RpcMessageFrame frame;
 };
 
-static const wchar_t* PipeName = L"\\\\.\\pipe\\DiscordRpcServer";
+static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
 
-/*static*/ RpcConnection* RpcConnection::Create()
+/*static*/ RpcConnection* RpcConnection::Create(const char* applicationId)
 {
-    return new WinRpcConnection;
+    auto connection = new WinRpcConnection;
+    StringCopy(connection->appId, applicationId, sizeof(connection->appId));
+    return connection;
 }
 
 /*static*/ void RpcConnection::Destroy(RpcConnection*& c)
@@ -49,6 +55,13 @@ void RpcConnection::Open()
             return;
         }
     }
+
+    RpcMessageFrame* frame = GetNextFrame();
+    frame->opcode = OPCODE::HANDSHAKE;
+    char* msg = frame->message;
+    JsonWriteHandshakeObj(msg, RpcVersion, appId);
+    frame->length = msg - frame->message;
+    WriteFrame(frame);
 }
 
 void RpcConnection::Close()
@@ -86,5 +99,5 @@ RpcMessageFrame* RpcConnection::GetNextFrame()
 void RpcConnection::WriteFrame(RpcMessageFrame* frame)
 {
     auto self = reinterpret_cast<WinRpcConnection*>(this);
-    self->Write(frame, frame->length);
+    self->Write(frame, 8 + frame->length);
 }
