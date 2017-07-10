@@ -59,7 +59,7 @@ class RpcMessage {
         } catch(e) {
             console.log(`failed to parse "${msg}"`);
             console.error(e);
-            return {};
+            return {opcode: OPCODES.CLOSE, message: e.message};
         }
     }
 };
