@@ -11,10 +11,12 @@
 #include "yolojson.h"
 
 const int RpcVersion = 1;
+const int NumFrames = 3;
 
 struct WinRpcConnection : public RpcConnection {
     HANDLE pipe{INVALID_HANDLE_VALUE};
-    RpcMessageFrame frame;
+    RpcMessageFrame frames[NumFrames];
+    int nextFrame{0};
 };
 
 static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
@@ -39,9 +41,6 @@ void RpcConnection::Open()
     for (;;) {
         self->pipe = ::CreateFileW(PipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
         if (self->pipe != INVALID_HANDLE_VALUE) {
-            if (self->onConnect) {
-                self->onConnect();
-            }
             break;
         }
 
@@ -62,6 +61,10 @@ void RpcConnection::Open()
     JsonWriteHandshakeObj(msg, RpcVersion, appId);
     frame->length = msg - frame->message;
     WriteFrame(frame);
+
+    if (self->onConnect) {
+        self->onConnect();
+    }
 }
 
 void RpcConnection::Close()
@@ -77,15 +80,18 @@ void RpcConnection::Close()
 void RpcConnection::Write(const void* data, size_t length)
 {
     auto self = reinterpret_cast<WinRpcConnection*>(this);
-
-    if (self->pipe == INVALID_HANDLE_VALUE) {
-        self->Open();
+    const int retries = 3;
+    for (int i = 0; i < retries; ++i) {
         if (self->pipe == INVALID_HANDLE_VALUE) {
-            return;
+            self->Open();
+            if (self->pipe == INVALID_HANDLE_VALUE) {
+                break;
+            }
         }
-    }
-    BOOL success = ::WriteFile(self->pipe, data, length, nullptr, nullptr);
-    if (!success) {
+        BOOL success = ::WriteFile(self->pipe, data, length, nullptr, nullptr);
+        if (success) {
+            break;
+        }
         self->Close();
     }
 }
@@ -93,7 +99,9 @@ void RpcConnection::Write(const void* data, size_t length)
 RpcMessageFrame* RpcConnection::GetNextFrame()
 {
     auto self = reinterpret_cast<WinRpcConnection*>(this);
-    return &(self->frame);
+    auto result = &(self->frames[self->nextFrame]);
+    self->nextFrame = (self->nextFrame + 1) % NumFrames;
+    return result;
 }
 
 void RpcConnection::WriteFrame(RpcMessageFrame* frame)

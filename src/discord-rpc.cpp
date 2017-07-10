@@ -34,6 +34,7 @@ extern "C" void Discord_Shutdown()
 extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     auto frame = MyConnection->GetNextFrame();
+    frame->opcode = OPCODE::FRAME;
     char* jsonWrite = frame->message;
     JsonWriteRichPresenceObj(jsonWrite, presence);
     frame->length = jsonWrite - frame->message;

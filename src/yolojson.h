@@ -190,6 +190,7 @@ inline void JsonWriteRichPresenceObj(char*& dest, const DiscordRichPresence* pre
 
     dest -= 1;
     *(dest - 1) = '}';
+    *dest = 0;
 }
 
 inline void JsonWriteHandshakeObj(char*& dest, int version, const char* applicationId)
