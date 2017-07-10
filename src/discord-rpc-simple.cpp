@@ -13,12 +13,21 @@
 
 namespace {
 
-struct RpcMessageFrame {
-    uint32_t length;
-    char message[64 * 1024 - sizeof(uint32_t)];
+const int RpcVersion = 1;
+
+enum class OPCODE : uint32_t {
+    HANDSHAKE = 0,
+    FRAME = 1,
+    CLOSE = 2,
 };
 
-static const wchar_t* PipeName = L"\\\\.\\pipe\\DiscordRpcServer";
+struct RpcMessageFrame {
+    OPCODE opcode;
+    uint32_t length;
+    char message[64 * 1024 - 8];
+};
+
+static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
 static HANDLE PipeHandle{ INVALID_HANDLE_VALUE };
 
 static char ApplicationId[64]{};
@@ -203,11 +212,26 @@ void JsonWriteRichPresenceObj(char*& dest, const DiscordRichPresence* presence)
         JsonWriteStringProp(dest, "spectate_secret", presence->spectateSecret);
     }
 
-    JsonWriteBoolProp(dest, "instance", presence->instance);
+    JsonWriteBoolProp(dest, "instance", presence->instance != 0);
 
     dest -= 1;
     *(dest - 1) = '}';
+    *dest = 0;
 }
+
+void JsonWriteHandshakeObj(char*& dest, const char* applicationId)
+{
+    *dest++ = '{';
+
+    JsonWriteNumberProp(dest, "v", RpcVersion);
+    JsonWriteStringProp(dest, "client_id", applicationId);
+
+    dest -= 1;
+    *(dest - 1) = '}';
+    *dest = 0;
+}
+
+void ConnectionWrite(const RpcMessageFrame* frame);
 
 void ConnectionOpen()
 {
@@ -220,7 +244,14 @@ void ConnectionOpen()
             break;
         }
 
-        if (GetLastError() != ERROR_PIPE_BUSY) {
+        DWORD err = GetLastError();
+
+        if (err == ERROR_FILE_NOT_FOUND) {
+            printf("No server running\n");
+            return;
+        }
+
+        if (err != ERROR_PIPE_BUSY) {
             printf("Could not open pipe. Error: %d\n", GetLastError());
             return;
         }
@@ -230,6 +261,13 @@ void ConnectionOpen()
             return;
         }
     }
+
+    RpcMessageFrame frame;
+    frame.opcode = OPCODE::HANDSHAKE;
+    char* msg = frame.message;
+    JsonWriteHandshakeObj(msg, ApplicationId);
+    frame.length = msg - frame.message;
+    ConnectionWrite(&frame);
 }
 
 void ConnectionClose()
@@ -241,7 +279,7 @@ void ConnectionClose()
     }
 }
 
-void ConnectionWrite(const void* data, size_t length)
+void ConnectionWrite(const RpcMessageFrame* frame)
 {
     if (PipeHandle == INVALID_HANDLE_VALUE) {
         ConnectionOpen();
@@ -249,7 +287,7 @@ void ConnectionWrite(const void* data, size_t length)
             return;
         }
     }
-    BOOL success = WriteFile(PipeHandle, &Frame, Frame.length, nullptr, nullptr);
+    BOOL success = WriteFile(PipeHandle, frame, 8 + frame->length, nullptr, nullptr);
     if (!success) {
         ConnectionClose();
     }
@@ -278,11 +316,9 @@ extern "C" void Discord_Shutdown()
 
 extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
+    Frame.opcode = OPCODE::FRAME;
     char* jsonWrite = Frame.message;
-
     JsonWriteRichPresenceObj(jsonWrite, presence);
-
-    Frame.length = sizeof(uint32_t) + (jsonWrite - Frame.message);
-
-    ConnectionWrite(&Frame, Frame.length);
+    Frame.length = jsonWrite - Frame.message;
+    ConnectionWrite(&Frame);
 }
