@@ -11,11 +11,12 @@
 #include "yolojson.h"
 
 const int RpcVersion = 1;
-const int NumFrames = 4;
+const int NumFrames = 3;
+static int LastErrorCode = 0;
+static const char* LastErrorMessage = "";
 
 struct WinRpcConnection : public RpcConnection {
     HANDLE pipe{INVALID_HANDLE_VALUE};
-    RpcMessageFrame readFrame;
     RpcMessageFrame frames[NumFrames];
     int nextFrame{0};
     int lastErrorCode{0};
@@ -84,9 +85,9 @@ void RpcConnection::Close()
     ::CloseHandle(self->pipe);
     self->pipe = INVALID_HANDLE_VALUE;
     if (self->onDisconnect) {
-        self->onDisconnect(self->lastErrorCode, self->lastErrorMessage);
-        self->lastErrorCode = 0;
-        self->lastErrorMessage[0] = 0;
+        self->onDisconnect(LastErrorCode, LastErrorMessage);
+        LastErrorCode = 0;
+        LastErrorMessage = "";
     }
 }
 
@@ -105,34 +106,15 @@ void RpcConnection::Write(const void* data, size_t length)
         if (success) {
             break;
         }
-
-        RpcMessageFrame* frame = self->Read();
-        if (frame) {
-            self->HandleError(frame);
-        }
-
+        LastErrorCode = -1;
+        LastErrorMessage = "Pipe closed";
         self->Close();
     }
 }
 
 RpcMessageFrame* RpcConnection::Read()
 {
-    auto self = reinterpret_cast<WinRpcConnection*>(this);
-    DWORD bytesAvailable = 0;
-    if (::PeekNamedPipe(self->pipe, nullptr, 0, nullptr, &bytesAvailable, nullptr) && bytesAvailable > 8) {
-        if (::ReadFile(self->pipe, &self->readFrame, 8, nullptr, nullptr) != TRUE) {
-            return nullptr;
-        }
-
-        if (self->readFrame.length > 0) {
-            if (::ReadFile(self->pipe, &self->readFrame.message, self->readFrame.length, nullptr, nullptr) != TRUE) {
-                return nullptr;
-            }
-            self->readFrame.message[self->readFrame.length] = 0;
-        }
-
-        return &self->readFrame;
-    }
+    // todo
     return nullptr;
 }
 

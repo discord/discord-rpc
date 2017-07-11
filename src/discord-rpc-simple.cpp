@@ -275,7 +275,7 @@ void ConnectionClose()
     CloseHandle(PipeHandle);
     PipeHandle = INVALID_HANDLE_VALUE;
     if (Handlers.disconnected) {
-        Handlers.disconnected();
+        Handlers.disconnected(0, "");
     }
 }
 

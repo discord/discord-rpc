@@ -3,11 +3,15 @@
 #include "connection.h"
 #include "yolojson.h"
 
+#include <stdio.h>
+
 static RpcConnection* MyConnection = nullptr;
 static char ApplicationId[64]{};
 static DiscordEventHandlers Handlers{};
-static bool wasJustConnected = false;
-static bool wasJustDisconnected = false;
+static bool WasJustConnected = false;
+static bool WasJustDisconnected = false;
+static int LastErrorCode = 0;
+static const char* LastErrorMessage = "";
 
 extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
@@ -19,8 +23,12 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
     }
 
     MyConnection = RpcConnection::Create(applicationId);
-    MyConnection->onConnect = []() { wasJustConnected = true; };
-    MyConnection->onDisconnect = []() { wasJustDisconnected = true; };
+    MyConnection->onConnect = []() { WasJustConnected = true; };
+    MyConnection->onDisconnect = [](int errorCode, const char* message) {
+        LastErrorCode = errorCode;
+        LastErrorMessage = message;
+        WasJustDisconnected = true;
+    };
     MyConnection->Open();
 }
 
@@ -43,17 +51,18 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 
 extern "C" void Discord_Update()
 {
-    // check for messages
-    // todo
-
-    // fire callbacks
-    if (wasJustDisconnected && Handlers.disconnected) {
-        wasJustDisconnected = false;
-        Handlers.disconnected();
+    while (auto frame = MyConnection->Read()) {
+        printf("got a message %d, %d, %s\n", frame->opcode, frame->length, frame->message);
     }
 
-    if (wasJustConnected && Handlers.ready) {
-        wasJustConnected = false;
+    // fire callbacks
+    if (WasJustDisconnected && Handlers.disconnected) {
+        WasJustDisconnected = false;
+        Handlers.disconnected(LastErrorCode, LastErrorMessage);
+    }
+
+    if (WasJustConnected && Handlers.ready) {
+        WasJustConnected = false;
         Handlers.ready();
     }
 }
