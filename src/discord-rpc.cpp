@@ -2,6 +2,7 @@
 
 #include "connection.h"
 #include "yolojson.h"
+#include "rapidjson/document.h"
 
 #include <stdio.h>
 
@@ -11,7 +12,7 @@ static DiscordEventHandlers Handlers{};
 static bool WasJustConnected = false;
 static bool WasJustDisconnected = false;
 static int LastErrorCode = 0;
-static const char* LastErrorMessage = "";
+static char LastErrorMessage[256];
 
 extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
@@ -24,17 +25,15 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
 
     MyConnection = RpcConnection::Create(applicationId);
     MyConnection->onConnect = []() { WasJustConnected = true; };
-    MyConnection->onDisconnect = [](int errorCode, const char* message) {
-        LastErrorCode = errorCode;
-        LastErrorMessage = message;
-        WasJustDisconnected = true;
-    };
+    MyConnection->onDisconnect = []() { WasJustDisconnected = true; };
     MyConnection->Open();
 }
 
 extern "C" void Discord_Shutdown()
 {
     Handlers = {};
+    MyConnection->onConnect = nullptr;
+    MyConnection->onDisconnect = nullptr;
     MyConnection->Close();
     RpcConnection::Destroy(MyConnection);
 }
@@ -53,6 +52,24 @@ extern "C" void Discord_Update()
 {
     while (auto frame = MyConnection->Read()) {
         printf("got a message %d, %d, %s\n", frame->opcode, frame->length, frame->message);
+        rapidjson::Document d;
+        if (frame->length > 0) {
+            d.ParseInsitu(frame->message);
+        }
+
+        switch (frame->opcode) {
+        case OPCODE::HANDSHAKE:
+            // does this happen?
+            break;
+        case OPCODE::CLOSE:
+            LastErrorCode = d["code"].GetInt();
+            StringCopy(LastErrorMessage, d["code"].GetString(), sizeof(LastErrorMessage));
+            MyConnection->Close();
+            break;
+        case OPCODE::FRAME:
+            // todo
+            break;
+        }
     }
 
     // fire callbacks

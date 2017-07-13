@@ -322,3 +322,7 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
     Frame.length = jsonWrite - Frame.message;
     ConnectionWrite(&Frame);
 }
+
+extern "C" void Discord_Update()
+{
+}

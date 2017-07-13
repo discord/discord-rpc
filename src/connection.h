@@ -18,7 +18,7 @@ struct RpcMessageFrame {
 
 struct RpcConnection {
     void (*onConnect)() = nullptr;
-    void (*onDisconnect)(int errorcode, const char* message) = nullptr;
+    void (*onDisconnect)() = nullptr;
     char appId[64];
 
     static RpcConnection* Create(const char* applicationId);

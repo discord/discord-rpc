@@ -1,6 +1,7 @@
 #include "connection.h"
 
 #include <stdio.h>
+#include "rapidjson/document.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMCX
@@ -12,23 +13,11 @@
 
 const int RpcVersion = 1;
 const int NumFrames = 3;
-static int LastErrorCode = 0;
-static const char* LastErrorMessage = "";
 
 struct WinRpcConnection : public RpcConnection {
     HANDLE pipe{INVALID_HANDLE_VALUE};
     RpcMessageFrame frames[NumFrames];
     int nextFrame{0};
-    int lastErrorCode{0};
-    char lastErrorMessage[1024];
-
-    void HandleError(RpcMessageFrame* frame) {
-        if (frame->opcode == OPCODE::CLOSE) {
-            lastErrorCode = 1; // todo
-            StringCopy(lastErrorMessage, frame->message, sizeof(lastErrorMessage));
-            printf("got a close message: %d: %s\n", lastErrorCode, lastErrorMessage);
-        }
-    }
 };
 
 static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
@@ -85,9 +74,7 @@ void RpcConnection::Close()
     ::CloseHandle(self->pipe);
     self->pipe = INVALID_HANDLE_VALUE;
     if (self->onDisconnect) {
-        self->onDisconnect(LastErrorCode, LastErrorMessage);
-        LastErrorCode = 0;
-        LastErrorMessage = "";
+        self->onDisconnect();
     }
 }
 
@@ -106,8 +93,6 @@ void RpcConnection::Write(const void* data, size_t length)
         if (success) {
             break;
         }
-        LastErrorCode = -1;
-        LastErrorMessage = "Pipe closed";
         self->Close();
     }
 }

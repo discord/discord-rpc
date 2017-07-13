@@ -18,16 +18,6 @@ struct WinRpcConnection : public RpcConnection {
     RpcMessageFrame readFrame;
     RpcMessageFrame frames[NumFrames];
     int nextFrame{0};
-    int lastErrorCode{0};
-    char lastErrorMessage[1024];
-
-    void HandleError(RpcMessageFrame* frame) {
-        if (frame->opcode == OPCODE::CLOSE) {
-            lastErrorCode = 1; // todo
-            StringCopy(lastErrorMessage, frame->message, sizeof(lastErrorMessage));
-            printf("got a close message: %d: %s\n", lastErrorCode, lastErrorMessage);
-        }
-    }
 };
 
 static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
@@ -84,9 +74,7 @@ void RpcConnection::Close()
     ::CloseHandle(self->pipe);
     self->pipe = INVALID_HANDLE_VALUE;
     if (self->onDisconnect) {
-        self->onDisconnect(self->lastErrorCode, self->lastErrorMessage);
-        self->lastErrorCode = 0;
-        self->lastErrorMessage[0] = 0;
+        self->onDisconnect();
     }
 }
 
@@ -106,10 +94,12 @@ void RpcConnection::Write(const void* data, size_t length)
             break;
         }
 
+        /* hmm
         RpcMessageFrame* frame = self->Read();
         if (frame) {
             self->HandleError(frame);
         }
+        */
 
         self->Close();
     }
