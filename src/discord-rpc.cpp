@@ -51,7 +51,6 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 extern "C" void Discord_Update()
 {
     while (auto frame = MyConnection->Read()) {
-        printf("got a message %d, %d, %s\n", frame->opcode, frame->length, frame->message);
         rapidjson::Document d;
         if (frame->length > 0) {
             d.ParseInsitu(frame->message);
