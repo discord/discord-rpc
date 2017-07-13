@@ -3,6 +3,7 @@
 // This is to wrap the platform specific kinds of connect/read/write.
 
 #include <stdint.h>
+#include <stdlib.h>
 
 enum class OPCODE : uint32_t {
     HANDSHAKE = 0,
