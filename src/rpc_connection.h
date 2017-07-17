@@ -3,6 +3,9 @@
 #include "connection.h"
 #include "rapidjson/document.h"
 
+// I took this from the buffer size libuv uses for named pipes; I suspect ours would usually be much smaller.
+constexpr size_t MaxRpcFrameSize = 64 * 1024;
+
 struct RpcConnection {
     enum class Opcode : uint32_t {
         Handshake = 0,
@@ -18,7 +21,7 @@ struct RpcConnection {
     };
 
     struct MessageFrame : public MessageFrameHeader {
-        char message[64 * 1024 - sizeof(MessageFrameHeader)];
+        char message[MaxRpcFrameSize - sizeof(MessageFrameHeader)];
     };
 
     enum class State : uint32_t {
