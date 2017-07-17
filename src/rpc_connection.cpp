@@ -5,14 +5,6 @@
 
 static const int RpcVersion = 1;
 static RpcConnection Instance;
-static const size_t SendQueueSize = 4;
-static RpcConnection::MessageFrame SendQueue[SendQueueSize];
-static std::atomic_uint SendQueueNext = 0;
-
-static RpcConnection::MessageFrame* NextSendFrame() {
-    auto index = (SendQueueNext++) % SendQueueSize;
-    return &SendQueue[index];
-}
 
 /*static*/ RpcConnection* RpcConnection::Create(const char* applicationId)
 {
@@ -42,13 +34,12 @@ void RpcConnection::Open()
         }
     }
 
-    auto handshakeFrame = NextSendFrame();
-    handshakeFrame->opcode = Opcode::Handshake;
-    char* json = handshakeFrame->message;
+    sendFrame.opcode = Opcode::Handshake;
+    char* json = sendFrame.message;
     JsonWriteHandshakeObj(json, RpcVersion, appId);
-    handshakeFrame->length = json - handshakeFrame->message;
+    sendFrame.length = json - sendFrame.message;
         
-    if (connection->Write(handshakeFrame, sizeof(MessageFrameHeader) + handshakeFrame->length)) {
+    if (connection->Write(&sendFrame, sizeof(MessageFrameHeader) + sendFrame.length)) {
         state = State::Connected;
         if (onConnect) {
             onConnect();
@@ -67,11 +58,10 @@ void RpcConnection::Close()
 
 void RpcConnection::Write(const void* data, size_t length)
 {
-    auto frame = NextSendFrame();
-    frame->opcode = Opcode::Frame;
-    memcpy(frame->message, data, length);
-    frame->length = length;
-    if (!connection->Write(frame, sizeof(MessageFrameHeader) + length)) {
+    sendFrame.opcode = Opcode::Frame;
+    memcpy(sendFrame.message, data, length);
+    sendFrame.length = length;
+    if (!connection->Write(&sendFrame, sizeof(MessageFrameHeader) + length)) {
         Close();
     }
 }

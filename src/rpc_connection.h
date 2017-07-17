@@ -37,6 +37,7 @@ struct RpcConnection {
     char appId[64]{};
     int lastErrorCode{0};
     char lastErrorMessage[256]{};
+    RpcConnection::MessageFrame sendFrame;
 
     static RpcConnection* Create(const char* applicationId);
     static void Destroy(RpcConnection*&);
