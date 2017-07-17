@@ -25,7 +25,6 @@ add_subdirectory(src)
 add_subdirectory(examples/simple)
 
 if(WIN32)
-    add_subdirectory(examples/simpleSync)
     add_subdirectory(examples/simplest)
 endif(WIN32)
 

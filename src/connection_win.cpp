@@ -1,7 +1,6 @@
 #include "connection.h"
 
 #include <stdio.h>
-#include "rapidjson/document.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMCX
@@ -9,110 +8,75 @@
 #define NOIME
 #include <windows.h>
 
-#include "yolojson.h"
-
-const int RpcVersion = 1;
-const int NumFrames = 3;
-
-struct WinRpcConnection : public RpcConnection {
+struct BaseConnectionWin : public BaseConnection {
     HANDLE pipe{INVALID_HANDLE_VALUE};
-    RpcMessageFrame frames[NumFrames];
-    int nextFrame{0};
 };
 
+static BaseConnectionWin Connection;
 static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
 
-/*static*/ RpcConnection* RpcConnection::Create(const char* applicationId)
+/*static*/ BaseConnection* BaseConnection::Create()
 {
-    auto connection = new WinRpcConnection;
-    StringCopy(connection->appId, applicationId, sizeof(connection->appId));
-    return connection;
+    return &Connection;
 }
 
-/*static*/ void RpcConnection::Destroy(RpcConnection*& c)
+/*static*/ void BaseConnection::Destroy(BaseConnection*& c)
 {
-    auto self = reinterpret_cast<WinRpcConnection*>(c);
-    delete self;
+    auto self = reinterpret_cast<BaseConnectionWin*>(c);
+    self->Close();
     c = nullptr;
 }
 
-void RpcConnection::Open()
+bool BaseConnection::Open()
 {
-    auto self = reinterpret_cast<WinRpcConnection*>(this);
+    auto self = reinterpret_cast<BaseConnectionWin*>(this);
     for (;;) {
         self->pipe = ::CreateFileW(PipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
         if (self->pipe != INVALID_HANDLE_VALUE) {
-            break;
+            return true;
         }
 
         if (GetLastError() != ERROR_PIPE_BUSY) {
             printf("Could not open pipe. Error: %d\n", GetLastError());
-            return;
+            return false;
         }
 
         if (!WaitNamedPipeW(PipeName, 10000)) {
             printf("Could not open pipe: 10 second wait timed out.\n");
-            return;
+            return false;
         }
-    }
-
-    RpcMessageFrame* frame = GetNextFrame();
-    frame->opcode = OPCODE::HANDSHAKE;
-    char* msg = frame->message;
-    JsonWriteHandshakeObj(msg, RpcVersion, appId);
-    frame->length = msg - frame->message;
-    WriteFrame(frame);
-
-    if (self->onConnect) {
-        self->onConnect();
     }
 }
 
-void RpcConnection::Close()
+bool BaseConnection::Close()
 {
-    auto self = reinterpret_cast<WinRpcConnection*>(this);
+    auto self = reinterpret_cast<BaseConnectionWin*>(this);
     ::CloseHandle(self->pipe);
     self->pipe = INVALID_HANDLE_VALUE;
-    if (self->onDisconnect) {
-        self->onDisconnect();
-    }
+    return true;
 }
 
-void RpcConnection::Write(const void* data, size_t length)
+bool BaseConnection::Write(const void* data, size_t length)
 {
-    auto self = reinterpret_cast<WinRpcConnection*>(this);
-    const int retries = 3;
-    for (int i = 0; i < retries; ++i) {
-        if (self->pipe == INVALID_HANDLE_VALUE) {
-            self->Open();
-            if (self->pipe == INVALID_HANDLE_VALUE) {
-                break;
-            }
-        }
-        BOOL success = ::WriteFile(self->pipe, data, length, nullptr, nullptr);
-        if (success) {
-            break;
-        }
+    auto self = reinterpret_cast<BaseConnectionWin*>(this);
+    BOOL success = ::WriteFile(self->pipe, data, length, nullptr, nullptr);
+    if (!success) {
         self->Close();
     }
+    return success;
 }
 
-RpcMessageFrame* RpcConnection::Read()
+bool BaseConnection::Read(void* data, size_t length)
 {
-    // todo
-    return nullptr;
+    auto self = reinterpret_cast<BaseConnectionWin*>(this);
+    DWORD bytesAvailable = 0;
+    if (::PeekNamedPipe(self->pipe, nullptr, 0, nullptr, &bytesAvailable, nullptr)) {
+        if (bytesAvailable >= length) {
+            if (::ReadFile(self->pipe, data, length, nullptr, nullptr) == TRUE) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
-RpcMessageFrame* RpcConnection::GetNextFrame()
-{
-    auto self = reinterpret_cast<WinRpcConnection*>(this);
-    auto result = &(self->frames[self->nextFrame]);
-    self->nextFrame = (self->nextFrame + 1) % NumFrames;
-    return result;
-}
-
-void RpcConnection::WriteFrame(RpcMessageFrame* frame)
-{
-    auto self = reinterpret_cast<WinRpcConnection*>(this);
-    self->Write(frame, 8 + frame->length);
-}

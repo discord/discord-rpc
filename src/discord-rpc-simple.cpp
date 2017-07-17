@@ -2,8 +2,6 @@
 
 #include <stdio.h>
 
-// todo: think about making per-platform versions of this whole file, or wrapping the platform specific parts -- win32 for first version
-
 // I just want the basics
 #define WIN32_LEAN_AND_MEAN
 #define NOMCX

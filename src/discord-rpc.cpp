@@ -1,6 +1,6 @@
 #include "discord-rpc.h"
 
-#include "connection.h"
+#include "rpc_connection.h"
 #include "yolojson.h"
 #include "rapidjson/document.h"
 
@@ -25,7 +25,11 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
 
     MyConnection = RpcConnection::Create(applicationId);
     MyConnection->onConnect = []() { WasJustConnected = true; };
-    MyConnection->onDisconnect = []() { WasJustDisconnected = true; };
+    MyConnection->onDisconnect = [](int err, const char* message) {
+        LastErrorCode = err;
+        StringCopy(LastErrorMessage, message, sizeof(LastErrorMessage));
+        WasJustDisconnected = true;
+    };
     MyConnection->Open();
 }
 
