@@ -59,11 +59,7 @@ bool BaseConnection::Close()
 bool BaseConnection::Write(const void* data, size_t length)
 {
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
-    BOOL success = ::WriteFile(self->pipe, data, length, nullptr, nullptr);
-    if (!success) {
-        self->Close();
-    }
-    return success;
+    return ::WriteFile(self->pipe, data, length, nullptr, nullptr) == TRUE;
 }
 
 bool BaseConnection::Read(void* data, size_t length)

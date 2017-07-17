@@ -5,14 +5,57 @@
 #include "rapidjson/document.h"
 
 #include <stdio.h>
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <thread>
 
-static RpcConnection* MyConnection = nullptr;
+static RpcConnection* Connection{nullptr};
 static char ApplicationId[64]{};
 static DiscordEventHandlers Handlers{};
-static bool WasJustConnected = false;
-static bool WasJustDisconnected = false;
+static std::atomic_bool WasJustConnected{false};
+static std::atomic_bool WasJustDisconnected{false};
 static int LastErrorCode = 0;
 static char LastErrorMessage[256];
+static std::atomic_bool KeepRunning{true};
+static std::mutex WaitForIOMutex;
+static std::condition_variable WaitForIOActivity;
+static std::thread IoThread;
+
+void Discord_UpdateConnection()
+{
+    if (!Connection->IsOpen()) {
+        Connection->Open();
+    }
+    else {
+        // reads
+        rapidjson::Document message;
+        while (Connection->Read(message)) {
+            // todo: do something...
+            printf("Hey, I got a message\n");
+        }
+    }
+}
+
+void DiscordRpcIo()
+{
+    printf("Discord io thread start\n");
+    const std::chrono::duration<int64_t, std::milli> maxWait{500LL};
+    
+    while (KeepRunning.load()) {
+        Discord_UpdateConnection();
+
+        std::unique_lock<std::mutex> lock(WaitForIOMutex);
+        WaitForIOActivity.wait_for(lock, maxWait);
+    }
+    Connection->Close();
+    printf("Discord io thread stop\n");
+}
+
+void SignalIOActivity()
+{
+    WaitForIOActivity.notify_all();
+}
 
 extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
@@ -23,66 +66,49 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
         Handlers = {};
     }
 
-    MyConnection = RpcConnection::Create(applicationId);
-    MyConnection->onConnect = []() { WasJustConnected = true; };
-    MyConnection->onDisconnect = [](int err, const char* message) {
+    Connection = RpcConnection::Create(applicationId);
+    Connection->onConnect = []() {
+        WasJustConnected.exchange(true);
+    };
+    Connection->onDisconnect = [](int err, const char* message) {
         LastErrorCode = err;
         StringCopy(LastErrorMessage, message, sizeof(LastErrorMessage));
-        WasJustDisconnected = true;
+        WasJustDisconnected.exchange(true);
     };
-    MyConnection->Open();
+
+    IoThread = std::thread(DiscordRpcIo);
 }
 
 extern "C" void Discord_Shutdown()
 {
+    Connection->onConnect = nullptr;
+    Connection->onDisconnect = nullptr;
     Handlers = {};
-    MyConnection->onConnect = nullptr;
-    MyConnection->onDisconnect = nullptr;
-    MyConnection->Close();
-    RpcConnection::Destroy(MyConnection);
+    KeepRunning.exchange(false);
+    SignalIOActivity();
+    if (IoThread.joinable()) {
+        IoThread.join();
+    }
+    RpcConnection::Destroy(Connection);
 }
 
 extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
-    auto frame = MyConnection->GetNextFrame();
-    frame->opcode = OPCODE::FRAME;
-    char* jsonWrite = frame->message;
+    char jsonBuffer[16 * 1024];
+    char* jsonWrite = jsonBuffer;
     JsonWriteRichPresenceObj(jsonWrite, presence);
-    frame->length = jsonWrite - frame->message;
-    MyConnection->WriteFrame(frame);
+    size_t length = jsonWrite - jsonBuffer;
+    Connection->Write(jsonBuffer, length);
+    SignalIOActivity();
 }
 
 extern "C" void Discord_Update()
 {
-    while (auto frame = MyConnection->Read()) {
-        rapidjson::Document d;
-        if (frame->length > 0) {
-            d.ParseInsitu(frame->message);
-        }
-
-        switch (frame->opcode) {
-        case OPCODE::HANDSHAKE:
-            // does this happen?
-            break;
-        case OPCODE::CLOSE:
-            LastErrorCode = d["code"].GetInt();
-            StringCopy(LastErrorMessage, d["code"].GetString(), sizeof(LastErrorMessage));
-            MyConnection->Close();
-            break;
-        case OPCODE::FRAME:
-            // todo
-            break;
-        }
-    }
-
-    // fire callbacks
-    if (WasJustDisconnected && Handlers.disconnected) {
-        WasJustDisconnected = false;
+    if (WasJustDisconnected.exchange(false) && Handlers.disconnected) {
         Handlers.disconnected(LastErrorCode, LastErrorMessage);
     }
 
-    if (WasJustConnected && Handlers.ready) {
-        WasJustConnected = false;
+    if (WasJustConnected.exchange(false) && Handlers.ready) {
         Handlers.ready();
     }
 }
