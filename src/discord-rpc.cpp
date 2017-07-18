@@ -25,14 +25,17 @@ static std::atomic_bool WasJustConnected{false};
 static std::atomic_bool WasJustDisconnected{false};
 static int LastErrorCode{0};
 static char LastErrorMessage[256];
-static std::atomic_bool KeepRunning{true};
-static std::mutex WaitForIOMutex;
-static std::condition_variable WaitForIOActivity;
-static std::thread IoThread;
 static QueuedMessage SendQueue[MessageQueueSize]{};
 static std::atomic_uint SendQueueNextAdd{0};
 static std::atomic_uint SendQueueNextSend{0};
 static std::atomic_uint SendQueuePendingSends{0};
+
+#ifndef DISCORD_DISABLE_IO_THREAD
+static std::atomic_bool KeepRunning{ true };
+static std::mutex WaitForIOMutex;
+static std::condition_variable WaitForIOActivity;
+static std::thread IoThread;
+#endif // DISCORD_DISABLE_IO_THREAD
 
 static QueuedMessage* SendQueueGetNextAddMessage() {
     // if we are falling behind, bail
@@ -50,7 +53,7 @@ static void SendQueueCommitMessage() {
     SendQueuePendingSends++;
 }
 
-void Discord_UpdateConnection()
+extern "C" void Discord_UpdateConnection()
 {
     if (!Connection->IsOpen()) {
         Connection->Open();
@@ -72,6 +75,7 @@ void Discord_UpdateConnection()
     }
 }
 
+#ifndef DISCORD_DISABLE_IO_THREAD
 void DiscordRpcIo()
 {
     const std::chrono::duration<int64_t, std::milli> maxWait{500LL};
@@ -83,10 +87,13 @@ void DiscordRpcIo()
         WaitForIOActivity.wait_for(lock, maxWait);
     }
 }
+#endif
 
 void SignalIOActivity()
 {
+#ifndef DISCORD_DISABLE_IO_THREAD
     WaitForIOActivity.notify_all();
+#endif
 }
 
 extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
@@ -108,7 +115,9 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
         WasJustDisconnected.exchange(true);
     };
 
+#ifndef DISCORD_DISABLE_IO_THREAD
     IoThread = std::thread(DiscordRpcIo);
+#endif
 }
 
 extern "C" void Discord_Shutdown()
@@ -116,11 +125,13 @@ extern "C" void Discord_Shutdown()
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
     Handlers = {};
+#ifndef DISCORD_DISABLE_IO_THREAD
     KeepRunning.exchange(false);
     SignalIOActivity();
     if (IoThread.joinable()) {
         IoThread.join();
     }
+#endif
     RpcConnection::Destroy(Connection);
 }
 
@@ -136,7 +147,7 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
     }
 }
 
-extern "C" void Discord_Update()
+extern "C" void Discord_RunCallbacks()
 {
     if (WasJustDisconnected.exchange(false) && Handlers.disconnected) {
         Handlers.disconnected(LastErrorCode, LastErrorMessage);

@@ -70,7 +70,11 @@ static void gameLoop() {
         ++FrustrationLevel;
         
         updateDiscordPresence();
-        Discord_Update();
+        
+#ifdef DISCORD_DISABLE_IO_THREAD
+        Discord_UpdateConnection();
+#endif
+        Discord_RunCallbacks();
     }
 }
 
