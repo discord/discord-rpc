@@ -2,13 +2,18 @@
 
 #include "rpc_connection.h"
 #include "yolojson.h"
+#include "backoff.h"
+
 #include "rapidjson/document.h"
 
 #include <stdio.h>
 #include <atomic>
 #include <chrono>
+
+#ifndef DISCORD_DISABLE_IO_THREAD
 #include <condition_variable>
 #include <thread>
+#endif
 
 constexpr size_t MaxMessageSize = 16 * 1024;
 constexpr size_t MessageQueueSize = 8;
@@ -29,6 +34,8 @@ static QueuedMessage SendQueue[MessageQueueSize]{};
 static std::atomic_uint SendQueueNextAdd{0};
 static std::atomic_uint SendQueueNextSend{0};
 static std::atomic_uint SendQueuePendingSends{0};
+static Backoff ReconnectTimeMs(500, 60 * 1000);
+static auto NextConnect{std::chrono::system_clock::now()};
 
 #ifndef DISCORD_DISABLE_IO_THREAD
 static std::atomic_bool KeepRunning{ true };
@@ -36,6 +43,11 @@ static std::mutex WaitForIOMutex;
 static std::condition_variable WaitForIOActivity;
 static std::thread IoThread;
 #endif // DISCORD_DISABLE_IO_THREAD
+
+static void UpdateReconnectTime()
+{
+    NextConnect = std::chrono::system_clock::now() + std::chrono::duration<int64_t, std::milli>{ReconnectTimeMs.nextDelay()};
+}
 
 static QueuedMessage* SendQueueGetNextAddMessage() {
     // if we are falling behind, bail
@@ -56,7 +68,10 @@ static void SendQueueCommitMessage() {
 extern "C" void Discord_UpdateConnection()
 {
     if (!Connection->IsOpen()) {
-        Connection->Open();
+        if (std::chrono::system_clock::now() >= NextConnect) {
+            UpdateReconnectTime();
+            Connection->Open();
+        }
     }
     else {
         // reads
@@ -108,11 +123,13 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
     Connection = RpcConnection::Create(applicationId);
     Connection->onConnect = []() {
         WasJustConnected.exchange(true);
+        ReconnectTimeMs.reset();
     };
     Connection->onDisconnect = [](int err, const char* message) {
         LastErrorCode = err;
         StringCopy(LastErrorMessage, message, sizeof(LastErrorMessage));
         WasJustDisconnected.exchange(true);
+        UpdateReconnectTime();
     };
 
 #ifndef DISCORD_DISABLE_IO_THREAD
