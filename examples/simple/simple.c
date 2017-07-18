@@ -28,8 +28,8 @@ static void handleDiscordReady() {
     printf("\nDiscord: ready\n");
 }
 
-static void handleDiscordDisconnected() {
-    printf("\nDiscord: disconnected\n");
+static void handleDiscordDisconnected(int errcode, const char* message) {
+    printf("\nDiscord: disconnected (%d: %s)\n", errcode, message);
 }
 
 static void handleDiscordWantsPresence() {
