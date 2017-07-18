@@ -6,7 +6,6 @@
 
 #include "rapidjson/document.h"
 
-#include <stdio.h>
 #include <atomic>
 #include <chrono>
 

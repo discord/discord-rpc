@@ -23,8 +23,3 @@ add_library(rapidjson STATIC IMPORTED ${RAPIDJSON})
 
 add_subdirectory(src)
 add_subdirectory(examples/simple)
-
-if(WIN32)
-    add_subdirectory(examples/simplest)
-endif(WIN32)
-

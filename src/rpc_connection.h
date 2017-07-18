@@ -48,6 +48,6 @@ struct RpcConnection {
 
     void Open();
     void Close();
-    void Write(const void* data, size_t length);
+    bool Write(const void* data, size_t length);
     bool Read(rapidjson::Document& message);
 };

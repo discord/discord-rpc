@@ -1,7 +1,5 @@
 #include "connection.h"
 
-#include <stdio.h>
-
 #define WIN32_LEAN_AND_MEAN
 #define NOMCX
 #define NOSERVICE

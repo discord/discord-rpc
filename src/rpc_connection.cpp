@@ -56,14 +56,16 @@ void RpcConnection::Close()
     state = State::Disconnected;
 }
 
-void RpcConnection::Write(const void* data, size_t length)
+bool RpcConnection::Write(const void* data, size_t length)
 {
     sendFrame.opcode = Opcode::Frame;
     memcpy(sendFrame.message, data, length);
     sendFrame.length = length;
     if (!connection->Write(&sendFrame, sizeof(MessageFrameHeader) + length)) {
         Close();
+        return false;
     }
+    return true;
 }
 
 bool RpcConnection::Read(rapidjson::Document& message)
