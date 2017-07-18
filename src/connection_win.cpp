@@ -37,12 +37,10 @@ bool BaseConnection::Open()
         }
 
         if (GetLastError() != ERROR_PIPE_BUSY) {
-            printf("Could not open pipe. Error: %d\n", GetLastError());
             return false;
         }
 
         if (!WaitNamedPipeW(PipeName, 10000)) {
-            printf("Could not open pipe: 10 second wait timed out.\n");
             return false;
         }
     }
