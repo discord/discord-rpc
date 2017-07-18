@@ -52,8 +52,7 @@ replServer.defineCommand('kill', {
     const sock = global.connections[who];
     if (sock) {
         console.log('killing', who);
-        sock.write(RpcMessage.sendClose(123, 'killed'));
-        sock.destroy();
+        sock.end(RpcMessage.sendClose(123, 'killed'));
     }
     this.displayPrompt();
   }
