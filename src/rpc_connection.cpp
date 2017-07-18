@@ -89,12 +89,12 @@ bool RpcConnection::Read(rapidjson::Document& message)
                 return false;
             }
             readFrame.message[readFrame.length] = 0;
-            message.ParseInsitu(readFrame.message);
         }
 
         switch (readFrame.opcode) {
         case Opcode::Close:
         {
+            message.ParseInsitu(readFrame.message);
             lastErrorCode = message["code"].GetInt();
             const auto& m = message["message"];
             StringCopy(lastErrorMessage, m.GetString(), sizeof(lastErrorMessage));
@@ -102,11 +102,12 @@ bool RpcConnection::Read(rapidjson::Document& message)
             return false;
         }
         case Opcode::Frame:
+            message.ParseInsitu(readFrame.message);
             return true;
         case Opcode::Ping:
         {
-            MessageFrameHeader frame{ Opcode::Pong, 0 };
-            if (!connection->Write(&frame, sizeof(MessageFrameHeader))) {
+            readFrame.opcode = Opcode::Pong;
+            if (!connection->Write(&readFrame, sizeof(MessageFrameHeader) + readFrame.length)) {
                 Close();
             }
             break;

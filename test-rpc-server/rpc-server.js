@@ -58,3 +58,18 @@ replServer.defineCommand('kill', {
   }
 });
 
+replServer.defineCommand('ping', {
+  help: 'Ping all clients',
+  action() {
+    this.bufferedCommand = '';
+    Object.keys(global.connections).forEach((who) => {
+        const sock = global.connections[who];
+        if (sock) {
+            console.log('pinging', who);
+            sock.write(RpcMessage.sendPing('hello'));
+        }
+    })
+    this.displayPrompt();
+  }
+});
+

@@ -6,6 +6,8 @@ const OPCODES = {
   HANDSHAKE: 0,
   FRAME: 1,
   CLOSE: 2,
+  PING: 3,
+  PONG: 4,
 };
 
 let PipePath;
@@ -47,9 +49,17 @@ class RpcMessage {
         return RpcMessage.serialize(opcode, {code, message});
     }
 
+    static sendPing(message) {
+        const opcode = OPCODES.PING;
+        return RpcMessage.serialize(opcode, {message});
+    }
+
     static deserialize(buff) {
         const opcode = buff.readInt32LE(0);
         const msgLen = buff.readInt32LE(4);
+        if (msgLen == 0) {
+            return {opcode, data: ''};
+        }
         if (buff.length < (msgLen + 8)) {
             return null;
         }
