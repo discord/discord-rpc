@@ -28,7 +28,7 @@ typedef struct {
 typedef struct {
     void (*ready)();
     void (*disconnected)(int errorCode, const char* message);
-    void (*wantsPresence)();
+    void (*presenceRequested)();
     void (*joinGame)(const char* joinSecret);
     void (*spectateGame)(const char* spectateSecret);
 } DiscordEventHandlers;

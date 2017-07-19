@@ -32,7 +32,7 @@ static void handleDiscordDisconnected(int errcode, const char* message) {
     printf("\nDiscord: disconnected (%d: %s)\n", errcode, message);
 }
 
-static void handleDiscordWantsPresence() {
+static void handleDiscordPresenceRequested() {
     printf("\nDiscord: requests presence\n");
     updateDiscordPresence();
 }
@@ -83,7 +83,7 @@ int main() {
     memset(&handlers, 0, sizeof(handlers));
     handlers.ready = handleDiscordReady;
     handlers.disconnected = handleDiscordDisconnected;
-    handlers.wantsPresence = handleDiscordWantsPresence;
+    handlers.presenceRequested = handleDiscordPresenceRequested;
     Discord_Initialize(APPLICATION_ID, &handlers);
 
     gameLoop();
