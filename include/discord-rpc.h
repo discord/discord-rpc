@@ -35,7 +35,6 @@ typedef struct DiscordEventHandlers {
 
 void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers);
 void Discord_Shutdown();
-void Discord_UpdatePresence(const DiscordRichPresence* presence);
 
 /* checks for incoming messages, dispatches callbacks */
 void Discord_RunCallbacks();
@@ -44,6 +43,8 @@ void Discord_RunCallbacks();
 #ifdef DISCORD_DISABLE_IO_THREAD
 void Discord_UpdateConnection();
 #endif
+
+void Discord_UpdatePresence(const DiscordRichPresence* presence);
 
 #ifdef  __cplusplus
 } /* extern "C" */

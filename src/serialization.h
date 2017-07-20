@@ -19,6 +19,7 @@ inline size_t StringCopy(char (&dest)[Len], const char* src) {
 
 size_t JsonWriteHandshakeObj(char* dest, size_t maxLen, int version, const char* applicationId);
 
+// Commands
 struct DiscordRichPresence;
 size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, int nonce, int pid, const DiscordRichPresence* presence);
 

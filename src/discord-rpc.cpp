@@ -78,6 +78,19 @@ extern "C" void Discord_UpdateConnection()
         while (Connection->Read(message)) {
             // todo: do something...
             printf("Hey, I got a message\n");
+
+            // expect cmd, data, evt, nonce here?
+
+            /*
+            message.FindMember("cmd");
+            message.FindMember("data");
+            message.FindMember("evt");
+            message.FindMember("nonce"); // in responses only
+
+            void(*presenceRequested)();
+            void(*joinGame)(const char* joinSecret);
+            void(*spectateGame)(const char* spectateSecret);
+            */
         }
 
         // writes

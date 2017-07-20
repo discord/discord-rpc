@@ -22,4 +22,4 @@ endif(NOT RAPIDJSON)
 add_library(rapidjson STATIC IMPORTED ${RAPIDJSON})
 
 add_subdirectory(src)
-add_subdirectory(examples/simple)
+add_subdirectory(examples/send-presence)
