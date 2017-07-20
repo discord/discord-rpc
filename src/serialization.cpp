@@ -3,6 +3,7 @@
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/internal/itoa.h"
 
 // I want to use as few allocations as I can get away with, and to do that with RapidJson, you need to supply some of
 // your own allocators for stuff rather than use the defaults
@@ -93,12 +94,14 @@ void WriteOptionalString(JsonWriter& w, T& k, const char* value) {
     }
 }
 
-void JsonWriteCommandStart(JsonWriter& writer, const char* nonce, const char* cmd)
+void JsonWriteCommandStart(JsonWriter& writer, int nonce, const char* cmd)
 {
     writer.StartObject();
 
     WriteKey(writer, "nonce");
-    writer.String(nonce);
+    char nonceBuffer[32]{};
+    rapidjson::internal::i32toa(nonce, nonceBuffer);
+    writer.String(nonceBuffer);
 
     WriteKey(writer, "cmd");
     writer.String(cmd);
@@ -113,7 +116,7 @@ void JsonWriteCommandEnd(JsonWriter& writer)
     writer.EndObject(); // top level
 }
 
-size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, char* nonce, int pid, const DiscordRichPresence* presence)
+size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, int nonce, int pid, const DiscordRichPresence* presence)
 {
     DirectStringBuffer sb(dest, maxLen);
     WriterAllocator wa;

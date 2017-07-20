@@ -12,8 +12,6 @@
 #include <thread>
 #endif
 
-#include "rapidjson/internal/itoa.h"
-
 constexpr size_t MaxMessageSize = 16 * 1024;
 constexpr size_t MessageQueueSize = 8;
 
@@ -159,9 +157,7 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     auto qmessage = SendQueueGetNextAddMessage();
     if (qmessage) {
-        char nonce[32]{};
-        rapidjson::internal::i32toa(Nonce++, nonce);
-        qmessage->length = JsonWriteRichPresenceObj(qmessage->buffer, sizeof(qmessage->buffer), nonce, Pid, presence);
+        qmessage->length = JsonWriteRichPresenceObj(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, Pid, presence);
         SendQueueCommitMessage();
         SignalIOActivity();
     }
