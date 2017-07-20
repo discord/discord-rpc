@@ -93,19 +93,36 @@ void WriteOptionalString(JsonWriter& w, T& k, const char* value) {
     }
 }
 
-size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, const DiscordRichPresence* presence)
+void JsonWriteCommandStart(JsonWriter& writer, const char* nonce, const char* cmd)
+{
+    writer.StartObject();
+
+    WriteKey(writer, "nonce");
+    writer.String(nonce);
+
+    WriteKey(writer, "cmd");
+    writer.String(cmd);
+
+    WriteKey(writer, "args");
+    writer.StartObject();
+}
+
+void JsonWriteCommandEnd(JsonWriter& writer)
+{
+    writer.EndObject(); // args
+    writer.EndObject(); // top level
+}
+
+size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, char* nonce, int pid, const DiscordRichPresence* presence)
 {
     DirectStringBuffer sb(dest, maxLen);
     WriterAllocator wa;
     JsonWriter writer(sb, &wa, WriterNestingLevels);
 
-    // const args = {pid, activity};
-    // this.socket.write(encode(OPCODES.FRAME, { nonce: uuid(), cmd : 'SET_ACTIVITY', args })
+    JsonWriteCommandStart(writer, nonce, "SET_ACTIVITY");
 
-    writer.StartObject();
-
-    WriteKey(writer, "args");
-    writer.StartObject();
+    WriteKey(writer, "pid");
+    writer.Int(pid);
 
     WriteKey(writer, "activity");
     writer.StartObject();
@@ -177,9 +194,7 @@ size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, const DiscordRichPres
 
     writer.EndObject(); // activity
 
-    writer.EndObject(); // args
-
-    writer.EndObject(); // top level
+    JsonWriteCommandEnd(writer);
 
     return sb.GetSize();
 }

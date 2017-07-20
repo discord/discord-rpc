@@ -12,6 +12,8 @@
 #include <thread>
 #endif
 
+#include "rapidjson/internal/itoa.h"
+
 constexpr size_t MaxMessageSize = 16 * 1024;
 constexpr size_t MessageQueueSize = 8;
 
@@ -33,6 +35,8 @@ static std::atomic_uint SendQueueNextSend{0};
 static std::atomic_uint SendQueuePendingSends{0};
 static Backoff ReconnectTimeMs(500, 60 * 1000);
 static auto NextConnect{std::chrono::system_clock::now()};
+static int Pid = 0;
+static int Nonce = 1;
 
 #ifndef DISCORD_DISABLE_IO_THREAD
 static std::atomic_bool KeepRunning{ true };
@@ -110,6 +114,8 @@ void SignalIOActivity()
 
 extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
+    Pid = GetProcessId();
+
     if (handlers) {
         Handlers = *handlers;
     }
@@ -153,7 +159,9 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     auto qmessage = SendQueueGetNextAddMessage();
     if (qmessage) {
-        qmessage->length = JsonWriteRichPresenceObj(qmessage->buffer, sizeof(qmessage->buffer), presence);
+        char nonce[32]{};
+        rapidjson::internal::i32toa(Nonce++, nonce);
+        qmessage->length = JsonWriteRichPresenceObj(qmessage->buffer, sizeof(qmessage->buffer), nonce, Pid, presence);
         SendQueueCommitMessage();
         SignalIOActivity();
     }
