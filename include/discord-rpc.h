@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-typedef struct {
+typedef struct DiscordRichPresence {
     const char* state;
     const char* details;
     int64_t startTimestamp;
@@ -25,7 +25,7 @@ typedef struct {
     int8_t instance;
 } DiscordRichPresence;
 
-typedef struct {
+typedef struct DiscordEventHandlers {
     void (*ready)();
     void (*disconnected)(int errorCode, const char* message);
     void (*presenceRequested)();
