@@ -1,5 +1,5 @@
 #include "rpc_connection.h"
-#include "yolojson.h"
+#include "serialization.h"
 
 #include <atomic>
 
@@ -9,7 +9,7 @@ static RpcConnection Instance;
 /*static*/ RpcConnection* RpcConnection::Create(const char* applicationId)
 {
     Instance.connection = BaseConnection::Create();
-    StringCopy(Instance.appId, applicationId, sizeof(Instance.appId));
+    StringCopy(Instance.appId, applicationId);
     return &Instance;
 }
 
@@ -35,9 +35,7 @@ void RpcConnection::Open()
     }
 
     sendFrame.opcode = Opcode::Handshake;
-    char* json = sendFrame.message;
-    JsonWriteHandshakeObj(json, RpcVersion, appId);
-    sendFrame.length = json - sendFrame.message;
+    sendFrame.length = JsonWriteHandshakeObj(sendFrame.message, sizeof(sendFrame.message), RpcVersion, appId);
         
     if (connection->Write(&sendFrame, sizeof(MessageFrameHeader) + sendFrame.length)) {
         state = State::Connected;
@@ -97,7 +95,7 @@ bool RpcConnection::Read(rapidjson::Document& message)
             message.ParseInsitu(readFrame.message);
             lastErrorCode = message["code"].GetInt();
             const auto& m = message["message"];
-            StringCopy(lastErrorMessage, m.GetString(), sizeof(lastErrorMessage));
+            StringCopy(lastErrorMessage, m.GetString());
             Close();
             return false;
         }
@@ -105,13 +103,11 @@ bool RpcConnection::Read(rapidjson::Document& message)
             message.ParseInsitu(readFrame.message);
             return true;
         case Opcode::Ping:
-        {
             readFrame.opcode = Opcode::Pong;
             if (!connection->Write(&readFrame, sizeof(MessageFrameHeader) + readFrame.length)) {
                 Close();
             }
             break;
-        }
         case Opcode::Pong:
             break;
         default:

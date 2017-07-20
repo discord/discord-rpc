@@ -1,10 +1,8 @@
 #include "discord-rpc.h"
 
-#include "rpc_connection.h"
-#include "yolojson.h"
 #include "backoff.h"
-
-#include "rapidjson/document.h"
+#include "rpc_connection.h"
+#include "serialization.h"
 
 #include <atomic>
 #include <chrono>
@@ -126,7 +124,7 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
     };
     Connection->onDisconnect = [](int err, const char* message) {
         LastErrorCode = err;
-        StringCopy(LastErrorMessage, message, sizeof(LastErrorMessage));
+        StringCopy(LastErrorMessage, message);
         WasJustDisconnected.exchange(true);
         UpdateReconnectTime();
     };
@@ -155,9 +153,7 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     auto qmessage = SendQueueGetNextAddMessage();
     if (qmessage) {
-        char* jsonWrite = qmessage->buffer;
-        JsonWriteRichPresenceObj(jsonWrite, presence);
-        qmessage->length = jsonWrite - qmessage->buffer;
+        qmessage->length = JsonWriteRichPresenceObj(qmessage->buffer, sizeof(qmessage->buffer), presence);
         SendQueueCommitMessage();
         SignalIOActivity();
     }
