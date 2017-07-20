@@ -1,5 +1,13 @@
 #include "connection.h"
 
+#include <sys/types.h>
+#include <unistd.h>
+
+int GetProcessId()
+{
+    return ::getpid();
+}
+
 const int RpcVersion = 1;
 const int NumFrames = 4;
 

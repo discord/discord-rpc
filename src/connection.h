@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+// not really connectiony, but need per-platform
+int GetProcessId();
+
 struct BaseConnection {
     static BaseConnection* Create();
     static void Destroy(BaseConnection*&);
