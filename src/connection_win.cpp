@@ -16,7 +16,8 @@ struct BaseConnectionWin : public BaseConnection {
 };
 
 static BaseConnectionWin Connection;
-static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
+//static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
+static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc-0";
 
 /*static*/ BaseConnection* BaseConnection::Create()
 {
