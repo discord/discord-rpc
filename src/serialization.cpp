@@ -94,14 +94,19 @@ void WriteOptionalString(JsonWriter& w, T& k, const char* value) {
     }
 }
 
-void JsonWriteCommandStart(JsonWriter& writer, int nonce, const char* cmd)
+void JsonWriteNonce(JsonWriter& writer, int nonce)
 {
-    writer.StartObject();
-
     WriteKey(writer, "nonce");
     char nonceBuffer[32]{};
     rapidjson::internal::i32toa(nonce, nonceBuffer);
     writer.String(nonceBuffer);
+}
+
+void JsonWriteCommandStart(JsonWriter& writer, int nonce, const char* cmd)
+{
+    writer.StartObject();
+
+    JsonWriteNonce(writer, nonce);
 
     WriteKey(writer, "cmd");
     writer.String(cmd);
@@ -218,3 +223,23 @@ size_t JsonWriteHandshakeObj(char* dest, size_t maxLen, int version, const char*
     return sb.GetSize();
 }
 
+size_t JsonWriteSubscribeCommand(char* dest, size_t maxLen, int nonce, const char* evtName)
+{
+    DirectStringBuffer sb(dest, maxLen);
+    WriterAllocator wa;
+    JsonWriter writer(sb, &wa, WriterNestingLevels);
+
+    writer.StartObject();
+
+    JsonWriteNonce(writer, nonce);
+    
+    WriteKey(writer, "cmd");
+    writer.String("SUBSCRIBE");
+    
+    WriteKey(writer, "evt");
+    writer.String(evtName);
+    
+    writer.EndObject();
+
+    return sb.GetSize();
+}

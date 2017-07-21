@@ -22,4 +22,4 @@ size_t JsonWriteHandshakeObj(char* dest, size_t maxLen, int version, const char*
 // Commands
 struct DiscordRichPresence;
 size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, int nonce, int pid, const DiscordRichPresence* presence);
-
+size_t JsonWriteSubscribeCommand(char* dest, size_t maxLen, int nonce, const char* evtName);

@@ -12,8 +12,8 @@
 #include <thread>
 #endif
 
-constexpr size_t MaxMessageSize = 16 * 1024;
-constexpr size_t MessageQueueSize = 8;
+constexpr size_t MaxMessageSize{16 * 1024};
+constexpr size_t MessageQueueSize{8};
 
 struct QueuedMessage {
     size_t length;
@@ -25,6 +25,11 @@ static char ApplicationId[64]{};
 static DiscordEventHandlers Handlers{};
 static std::atomic_bool WasJustConnected{false};
 static std::atomic_bool WasJustDisconnected{false};
+static std::atomic_bool WasPresenceRequested{false};
+static std::atomic_bool WasJoinGame{false};
+static std::atomic_bool WasSpectateGame{false};
+static char JoinGameSecret[256];
+static char SpectateGameSecret[256];
 static int LastErrorCode{0};
 static char LastErrorMessage[256];
 static QueuedMessage SendQueue[MessageQueueSize]{};
@@ -33,11 +38,11 @@ static std::atomic_uint SendQueueNextSend{0};
 static std::atomic_uint SendQueuePendingSends{0};
 static Backoff ReconnectTimeMs(500, 60 * 1000);
 static auto NextConnect{std::chrono::system_clock::now()};
-static int Pid = 0;
-static int Nonce = 1;
+static int Pid{0};
+static int Nonce{1};
 
 #ifndef DISCORD_DISABLE_IO_THREAD
-static std::atomic_bool KeepRunning{ true };
+static std::atomic_bool KeepRunning{true};
 static std::mutex WaitForIOMutex;
 static std::condition_variable WaitForIOActivity;
 static std::thread IoThread;
@@ -76,21 +81,35 @@ extern "C" void Discord_UpdateConnection()
         // reads
         rapidjson::Document message;
         while (Connection->Read(message)) {
-            // todo: do something...
-            printf("Hey, I got a message\n");
+            auto nonce = message.FindMember("nonce");
+            if (nonce != message.MemberEnd() && nonce->value.IsString()) {
+                // in responses only -- should use to match up response when needed.
+                //auto cmd = message.FindMember("cmd"); needed?
+            }
+            else {
+                // should have evt == name of event, optional data
+                auto evt = message.FindMember("evt");
+                if (evt != message.MemberEnd() && evt->value.IsString()) {
+                    const char* evtName = evt->value.GetString();
 
-            // expect cmd, data, evt, nonce here?
-
-            /*
-            message.FindMember("cmd");
-            message.FindMember("data");
-            message.FindMember("evt");
-            message.FindMember("nonce"); // in responses only
-
-            void(*presenceRequested)();
-            void(*joinGame)(const char* joinSecret);
-            void(*spectateGame)(const char* spectateSecret);
-            */
+                    // todo ug
+                    if (strcmp(evtName, "PRESENCE_REQUESTED") == 0) {
+                        WasPresenceRequested.store(true);
+                    }
+                    else if (strcmp(evtName, "JOIN_GAME") == 0) {
+                        auto data = message.FindMember("data");
+                        auto secret = data->value["secret"].GetString();
+                        StringCopy(JoinGameSecret, secret);
+                        WasJoinGame.store(true);
+                    }
+                    else if (strcmp(evtName, "SPECTATE_GAME") == 0) {
+                        auto data = message.FindMember("data");
+                        auto secret = data->value["secret"].GetString();
+                        StringCopy(SpectateGameSecret, secret);
+                        WasSpectateGame.store(true);
+                    }
+                }
+            }
         }
 
         // writes
@@ -123,6 +142,18 @@ void SignalIOActivity()
 #endif
 }
 
+bool RegisterForEvent(const char* evtName)
+{
+    auto qmessage = SendQueueGetNextAddMessage();
+    if (qmessage) {
+        qmessage->length = JsonWriteSubscribeCommand(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, evtName);
+        SendQueueCommitMessage();
+        SignalIOActivity();
+        return true;
+    }
+    return false;
+}
+
 extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
 {
     Pid = GetProcessId();
@@ -138,6 +169,18 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
     Connection->onConnect = []() {
         WasJustConnected.exchange(true);
         ReconnectTimeMs.reset();
+
+        if (Handlers.presenceRequested) {
+            RegisterForEvent("PRESENCE_REQUESTED");
+        }
+
+        if (Handlers.joinGame) {
+            RegisterForEvent("JOIN_GAME");
+        }
+
+        if (Handlers.spectateGame) {
+            RegisterForEvent("SPECTATE_GAME");
+        }
     };
     Connection->onDisconnect = [](int err, const char* message) {
         LastErrorCode = err;
@@ -184,5 +227,17 @@ extern "C" void Discord_RunCallbacks()
 
     if (WasJustConnected.exchange(false) && Handlers.ready) {
         Handlers.ready();
+    }
+
+    if (WasPresenceRequested.exchange(false) && Handlers.presenceRequested) {
+        Handlers.presenceRequested();
+    }
+
+    if (WasJoinGame.exchange(false) && Handlers.joinGame) {
+        Handlers.joinGame(JoinGameSecret);
+    }
+
+    if (WasSpectateGame.exchange(false) && Handlers.spectateGame) {
+        Handlers.spectateGame(SpectateGameSecret);
     }
 }
