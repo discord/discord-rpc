@@ -27,20 +27,40 @@ void RpcConnection::Open()
 
     if (state == State::Disconnected) {
         if (connection->Open()) {
-            state = State::Connecting;
         }
         else {
             return;
         }
     }
 
-    sendFrame.opcode = Opcode::Handshake;
-    sendFrame.length = JsonWriteHandshakeObj(sendFrame.message, sizeof(sendFrame.message), RpcVersion, appId);
-        
-    if (connection->Write(&sendFrame, sizeof(MessageFrameHeader) + sendFrame.length)) {
-        state = State::Connected;
-        if (onConnect) {
-            onConnect();
+    if (state == State::SentHandshake) {
+        rapidjson::Document message;
+        if (Read(message)) {
+            auto cmd = message.FindMember("cmd");
+            if (cmd == message.MemberEnd() || !cmd->value.IsString()) {
+                return;
+            }
+            auto evt = message.FindMember("evt");
+            if (evt == message.MemberEnd() || !evt->value.IsString()) {
+                return;
+            }
+            if (!strcmp(cmd->value.GetString(), "DISPATCH") && !strcmp(evt->value.GetString(), "READY")) {
+                state = State::Connected;
+                if (onConnect) {
+                    onConnect();
+                }
+            }
+        }
+    }
+    else {
+        sendFrame.opcode = Opcode::Handshake;
+        sendFrame.length = JsonWriteHandshakeObj(sendFrame.message, sizeof(sendFrame.message), RpcVersion, appId);
+
+        if (connection->Write(&sendFrame, sizeof(MessageFrameHeader) + sendFrame.length)) {
+            state = State::SentHandshake;
+        }
+        else {
+            Close();
         }
     }
 }
@@ -68,7 +88,7 @@ bool RpcConnection::Write(const void* data, size_t length)
 
 bool RpcConnection::Read(rapidjson::Document& message)
 {
-    if (state != State::Connected) {
+    if (state != State::Connected && state != State::SentHandshake) {
         return false;
     }
     MessageFrame readFrame;

@@ -26,7 +26,8 @@ struct RpcConnection {
 
     enum class State : uint32_t {
         Disconnected,
-        Connecting,
+        SentHandshake,
+        AwaitingResponse,
         Connected,
     };
 

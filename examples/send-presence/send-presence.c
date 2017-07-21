@@ -11,7 +11,7 @@
 
 #include "discord-rpc.h"
 
-static const char* APPLICATION_ID = "12345678910";
+static const char* APPLICATION_ID = "338030514596216832";
 static int FrustrationLevel = 0;
 
 static void updateDiscordPresence() {
