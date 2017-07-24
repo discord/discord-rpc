@@ -1,7 +1,7 @@
 #pragma once
 
 #include "connection.h"
-#include "rapidjson/document.h"
+#include "serialization.h"
 
 // I took this from the buffer size libuv uses for named pipes; I suspect ours would usually be much smaller.
 constexpr size_t MaxRpcFrameSize = 64 * 1024;
@@ -50,5 +50,5 @@ struct RpcConnection {
     void Open();
     void Close();
     bool Write(const void* data, size_t length);
-    bool Read(rapidjson::Document& message);
+    bool Read(JsonDocument& message);
 };

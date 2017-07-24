@@ -34,7 +34,7 @@ void RpcConnection::Open()
     }
 
     if (state == State::SentHandshake) {
-        rapidjson::Document message;
+        JsonDocument message;
         if (Read(message)) {
             auto cmd = message.FindMember("cmd");
             if (cmd == message.MemberEnd() || !cmd->value.IsString()) {
@@ -86,7 +86,7 @@ bool RpcConnection::Write(const void* data, size_t length)
     return true;
 }
 
-bool RpcConnection::Read(rapidjson::Document& message)
+bool RpcConnection::Read(JsonDocument& message)
 {
     if (state != State::Connected && state != State::SentHandshake) {
         return false;

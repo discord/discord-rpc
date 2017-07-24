@@ -79,7 +79,7 @@ extern "C" void Discord_UpdateConnection()
     }
     else {
         // reads
-        rapidjson::Document message;
+        JsonDocument message;
         while (Connection->Read(message)) {
             auto nonce = message.FindMember("nonce");
             if (nonce != message.MemberEnd() && nonce->value.IsString()) {
