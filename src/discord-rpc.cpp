@@ -25,6 +25,7 @@ static char ApplicationId[64]{};
 static DiscordEventHandlers Handlers{};
 static std::atomic_bool WasJustConnected{false};
 static std::atomic_bool WasJustDisconnected{false};
+static std::atomic_bool GotErrorMessage{false};
 static std::atomic_bool WasPresenceRequested{false};
 static std::atomic_bool WasJoinGame{false};
 static std::atomic_bool WasSpectateGame{false};
@@ -32,6 +33,8 @@ static char JoinGameSecret[256];
 static char SpectateGameSecret[256];
 static int LastErrorCode{0};
 static char LastErrorMessage[256];
+static int LastDisconnectErrorCode{0};
+static char LastDisconnectErrorMessage[256];
 static QueuedMessage SendQueue[MessageQueueSize]{};
 static std::atomic_uint SendQueueNextAdd{0};
 static std::atomic_uint SendQueueNextSend{0};
@@ -183,8 +186,8 @@ extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandle
         }
     };
     Connection->onDisconnect = [](int err, const char* message) {
-        LastErrorCode = err;
-        StringCopy(LastErrorMessage, message);
+        LastDisconnectErrorCode = err;
+        StringCopy(LastDisconnectErrorMessage, message);
         WasJustDisconnected.exchange(true);
         UpdateReconnectTime();
     };
@@ -221,8 +224,12 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 
 extern "C" void Discord_RunCallbacks()
 {
+    if (GotErrorMessage.exchange(false) && Handlers.errored) {
+        Handlers.errored(LastErrorCode, LastErrorMessage);
+    }
+
     if (WasJustDisconnected.exchange(false) && Handlers.disconnected) {
-        Handlers.disconnected(LastErrorCode, LastErrorMessage);
+        Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
     }
 
     if (WasJustConnected.exchange(false) && Handlers.ready) {

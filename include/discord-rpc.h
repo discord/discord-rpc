@@ -28,6 +28,7 @@ typedef struct DiscordRichPresence {
 typedef struct DiscordEventHandlers {
     void (*ready)();
     void (*disconnected)(int errorCode, const char* message);
+    void (*errored)(int errorCode, const char* message);
     void (*presenceRequested)();
     void (*joinGame)(const char* joinSecret);
     void (*spectateGame)(const char* spectateSecret);
