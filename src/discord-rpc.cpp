@@ -82,35 +82,56 @@ extern "C" void Discord_UpdateConnection()
     }
     else {
         // reads
-        JsonDocument message;
-        while (Connection->Read(message)) {
+
+        // json parser will use this buffer first, then allocate more if needed; I seriously doubt we send any messages that would use all of this, though.
+        char parseBuffer[32 * 1024];
+        for (;;) {
+            PoolAllocator pa(parseBuffer, sizeof(parseBuffer));
+            StackAllocator sa;
+            JsonDocument message(rapidjson::kObjectType, &pa, sizeof(sa.fixedBuffer_), &sa);
+
+            if (!Connection->Read(message)) {
+                break;
+            }
+
+            const char* evtName = nullptr;
+            auto evt = message.FindMember("evt");
+            if (evt != message.MemberEnd() && evt->value.IsString()) {
+                evtName = evt->value.GetString();
+            }
+
             auto nonce = message.FindMember("nonce");
             if (nonce != message.MemberEnd() && nonce->value.IsString()) {
                 // in responses only -- should use to match up response when needed.
-                //auto cmd = message.FindMember("cmd"); needed?
+
+                if (evtName && strcmp(evtName, "ERROR") == 0) {
+                    auto data = message.FindMember("data");
+                    LastErrorCode = data->value["code"].GetInt();
+                    StringCopy(LastErrorMessage, data->value["message"].GetString());
+                    GotErrorMessage.store(true);
+                }
             }
             else {
                 // should have evt == name of event, optional data
-                auto evt = message.FindMember("evt");
-                if (evt != message.MemberEnd() && evt->value.IsString()) {
-                    const char* evtName = evt->value.GetString();
+                if (evtName == nullptr) {
+                    continue;
+                }
 
-                    // todo ug
-                    if (strcmp(evtName, "PRESENCE_REQUESTED") == 0) {
-                        WasPresenceRequested.store(true);
-                    }
-                    else if (strcmp(evtName, "JOIN_GAME") == 0) {
-                        auto data = message.FindMember("data");
-                        auto secret = data->value["secret"].GetString();
-                        StringCopy(JoinGameSecret, secret);
-                        WasJoinGame.store(true);
-                    }
-                    else if (strcmp(evtName, "SPECTATE_GAME") == 0) {
-                        auto data = message.FindMember("data");
-                        auto secret = data->value["secret"].GetString();
-                        StringCopy(SpectateGameSecret, secret);
-                        WasSpectateGame.store(true);
-                    }
+                // todo ug
+                if (strcmp(evtName, "PRESENCE_REQUESTED") == 0) {
+                    WasPresenceRequested.store(true);
+                }
+                else if (strcmp(evtName, "JOIN_GAME") == 0) {
+                    auto data = message.FindMember("data");
+                    auto secret = data->value["secret"].GetString();
+                    StringCopy(JoinGameSecret, secret);
+                    WasJoinGame.store(true);
+                }
+                else if (strcmp(evtName, "SPECTATE_GAME") == 0) {
+                    auto data = message.FindMember("data");
+                    auto secret = data->value["secret"].GetString();
+                    StringCopy(SpectateGameSecret, secret);
+                    WasSpectateGame.store(true);
                 }
             }
         }

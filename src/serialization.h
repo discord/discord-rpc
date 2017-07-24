@@ -63,7 +63,7 @@ public:
     static void Free(void* ptr) { /* shrug */ }
 };
 
-template<int Size>
+template<size_t Size>
 class FixedLinearAllocator : public LinearAllocator {
 public:
     char fixedBuffer_[Size];
@@ -98,9 +98,12 @@ public:
     }
 };
 
+using MallocAllocator = rapidjson::CrtAllocator;
+extern MallocAllocator MallocAllocatorInst;
+using PoolAllocator = rapidjson::MemoryPoolAllocator<MallocAllocator>;
 using UTF8 = rapidjson::UTF8<char>;
 // Writer appears to need about 16 bytes per nested object level (with 64bit size_t)
-using WriterAllocator = FixedLinearAllocator<2048>;
+using StackAllocator = FixedLinearAllocator<2048>;
 constexpr size_t WriterNestingLevels = 2048 / (2 * sizeof(size_t));
-using JsonWriter = rapidjson::Writer<DirectStringBuffer, UTF8, UTF8, WriterAllocator, rapidjson::kWriteNoFlags>;
-using JsonDocument = rapidjson::GenericDocument<UTF8>;
+using JsonWriter = rapidjson::Writer<DirectStringBuffer, UTF8, UTF8, StackAllocator, rapidjson::kWriteNoFlags>;
+using JsonDocument = rapidjson::GenericDocument<UTF8, PoolAllocator, FixedLinearAllocator<2048>>;

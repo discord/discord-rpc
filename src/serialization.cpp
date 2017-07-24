@@ -2,6 +2,8 @@
 #include "connection.h"
 #include "discord-rpc.h"
 
+MallocAllocator MallocAllocatorInst;
+
 // it's ever so slightly faster to not have to strlen the key
 template<typename T>
 void WriteKey(JsonWriter& w, T& k) {
@@ -46,7 +48,7 @@ void JsonWriteCommandEnd(JsonWriter& writer)
 size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, int nonce, int pid, const DiscordRichPresence* presence)
 {
     DirectStringBuffer sb(dest, maxLen);
-    WriterAllocator wa;
+    StackAllocator wa;
     JsonWriter writer(sb, &wa, WriterNestingLevels);
 
     JsonWriteCommandStart(writer, nonce, "SET_ACTIVITY");
@@ -132,7 +134,7 @@ size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, int nonce, int pid, c
 size_t JsonWriteHandshakeObj(char* dest, size_t maxLen, int version, const char* applicationId)
 {
     DirectStringBuffer sb(dest, maxLen);
-    WriterAllocator wa;
+    StackAllocator wa;
     JsonWriter writer(sb, &wa, WriterNestingLevels);
 
     writer.StartObject();
@@ -148,7 +150,7 @@ size_t JsonWriteHandshakeObj(char* dest, size_t maxLen, int version, const char*
 size_t JsonWriteSubscribeCommand(char* dest, size_t maxLen, int nonce, const char* evtName)
 {
     DirectStringBuffer sb(dest, maxLen);
-    WriterAllocator wa;
+    StackAllocator wa;
     JsonWriter writer(sb, &wa, WriterNestingLevels);
 
     writer.StartObject();
