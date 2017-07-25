@@ -88,7 +88,7 @@ public:
 // wonder why this isn't a thing already, maybe I missed it
 class DirectStringBuffer {
 public:
-    typedef typename char Ch;
+    using Ch = char;
     char* buffer_;
     char* end_;
     char* current_;
