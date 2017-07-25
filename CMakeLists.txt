@@ -32,8 +32,8 @@ execute_process(
     ERROR_QUIET
 )
 
-find_file(RAPIDJSON NAMES rapidjson rapidjson-1.1.0 PATHS ${CMAKE_SOURCE_DIR}/thirdparty)
-if (NOT RAPIDJSON)
+find_file(RAPIDJSONTEST NAMES rapidjson rapidjson-1.1.0 PATHS ${CMAKE_SOURCE_DIR}/thirdparty)
+if (NOT RAPIDJSONTEST)
     message("no rapidjson, download")
     set(RJ_TAR_FILE ${CMAKE_SOURCE_DIR}/thirdparty/v1.1.0.tar.gz)
     file(DOWNLOAD https://github.com/miloyip/rapidjson/archive/v1.1.0.tar.gz ${RJ_TAR_FILE})
@@ -42,7 +42,10 @@ if (NOT RAPIDJSON)
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/thirdparty
     )
     file(REMOVE ${RJ_TAR_FILE})
-endif(NOT RAPIDJSON)
+endif(NOT RAPIDJSONTEST)
+
+find_file(RAPIDJSON NAMES rapidjson rapidjson-1.1.0 PATHS ${CMAKE_SOURCE_DIR}/thirdparty)
+
 add_library(rapidjson STATIC IMPORTED ${RAPIDJSON})
 
 # add subdirs
