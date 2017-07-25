@@ -69,7 +69,7 @@ void RpcConnection::Open()
 
 void RpcConnection::Close()
 {
-    if (onDisconnect && state == State::Connected) {
+    if (onDisconnect && (state == State::Connected || state == State::SentHandshake)) {
         onDisconnect(lastErrorCode, lastErrorMessage);
     }
     connection->Close();
