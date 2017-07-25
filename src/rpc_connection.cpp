@@ -44,7 +44,8 @@ void RpcConnection::Open()
             if (evt == message.MemberEnd() || !evt->value.IsString()) {
                 return;
             }
-            if (!strcmp(cmd->value.GetString(), "DISPATCH") && !strcmp(evt->value.GetString(), "READY")) {
+            if (!strcmp(cmd->value.GetString(), "DISPATCH") &&
+                !strcmp(evt->value.GetString(), "READY")) {
                 state = State::Connected;
                 if (onConnect) {
                     onConnect();
@@ -54,7 +55,8 @@ void RpcConnection::Open()
     }
     else {
         sendFrame.opcode = Opcode::Handshake;
-        sendFrame.length = JsonWriteHandshakeObj(sendFrame.message, sizeof(sendFrame.message), RpcVersion, appId);
+        sendFrame.length =
+          JsonWriteHandshakeObj(sendFrame.message, sizeof(sendFrame.message), RpcVersion, appId);
 
         if (connection->Write(&sendFrame, sizeof(MessageFrameHeader) + sendFrame.length)) {
             state = State::SentHandshake;
@@ -110,8 +112,7 @@ bool RpcConnection::Read(JsonDocument& message)
         }
 
         switch (readFrame.opcode) {
-        case Opcode::Close:
-        {
+        case Opcode::Close: {
             message.ParseInsitu(readFrame.message);
             lastErrorCode = message["code"].GetInt();
             const auto& m = message["message"];

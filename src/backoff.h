@@ -4,8 +4,7 @@
 #include <algorithm>
 #include <random>
 
-struct Backoff
-{
+struct Backoff {
     int64_t minAmount;
     int64_t maxAmount;
     int64_t current;
@@ -13,16 +12,15 @@ struct Backoff
     std::mt19937_64 randGenerator;
     std::uniform_real_distribution<> randDistribution;
 
-    double rand01() {
-        return randDistribution(randGenerator);
-    }
+    double rand01() { return randDistribution(randGenerator); }
 
     Backoff(int64_t min, int64_t max)
-    : minAmount(min)
-    , maxAmount(max)
-    , current(min)
-    , fails(0)
-    {}
+      : minAmount(min)
+      , maxAmount(max)
+      , current(min)
+      , fails(0)
+    {
+    }
 
     void reset()
     {
@@ -38,4 +36,3 @@ struct Backoff
         return current;
     }
 };
-

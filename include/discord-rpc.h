@@ -3,7 +3,7 @@
 
 //#define DISCORD_DISABLE_IO_THREAD
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -47,6 +47,6 @@ void Discord_UpdateConnection();
 
 void Discord_UpdatePresence(const DiscordRichPresence* presence);
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
 #endif

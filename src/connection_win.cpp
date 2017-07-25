@@ -16,7 +16,7 @@ struct BaseConnectionWin : public BaseConnection {
 };
 
 static BaseConnectionWin Connection;
-//static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
+// static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
 static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc-0";
 
 /*static*/ BaseConnection* BaseConnection::Create()
@@ -35,7 +35,8 @@ bool BaseConnection::Open()
 {
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
     for (;;) {
-        self->pipe = ::CreateFileW(PipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+        self->pipe = ::CreateFileW(
+          PipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
         if (self->pipe != INVALID_HANDLE_VALUE) {
             return true;
         }
@@ -77,4 +78,3 @@ bool BaseConnection::Read(void* data, size_t length)
     }
     return false;
 }
-

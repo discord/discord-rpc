@@ -5,13 +5,15 @@
 MallocAllocator MallocAllocatorInst;
 
 // it's ever so slightly faster to not have to strlen the key
-template<typename T>
-void WriteKey(JsonWriter& w, T& k) {
+template <typename T>
+void WriteKey(JsonWriter& w, T& k)
+{
     w.Key(k, sizeof(T) - 1);
 }
 
-template<typename T>
-void WriteOptionalString(JsonWriter& w, T& k, const char* value) {
+template <typename T>
+void WriteOptionalString(JsonWriter& w, T& k, const char* value)
+{
     if (value) {
         w.Key(k, sizeof(T) - 1);
         w.String(value);
@@ -45,7 +47,11 @@ void JsonWriteCommandEnd(JsonWriter& writer)
     writer.EndObject(); // top level
 }
 
-size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, int nonce, int pid, const DiscordRichPresence* presence)
+size_t JsonWriteRichPresenceObj(char* dest,
+                                size_t maxLen,
+                                int nonce,
+                                int pid,
+                                const DiscordRichPresence* presence)
 {
     DirectStringBuffer sb(dest, maxLen);
     StackAllocator wa;
@@ -79,7 +85,8 @@ size_t JsonWriteRichPresenceObj(char* dest, size_t maxLen, int nonce, int pid, c
         writer.EndObject();
     }
 
-    if (presence->largeImageKey || presence->largeImageText || presence->smallImageKey || presence->smallImageText) {
+    if (presence->largeImageKey || presence->largeImageText || presence->smallImageKey ||
+        presence->smallImageText) {
         WriteKey(writer, "assets");
         writer.StartObject();
 
@@ -156,13 +163,13 @@ size_t JsonWriteSubscribeCommand(char* dest, size_t maxLen, int nonce, const cha
     writer.StartObject();
 
     JsonWriteNonce(writer, nonce);
-    
+
     WriteKey(writer, "cmd");
     writer.String("SUBSCRIBE");
-    
+
     WriteKey(writer, "evt");
     writer.String(evtName);
-    
+
     writer.EndObject();
 
     return sb.GetSize();

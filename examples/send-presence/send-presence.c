@@ -14,7 +14,8 @@
 static const char* APPLICATION_ID = "338030514596216832";
 static int FrustrationLevel = 0;
 
-static void updateDiscordPresence() {
+static void updateDiscordPresence()
+{
     char buffer[256];
     DiscordRichPresence discordPresence;
     memset(&discordPresence, 0, sizeof(discordPresence));
@@ -24,24 +25,29 @@ static void updateDiscordPresence() {
     Discord_UpdatePresence(&discordPresence);
 }
 
-static void handleDiscordReady() {
+static void handleDiscordReady()
+{
     printf("\nDiscord: ready\n");
 }
 
-static void handleDiscordDisconnected(int errcode, const char* message) {
+static void handleDiscordDisconnected(int errcode, const char* message)
+{
     printf("\nDiscord: disconnected (%d: %s)\n", errcode, message);
 }
 
-static void handleDiscordError(int errcode, const char* message) {
+static void handleDiscordError(int errcode, const char* message)
+{
     printf("\nDiscord: error (%d: %s)\n", errcode, message);
 }
 
-static void handleDiscordPresenceRequested() {
+static void handleDiscordPresenceRequested()
+{
     printf("\nDiscord: requests presence\n");
     updateDiscordPresence();
 }
 
-static int prompt(char* line, size_t size) {
+static int prompt(char* line, size_t size)
+{
     int res;
     char* nl;
     printf("\n> ");
@@ -55,7 +61,8 @@ static int prompt(char* line, size_t size) {
     return res;
 }
 
-static void gameLoop() {
+static void gameLoop()
+{
     char line[512];
     char* space;
 
@@ -63,7 +70,8 @@ static void gameLoop() {
     while (prompt(line, sizeof(line))) {
         if (time(NULL) & 1) {
             printf("I don't understand that.\n");
-        } else {
+        }
+        else {
             space = strchr(line, ' ');
             if (space) {
                 *space = 0;
@@ -72,9 +80,9 @@ static void gameLoop() {
         }
 
         ++FrustrationLevel;
-        
+
         updateDiscordPresence();
-        
+
 #ifdef DISCORD_DISABLE_IO_THREAD
         Discord_UpdateConnection();
 #endif
@@ -82,7 +90,8 @@ static void gameLoop() {
     }
 }
 
-int main() {
+int main()
+{
     DiscordEventHandlers handlers;
     memset(&handlers, 0, sizeof(handlers));
     handlers.ready = handleDiscordReady;
@@ -92,8 +101,7 @@ int main() {
     Discord_Initialize(APPLICATION_ID, &handlers);
 
     gameLoop();
-    
+
     Discord_Shutdown();
     return 0;
 }
-

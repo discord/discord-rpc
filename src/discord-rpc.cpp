@@ -53,10 +53,12 @@ static std::thread IoThread;
 
 static void UpdateReconnectTime()
 {
-    NextConnect = std::chrono::system_clock::now() + std::chrono::duration<int64_t, std::milli>{ReconnectTimeMs.nextDelay()};
+    NextConnect = std::chrono::system_clock::now() +
+      std::chrono::duration<int64_t, std::milli>{ReconnectTimeMs.nextDelay()};
 }
 
-static QueuedMessage* SendQueueGetNextAddMessage() {
+static QueuedMessage* SendQueueGetNextAddMessage()
+{
     // if we are falling behind, bail
     if (SendQueuePendingSends.load() >= MessageQueueSize) {
         return nullptr;
@@ -64,11 +66,13 @@ static QueuedMessage* SendQueueGetNextAddMessage() {
     auto index = (SendQueueNextAdd++) % MessageQueueSize;
     return &SendQueue[index];
 }
-static QueuedMessage* SendQueueGetNextSendMessage() {
+static QueuedMessage* SendQueueGetNextSendMessage()
+{
     auto index = (SendQueueNextSend++) % MessageQueueSize;
     return &SendQueue[index];
 }
-static void SendQueueCommitMessage() {
+static void SendQueueCommitMessage()
+{
     SendQueuePendingSends++;
 }
 
@@ -145,7 +149,7 @@ extern "C" void Discord_UpdateConnection()
 void DiscordRpcIo()
 {
     const std::chrono::duration<int64_t, std::milli> maxWait{500LL};
-    
+
     while (KeepRunning.load()) {
         Discord_UpdateConnection();
 
@@ -166,7 +170,8 @@ bool RegisterForEvent(const char* evtName)
 {
     auto qmessage = SendQueueGetNextAddMessage();
     if (qmessage) {
-        qmessage->length = JsonWriteSubscribeCommand(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, evtName);
+        qmessage->length =
+          JsonWriteSubscribeCommand(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, evtName);
         SendQueueCommitMessage();
         SignalIOActivity();
         return true;
@@ -233,7 +238,8 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     auto qmessage = SendQueueGetNextAddMessage();
     if (qmessage) {
-        qmessage->length = JsonWriteRichPresenceObj(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, Pid, presence);
+        qmessage->length = JsonWriteRichPresenceObj(
+          qmessage->buffer, sizeof(qmessage->buffer), Nonce++, Pid, presence);
         SendQueueCommitMessage();
         SignalIOActivity();
     }
