@@ -34,10 +34,7 @@ void RpcConnection::Open()
     }
 
     if (state == State::SentHandshake) {
-        char parseBuffer[32 * 1024];
-        PoolAllocator pa(parseBuffer, sizeof(parseBuffer));
-        StackAllocator sa;
-        JsonDocument message(rapidjson::kObjectType, &pa, sizeof(sa.fixedBuffer_), &sa);
+        JsonDocument message;
         if (Read(message)) {
             auto cmd = message.FindMember("cmd");
             if (cmd == message.MemberEnd() || !cmd->value.IsString()) {

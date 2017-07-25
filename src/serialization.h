@@ -99,11 +99,24 @@ public:
 };
 
 using MallocAllocator = rapidjson::CrtAllocator;
-extern MallocAllocator MallocAllocatorInst;
 using PoolAllocator = rapidjson::MemoryPoolAllocator<MallocAllocator>;
 using UTF8 = rapidjson::UTF8<char>;
 // Writer appears to need about 16 bytes per nested object level (with 64bit size_t)
 using StackAllocator = FixedLinearAllocator<2048>;
 constexpr size_t WriterNestingLevels = 2048 / (2 * sizeof(size_t));
 using JsonWriter = rapidjson::Writer<DirectStringBuffer, UTF8, UTF8, StackAllocator, rapidjson::kWriteNoFlags>;
-using JsonDocument = rapidjson::GenericDocument<UTF8, PoolAllocator, FixedLinearAllocator<2048>>;
+using JsonDocumentBase = rapidjson::GenericDocument<UTF8, PoolAllocator, StackAllocator>;
+class JsonDocument : public JsonDocumentBase
+{
+public:
+    static const int kDefaultChunkCapacity = 32 * 1024;
+    // json parser will use this buffer first, then allocate more if needed; I seriously doubt we send any messages that would use all of this, though.
+    char parseBuffer_[32 * 1024];
+    MallocAllocator mallocAllocator_;
+    PoolAllocator poolAllocator_;
+    StackAllocator stackAllocator_;
+    JsonDocument() : JsonDocumentBase(rapidjson::kObjectType, &poolAllocator_, sizeof(stackAllocator_.fixedBuffer_), &stackAllocator_)
+        , poolAllocator_(parseBuffer_, sizeof(parseBuffer_), kDefaultChunkCapacity, &mallocAllocator_)
+        , stackAllocator_()
+    {}
+};

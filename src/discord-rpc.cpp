@@ -83,12 +83,8 @@ extern "C" void Discord_UpdateConnection()
     else {
         // reads
 
-        // json parser will use this buffer first, then allocate more if needed; I seriously doubt we send any messages that would use all of this, though.
-        char parseBuffer[32 * 1024];
         for (;;) {
-            PoolAllocator pa(parseBuffer, sizeof(parseBuffer));
-            StackAllocator sa;
-            JsonDocument message(rapidjson::kObjectType, &pa, sizeof(sa.fixedBuffer_), &sa);
+            JsonDocument message;
 
             if (!Connection->Read(message)) {
                 break;
