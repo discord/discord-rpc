@@ -1,8 +1,6 @@
 #pragma once
 #include <stdint.h>
 
-//#define DISCORD_DISABLE_IO_THREAD
-
 #ifdef __cplusplus
 extern "C" {
 #endif

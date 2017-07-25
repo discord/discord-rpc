@@ -10,12 +10,12 @@ PRs/feedback welcome if you have an improvement everyone might want.
 ## Usage
 
 There's a CMake file that should be able to generate the lib for you; I use it like this:
-```
+```sh
     cd /path/to/discord-rpc
     mkdir build
     cd build
     cmake ..
-    cmake --build .
+    cmake --build . --config Release
 ```
 Sometimes I use the generated project files.
 
