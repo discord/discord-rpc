@@ -19,3 +19,19 @@ endif(UNIX)
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)
 
 add_dependencies(discord-rpc clangformat)
+
+# install
+
+install(
+    TARGETS discord-rpc
+    EXPORT "discord-rpc"
+    LIBRARY DESTINATION "lib"
+    ARCHIVE DESTINATION "lib"
+    INCLUDES DESTINATION "include"
+)
+
+install(
+    FILES
+        "../include/discord-rpc.h"
+    DESTINATION "include"
+)

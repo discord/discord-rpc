@@ -9,13 +9,23 @@ PRs/feedback welcome if you have an improvement everyone might want.
 
 ## Usage
 
+First, head on over to the [Discord developers site](https://discordapp.com/developers/applications/me)
+and make yourself an app. Keep track of `Client ID` -- you'll need it here.
+
+### From package
+
+Download a release package, extract it, add `/include` to your compile includes, `/lib` to your
+linker paths, and link with `discord-rpc`.
+
+### From repo
+
 There's a CMake file that should be able to generate the lib for you; I use it like this:
 ```sh
     cd /path/to/discord-rpc
     mkdir build
     cd build
-    cmake ..
-    cmake --build . --config Release
+    cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/that
+    cmake --build . --config Release --target install
 ```
 Sometimes I use the generated project files.
 
