@@ -68,20 +68,25 @@ static void gameLoop()
 
     printf("You are standing in an open field west of a white house.\n");
     while (prompt(line, sizeof(line))) {
-        if (time(NULL) & 1) {
-            printf("I don't understand that.\n");
-        }
-        else {
-            space = strchr(line, ' ');
-            if (space) {
-                *space = 0;
+        if (line[0]) {
+            if (line[0] == 'q') {
+                break;
             }
-            printf("I don't know the word \"%s\".\n", line);
+            if (time(NULL) & 1) {
+                printf("I don't understand that.\n");
+            }
+            else {
+                space = strchr(line, ' ');
+                if (space) {
+                    *space = 0;
+                }
+                printf("I don't know the word \"%s\".\n", line);
+            }
+
+            ++FrustrationLevel;
+
+            updateDiscordPresence();
         }
-
-        ++FrustrationLevel;
-
-        updateDiscordPresence();
 
 #ifdef DISCORD_DISABLE_IO_THREAD
         Discord_UpdateConnection();
