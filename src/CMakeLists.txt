@@ -11,3 +11,5 @@ if(UNIX)
 endif(UNIX)
 
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)
+
+add_dependencies(discord-rpc clangformat)

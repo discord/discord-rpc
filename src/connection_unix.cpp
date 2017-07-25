@@ -31,17 +31,14 @@ struct RpcConnectionUnix : public RpcConnection {
 
 void RpcConnection::Open()
 {
-    
 }
 
 void RpcConnection::Close()
 {
-    
 }
 
 void RpcConnection::Write(const void* data, size_t length)
 {
-    
 }
 
 RpcMessageFrame* RpcConnection::Read()
@@ -59,5 +56,4 @@ RpcMessageFrame* RpcConnection::GetNextFrame()
 
 void RpcConnection::WriteFrame(RpcMessageFrame* frame)
 {
-    
 }
