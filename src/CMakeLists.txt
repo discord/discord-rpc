@@ -10,6 +10,7 @@ set(BASE_RPC_SRC ${PROJECT_SOURCE_DIR}/include/discord-rpc.h discord-rpc.cpp dis
 
 if(WIN32)
     add_library(discord-rpc STATIC ${BASE_RPC_SRC} connection_win.cpp)
+    target_compile_options(discord-rpc PRIVATE /W4)
 endif(WIN32)
 
 if(UNIX)

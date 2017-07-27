@@ -22,7 +22,6 @@ struct QueuedMessage {
 };
 
 static RpcConnection* Connection{nullptr};
-static char ApplicationId[64]{};
 static DiscordEventHandlers Handlers{};
 static std::atomic_bool WasJustConnected{false};
 static std::atomic_bool WasJustDisconnected{false};
@@ -180,7 +179,9 @@ bool RegisterForEvent(const char* evtName)
     return false;
 }
 
-extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers, int autoRegister)
+extern "C" void Discord_Initialize(const char* applicationId,
+                                   DiscordEventHandlers* handlers,
+                                   int autoRegister)
 {
     if (autoRegister) {
         Discord_Register(applicationId);

@@ -11,7 +11,7 @@
 template <size_t Len>
 inline size_t StringCopy(char (&dest)[Len], const char* src)
 {
-    if (!dest || !src || !Len) {
+    if (!src || !Len) {
         return 0;
     }
     size_t copied;
@@ -71,7 +71,11 @@ public:
         assert(!originalPtr && !originalSize);
         return Malloc(newSize);
     }
-    static void Free(void* ptr) { /* shrug */}
+    static void Free(void* ptr)
+    {
+        /* shrug */
+        (void)ptr;
+    }
 };
 
 template <size_t Size>

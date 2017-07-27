@@ -32,7 +32,9 @@ typedef struct DiscordEventHandlers {
     void (*spectateGame)(const char* spectateSecret);
 } DiscordEventHandlers;
 
-void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers, int autoRegister);
+void Discord_Initialize(const char* applicationId,
+                        DiscordEventHandlers* handlers,
+                        int autoRegister);
 void Discord_Shutdown();
 
 /* checks for incoming messages, dispatches callbacks */
