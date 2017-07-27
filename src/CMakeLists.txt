@@ -6,7 +6,7 @@ if (${ENABLE_IO_THREAD} EQUAL OFF)
     add_definitions(-DDISCORD_DISABLE_IO_THREAD)
 endif (${ENABLE_IO_THREAD} EQUAL OFF)
 
-set(BASE_RPC_SRC ${PROJECT_SOURCE_DIR}/include/discord-rpc.h discord-rpc.cpp rpc_connection.h rpc_connection.cpp serialization.h serialization.cpp connection.h backoff.h)
+set(BASE_RPC_SRC ${PROJECT_SOURCE_DIR}/include/discord-rpc.h discord-rpc.cpp discord-register.cpp rpc_connection.h rpc_connection.cpp serialization.h serialization.cpp connection.h backoff.h)
 
 if(WIN32)
     add_library(discord-rpc STATIC ${BASE_RPC_SRC} connection_win.cpp)

@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+/* Registration */
+
+void Discord_Register(const char* applicationId);
+
+/* RPC */
+
 typedef struct DiscordRichPresence {
     const char* state;
     const char* details;

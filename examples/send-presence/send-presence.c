@@ -95,8 +95,11 @@ static void gameLoop()
     }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    /* This would typically be in an installer and/or wrapped to only run once */
+    Discord_Register(APPLICATION_ID);
+
     DiscordEventHandlers handlers;
     memset(&handlers, 0, sizeof(handlers));
     handlers.ready = handleDiscordReady;
