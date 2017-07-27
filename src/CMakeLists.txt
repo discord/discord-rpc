@@ -15,6 +15,8 @@ endif(WIN32)
 
 if(UNIX)
     add_library(discord-rpc STATIC ${BASE_RPC_SRC} connection_unix.cpp)
+    target_link_libraries(discord-rpc PUBLIC pthread)
+    target_compile_options(discord-rpc PRIVATE -g -Wall)
 endif(UNIX)
 
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)

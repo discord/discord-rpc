@@ -1,6 +1,11 @@
 #include "connection.h"
 
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/un.h>
 #include <unistd.h>
 
 int GetProcessId()
@@ -8,52 +13,84 @@ int GetProcessId()
     return ::getpid();
 }
 
-const int RpcVersion = 1;
-const int NumFrames = 4;
-
-struct RpcConnectionUnix : public RpcConnection {
-    int pipe{-1};
-    RpcMessageFrame frames[NumFrames];
-    int nextFrame{0};
+struct BaseConnectionUnix : public BaseConnection {
+    int sock{-1};
 };
 
-/*static*/ RpcConnection* RpcConnection::Create(const char* applicationId)
+static BaseConnectionUnix Connection;
+sockaddr_un PipeAddr{};
+
+static const char* GetTempPath()
 {
-    return new RpcConnectionUnix;
+    const char* temp = getenv("XDG_RUNTIME_DIR");
+    temp = temp ? temp : getenv("TMPDIR");
+    temp = temp ? temp : getenv("TMP");
+    temp = temp ? temp : getenv("TEMP");
+    temp = temp ? temp : "/tmp";
+    return temp;
 }
 
-/*static*/ void RpcConnection::Destroy(RpcConnection*& c)
+/*static*/ BaseConnection* BaseConnection::Create()
 {
-    auto self = reinterpret_cast<RpcConnectionUnix*&>(c);
-    delete self;
+    snprintf(PipeAddr.sun_path, sizeof(PipeAddr.sun_path), "%s/discord-ipc-0", GetTempPath());
+    PipeAddr.sun_family = AF_UNIX;
+    return &Connection;
+}
+
+/*static*/ void BaseConnection::Destroy(BaseConnection*& c)
+{
+    auto self = reinterpret_cast<BaseConnectionUnix*>(c);
+    self->Close();
     c = nullptr;
 }
 
-void RpcConnection::Open()
+bool BaseConnection::Open()
 {
+    auto self = reinterpret_cast<BaseConnectionUnix*>(this);
+    self->sock = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (self->sock == -1) {
+        return false;
+    }
+    fcntl(self->sock, F_SETFL, O_NONBLOCK);
+    int err = connect(self->sock, (const sockaddr*)&PipeAddr, sizeof(PipeAddr));
+    if (err != 0) {
+        self->Close();
+        return false;
+    }
+    return true;
 }
 
-void RpcConnection::Close()
+bool BaseConnection::Close()
 {
+    auto self = reinterpret_cast<BaseConnectionUnix*>(this);
+    if (self->sock == -1) {
+        return false;
+    }
+    close(self->sock);
+    self->sock = -1;
+    return true;
 }
 
-void RpcConnection::Write(const void* data, size_t length)
+bool BaseConnection::Write(const void* data, size_t length)
 {
+    auto self = reinterpret_cast<BaseConnectionUnix*>(this);
+
+    if (self->sock == -1) {
+        return false;
+    }
+
+    ssize_t sentBytes = send(self->sock, data, length, 0);
+    return sentBytes == (ssize_t)length;
 }
 
-RpcMessageFrame* RpcConnection::Read()
+bool BaseConnection::Read(void* data, size_t length)
 {
-    return nullptr;
-}
+    auto self = reinterpret_cast<BaseConnectionUnix*>(this);
 
-RpcMessageFrame* RpcConnection::GetNextFrame()
-{
-    auto self = reinterpret_cast<RpcConnectionUnix*>(this);
-    auto result = &(self->frames[self->nextFrame]);
-    self->nextFrame = (self->nextFrame + 1) % NumFrames;
-    return result;
-}
+    if (self->sock == -1) {
+        return false;
+    }
 
-void RpcConnection::WriteFrame(RpcMessageFrame* frame)
-{
+    int res = recv(self->sock, data, length, 0);
+    return res == (int)length;
 }
