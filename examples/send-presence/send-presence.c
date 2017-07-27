@@ -97,16 +97,13 @@ static void gameLoop()
 
 int main(int argc, char* argv[])
 {
-    /* This would typically be in an installer and/or wrapped to only run once */
-    Discord_Register(APPLICATION_ID);
-
     DiscordEventHandlers handlers;
     memset(&handlers, 0, sizeof(handlers));
     handlers.ready = handleDiscordReady;
     handlers.disconnected = handleDiscordDisconnected;
     handlers.errored = handleDiscordError;
     handlers.presenceRequested = handleDiscordPresenceRequested;
-    Discord_Initialize(APPLICATION_ID, &handlers);
+    Discord_Initialize(APPLICATION_ID, &handlers, 1);
 
     gameLoop();
 

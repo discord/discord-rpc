@@ -5,12 +5,6 @@
 extern "C" {
 #endif
 
-/* Registration */
-
-void Discord_Register(const char* applicationId);
-
-/* RPC */
-
 typedef struct DiscordRichPresence {
     const char* state;
     const char* details;
@@ -38,7 +32,7 @@ typedef struct DiscordEventHandlers {
     void (*spectateGame)(const char* spectateSecret);
 } DiscordEventHandlers;
 
-void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers);
+void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers, int autoRegister);
 void Discord_Shutdown();
 
 /* checks for incoming messages, dispatches callbacks */

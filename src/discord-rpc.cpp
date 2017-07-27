@@ -1,6 +1,7 @@
 #include "discord-rpc.h"
 
 #include "backoff.h"
+#include "discord-register.h"
 #include "rpc_connection.h"
 #include "serialization.h"
 
@@ -179,8 +180,12 @@ bool RegisterForEvent(const char* evtName)
     return false;
 }
 
-extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers)
+extern "C" void Discord_Initialize(const char* applicationId, DiscordEventHandlers* handlers, int autoRegister)
 {
+    if (autoRegister) {
+        Discord_Register(applicationId);
+    }
+
     Pid = GetProcessId();
 
     if (handlers) {
