@@ -32,7 +32,7 @@ static const char* GetTempPath()
 
 /*static*/ BaseConnection* BaseConnection::Create()
 {
-    snprintf(PipeAddr.sun_path, sizeof(PipeAddr.sun_path), "%s/discord-ipc-0", GetTempPath());
+    
     PipeAddr.sun_family = AF_UNIX;
     return &Connection;
 }
@@ -46,18 +46,22 @@ static const char* GetTempPath()
 
 bool BaseConnection::Open()
 {
+    const char* tempPath = GetTempPath();
     auto self = reinterpret_cast<BaseConnectionUnix*>(this);
     self->sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if (self->sock == -1) {
         return false;
     }
     fcntl(self->sock, F_SETFL, O_NONBLOCK);
-    int err = connect(self->sock, (const sockaddr*)&PipeAddr, sizeof(PipeAddr));
-    if (err != 0) {
-        self->Close();
-        return false;
+    for (int pipeNum = 0; pipeNum < 10; ++pipeNum) {
+        snprintf(PipeAddr.sun_path, sizeof(PipeAddr.sun_path), "%s/discord-ipc-%d", tempPath, pipeNum);
+        int err = connect(self->sock, (const sockaddr*)&PipeAddr, sizeof(PipeAddr));
+        if (err == 0) {
+            return true;
+        }
     }
-    return true;
+    self->Close();
+    return false;
 }
 
 bool BaseConnection::Close()

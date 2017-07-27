@@ -16,8 +16,6 @@ struct BaseConnectionWin : public BaseConnection {
 };
 
 static BaseConnectionWin Connection;
-// static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc";
-static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc-0";
 
 /*static*/ BaseConnection* BaseConnection::Create()
 {
@@ -33,21 +31,31 @@ static const wchar_t* PipeName = L"\\\\?\\pipe\\discord-ipc-0";
 
 bool BaseConnection::Open()
 {
+    wchar_t pipeName[]{L"\\\\?\\pipe\\discord-ipc-0"};
+    const size_t pipeDigit = sizeof(pipeName) / sizeof(wchar_t) - 2;
+    pipeName[pipeDigit] = L'0';
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
     for (;;) {
         self->pipe = ::CreateFileW(
-          PipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+          pipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
         if (self->pipe != INVALID_HANDLE_VALUE) {
             return true;
         }
 
-        if (GetLastError() != ERROR_PIPE_BUSY) {
-            return false;
+        auto lastError = GetLastError();
+        if (lastError == ERROR_FILE_NOT_FOUND) {
+            if (pipeName[pipeDigit] < L'9') {
+                pipeName[pipeDigit]++;
+                continue;
+            }
         }
-
-        if (!WaitNamedPipeW(PipeName, 10000)) {
-            return false;
+        else if (lastError == ERROR_PIPE_BUSY) {
+            if (!WaitNamedPipeW(pipeName, 10000)) {
+                return false;
+            }
+            continue;
         }
+        return false;
     }
 }
 
