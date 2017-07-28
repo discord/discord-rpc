@@ -60,6 +60,11 @@ static void UpdateReconnectTime()
 
 static QueuedMessage* SendQueueGetNextAddMessage()
 {
+    // if we are not connected, let's not batch up stale messages for later
+    if (!Connection || !Connection->IsOpen()) {
+        return nullptr;
+    }
+
     // if we are falling behind, bail
     if (SendQueuePendingSends.load() >= MessageQueueSize) {
         return nullptr;
