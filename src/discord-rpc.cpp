@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <mutex>
 
 #ifndef DISCORD_DISABLE_IO_THREAD
 #include <condition_variable>
@@ -19,6 +20,14 @@ constexpr size_t MessageQueueSize{8};
 struct QueuedMessage {
     size_t length;
     char buffer[MaxMessageSize];
+
+    void Copy(const QueuedMessage& other)
+    {
+        length = other.length;
+        if (length) {
+            memcpy(buffer, other.buffer, length);
+        }
+    }
 };
 
 static RpcConnection* Connection{nullptr};
@@ -34,6 +43,8 @@ static int LastErrorCode{0};
 static char LastErrorMessage[256];
 static int LastDisconnectErrorCode{0};
 static char LastDisconnectErrorMessage[256];
+static std::mutex PresenceMutex;
+static QueuedMessage QueuedPresence{};
 static QueuedMessage SendQueue[MessageQueueSize]{};
 static std::atomic_uint SendQueueNextAdd{0};
 static std::atomic_uint SendQueueNextSend{0};
@@ -139,6 +150,20 @@ extern "C" void Discord_UpdateConnection()
         }
 
         // writes
+        if (QueuedPresence.length) {
+            QueuedMessage local;
+            PresenceMutex.lock();
+            local.Copy(QueuedPresence);
+            QueuedPresence.length = 0;
+            PresenceMutex.unlock();
+            if (!Connection->Write(local.buffer, local.length)) {
+                // if we fail to send, requeue
+                PresenceMutex.lock();
+                QueuedPresence.Copy(local);
+                PresenceMutex.unlock();
+            }
+        }
+
         while (SendQueuePendingSends.load()) {
             auto qmessage = SendQueueGetNextSendMessage();
             Connection->Write(qmessage->buffer, qmessage->length);
@@ -240,13 +265,11 @@ extern "C" void Discord_Shutdown()
 
 extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
-    auto qmessage = SendQueueGetNextAddMessage();
-    if (qmessage) {
-        qmessage->length = JsonWriteRichPresenceObj(
-          qmessage->buffer, sizeof(qmessage->buffer), Nonce++, Pid, presence);
-        SendQueueCommitMessage();
-        SignalIOActivity();
-    }
+    PresenceMutex.lock();
+    QueuedPresence.length = JsonWriteRichPresenceObj(
+      QueuedPresence.buffer, sizeof(QueuedPresence.buffer), Nonce++, Pid, presence);
+    PresenceMutex.unlock();
+    SignalIOActivity();
 }
 
 extern "C" void Discord_RunCallbacks()
