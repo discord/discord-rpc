@@ -6,20 +6,20 @@ extern "C" {
 #endif
 
 typedef struct DiscordRichPresence {
-    const char* state;
-    const char* details;
+    const char* state; /* max 128 bytes */
+    const char* details; /* max 128 bytes */
     int64_t startTimestamp;
     int64_t endTimestamp;
-    const char* largeImageKey;
-    const char* largeImageText;
-    const char* smallImageKey;
-    const char* smallImageText;
-    const char* partyId;
+    const char* largeImageKey; /* max 32 bytes */
+    const char* largeImageText; /* max 128 bytes */
+    const char* smallImageKey; /* max 32 bytes */
+    const char* smallImageText; /* max 128 bytes */
+    const char* partyId; /* max 128 bytes */
     int partySize;
     int partyMax;
-    const char* matchSecret;
-    const char* joinSecret;
-    const char* spectateSecret;
+    const char* matchSecret; /* max 128 bytes */
+    const char* joinSecret; /* max 128 bytes */
+    const char* spectateSecret; /* max 128 bytes */
     int8_t instance;
 } DiscordRichPresence;
 
