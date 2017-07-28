@@ -13,6 +13,7 @@
 
 static const char* APPLICATION_ID = "338030514596216832";
 static int FrustrationLevel = 0;
+static int64_t StartTime;
 
 static void updateDiscordPresence()
 {
@@ -22,6 +23,15 @@ static void updateDiscordPresence()
     discordPresence.state = "West of House";
     sprintf(buffer, "Frustration level: %d", FrustrationLevel);
     discordPresence.details = buffer;
+    discordPresence.startTimestamp = StartTime;
+    discordPresence.endTimestamp = time(0) + 5 * 60;
+    discordPresence.partyId = "party1234";
+    discordPresence.partySize = 1;
+    discordPresence.partyMax = 6;
+    discordPresence.matchSecret = "xyzzy";
+    discordPresence.joinSecret = "join";
+    discordPresence.spectateSecret = "look";
+    discordPresence.instance = 0;
     Discord_UpdatePresence(&discordPresence);
 }
 
@@ -59,6 +69,8 @@ static void gameLoop()
 {
     char line[512];
     char* space;
+
+    StartTime = time(0);
 
     printf("You are standing in an open field west of a white house.\n");
     while (prompt(line, sizeof(line))) {
