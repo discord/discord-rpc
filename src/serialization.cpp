@@ -104,6 +104,7 @@ size_t JsonWriteRichPresenceObj(char* dest,
 
         WriteOptionalString(writer, "id", presence->partyId);
         if (presence->partySize) {
+            WriteKey(writer, "size");
             writer.StartArray();
 
             writer.Int(presence->partySize);
