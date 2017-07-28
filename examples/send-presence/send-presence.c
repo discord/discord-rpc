@@ -50,6 +50,16 @@ static void handleDiscordError(int errcode, const char* message)
     printf("\nDiscord: error (%d: %s)\n", errcode, message);
 }
 
+static void handleDiscordJoin(const char* secret)
+{
+    printf("\nDiscord: join (%s)\n", secret);
+}
+
+static void handleDiscordSpectate(const char* secret)
+{
+    printf("\nDiscord: spectate (%s)\n", secret);
+}
+
 static int prompt(char* line, size_t size)
 {
     int res;
@@ -108,6 +118,9 @@ int main(int argc, char* argv[])
     handlers.ready = handleDiscordReady;
     handlers.disconnected = handleDiscordDisconnected;
     handlers.errored = handleDiscordError;
+    handlers.joinGame = handleDiscordJoin;
+    handlers.spectateGame = handleDiscordSpectate;
+
     Discord_Initialize(APPLICATION_ID, &handlers, 1);
 
     gameLoop();
