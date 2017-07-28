@@ -32,7 +32,6 @@ static const char* GetTempPath()
 
 /*static*/ BaseConnection* BaseConnection::Create()
 {
-    
     PipeAddr.sun_family = AF_UNIX;
     return &Connection;
 }
@@ -54,7 +53,8 @@ bool BaseConnection::Open()
     }
     fcntl(self->sock, F_SETFL, O_NONBLOCK);
     for (int pipeNum = 0; pipeNum < 10; ++pipeNum) {
-        snprintf(PipeAddr.sun_path, sizeof(PipeAddr.sun_path), "%s/discord-ipc-%d", tempPath, pipeNum);
+        snprintf(
+          PipeAddr.sun_path, sizeof(PipeAddr.sun_path), "%s/discord-ipc-%d", tempPath, pipeNum);
         int err = connect(self->sock, (const sockaddr*)&PipeAddr, sizeof(PipeAddr));
         if (err == 0) {
             return true;
