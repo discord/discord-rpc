@@ -100,20 +100,16 @@ extern "C" void Discord_UpdateConnection()
                 break;
             }
 
-            const char* evtName = nullptr;
-            auto evt = message.FindMember("evt");
-            if (evt != message.MemberEnd() && evt->value.IsString()) {
-                evtName = evt->value.GetString();
-            }
+            const char* evtName = GetStrMember(&message, "evt");
+            const char* nonce = GetStrMember(&message, "nonce");
 
-            auto nonce = message.FindMember("nonce");
-            if (nonce != message.MemberEnd() && nonce->value.IsString()) {
+            if (nonce) {
                 // in responses only -- should use to match up response when needed.
 
                 if (evtName && strcmp(evtName, "ERROR") == 0) {
-                    auto data = message.FindMember("data");
-                    LastErrorCode = data->value["code"].GetInt();
-                    StringCopy(LastErrorMessage, data->value["message"].GetString());
+                    auto data = GetObjMember(&message, "data");
+                    LastErrorCode = GetIntMember(data, "code");
+                    StringCopy(LastErrorMessage, GetStrMember(data, "message", ""));
                     GotErrorMessage.store(true);
                 }
             }
@@ -124,16 +120,20 @@ extern "C" void Discord_UpdateConnection()
                 }
 
                 if (strcmp(evtName, "GAME_JOIN") == 0) {
-                    auto data = message.FindMember("data");
-                    auto secret = data->value["secret"].GetString();
-                    StringCopy(JoinGameSecret, secret);
-                    WasJoinGame.store(true);
+                    auto data = GetObjMember(&message, "data");
+                    auto secret = GetStrMember(data, "secret");
+                    if (secret) {
+                        StringCopy(JoinGameSecret, secret);
+                        WasJoinGame.store(true);
+                    }
                 }
                 else if (strcmp(evtName, "GAME_SPECTATE") == 0) {
-                    auto data = message.FindMember("data");
-                    auto secret = data->value["secret"].GetString();
-                    StringCopy(SpectateGameSecret, secret);
-                    WasSpectateGame.store(true);
+                    auto data = GetObjMember(&message, "data");
+                    auto secret = GetStrMember(data, "secret");
+                    if (secret) {
+                        StringCopy(SpectateGameSecret, secret);
+                        WasSpectateGame.store(true);
+                    }
                 }
             }
         }

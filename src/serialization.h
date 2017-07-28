@@ -142,3 +142,40 @@ public:
     {
     }
 };
+
+using JsonValue = rapidjson::GenericValue<UTF8, PoolAllocator>;
+
+inline JsonValue* GetObjMember(JsonValue* obj, const char* name)
+{
+    if (obj) {
+        auto member = obj->FindMember(name);
+        if (member != obj->MemberEnd() && member->value.IsObject()) {
+            return &member->value;
+        }
+    }
+    return nullptr;
+}
+
+inline int GetIntMember(JsonValue* obj, const char* name, int notFoundDefault = 0)
+{
+    if (obj) {
+        auto member = obj->FindMember(name);
+        if (member != obj->MemberEnd() && member->value.IsInt()) {
+            return member->value.GetInt();
+        }
+    }
+    return notFoundDefault;
+}
+
+inline const char* GetStrMember(JsonValue* obj,
+                                const char* name,
+                                const char* notFoundDefault = nullptr)
+{
+    if (obj) {
+        auto member = obj->FindMember(name);
+        if (member != obj->MemberEnd() && member->value.IsString()) {
+            return member->value.GetString();
+        }
+    }
+    return notFoundDefault;
+}

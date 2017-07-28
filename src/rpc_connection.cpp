@@ -114,9 +114,8 @@ bool RpcConnection::Read(JsonDocument& message)
         switch (readFrame.opcode) {
         case Opcode::Close: {
             message.ParseInsitu(readFrame.message);
-            lastErrorCode = message["code"].GetInt();
-            const auto& m = message["message"];
-            StringCopy(lastErrorMessage, m.GetString());
+            lastErrorCode = GetIntMember(&message, "code");
+            StringCopy(lastErrorMessage, GetStrMember(&message, "message", ""));
             Close();
             return false;
         }
