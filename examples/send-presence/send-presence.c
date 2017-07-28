@@ -40,12 +40,6 @@ static void handleDiscordError(int errcode, const char* message)
     printf("\nDiscord: error (%d: %s)\n", errcode, message);
 }
 
-static void handleDiscordPresenceRequested()
-{
-    printf("\nDiscord: requests presence\n");
-    updateDiscordPresence();
-}
-
 static int prompt(char* line, size_t size)
 {
     int res;
@@ -102,7 +96,6 @@ int main(int argc, char* argv[])
     handlers.ready = handleDiscordReady;
     handlers.disconnected = handleDiscordDisconnected;
     handlers.errored = handleDiscordError;
-    handlers.presenceRequested = handleDiscordPresenceRequested;
     Discord_Initialize(APPLICATION_ID, &handlers, 1);
 
     gameLoop();

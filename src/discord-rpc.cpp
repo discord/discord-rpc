@@ -26,7 +26,6 @@ static DiscordEventHandlers Handlers{};
 static std::atomic_bool WasJustConnected{false};
 static std::atomic_bool WasJustDisconnected{false};
 static std::atomic_bool GotErrorMessage{false};
-static std::atomic_bool WasPresenceRequested{false};
 static std::atomic_bool WasJoinGame{false};
 static std::atomic_bool WasSpectateGame{false};
 static char JoinGameSecret[256];
@@ -117,17 +116,13 @@ extern "C" void Discord_UpdateConnection()
                     continue;
                 }
 
-                // todo ug
-                if (strcmp(evtName, "PRESENCE_REQUESTED") == 0) {
-                    WasPresenceRequested.store(true);
-                }
-                else if (strcmp(evtName, "JOIN_GAME") == 0) {
+                if (strcmp(evtName, "GAME_JOIN") == 0) {
                     auto data = message.FindMember("data");
                     auto secret = data->value["secret"].GetString();
                     StringCopy(JoinGameSecret, secret);
                     WasJoinGame.store(true);
                 }
-                else if (strcmp(evtName, "SPECTATE_GAME") == 0) {
+                else if (strcmp(evtName, "GAME_SPECTATE") == 0) {
                     auto data = message.FindMember("data");
                     auto secret = data->value["secret"].GetString();
                     StringCopy(SpectateGameSecret, secret);
@@ -201,16 +196,12 @@ extern "C" void Discord_Initialize(const char* applicationId,
         WasJustConnected.exchange(true);
         ReconnectTimeMs.reset();
 
-        if (Handlers.presenceRequested) {
-            RegisterForEvent("PRESENCE_REQUESTED");
-        }
-
         if (Handlers.joinGame) {
-            RegisterForEvent("JOIN_GAME");
+            RegisterForEvent("GAME_JOIN");
         }
 
         if (Handlers.spectateGame) {
-            RegisterForEvent("SPECTATE_GAME");
+            RegisterForEvent("GAME_SPECTATE");
         }
     };
     Connection->onDisconnect = [](int err, const char* message) {
@@ -263,10 +254,6 @@ extern "C" void Discord_RunCallbacks()
 
     if (WasJustConnected.exchange(false) && Handlers.ready) {
         Handlers.ready();
-    }
-
-    if (WasPresenceRequested.exchange(false) && Handlers.presenceRequested) {
-        Handlers.presenceRequested();
     }
 
     if (WasJoinGame.exchange(false) && Handlers.joinGame) {
