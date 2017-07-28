@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <algorithm>
 #include <random>
+#include <time.h>
 
 struct Backoff {
     int64_t minAmount;
@@ -19,6 +20,7 @@ struct Backoff {
       , maxAmount(max)
       , current(min)
       , fails(0)
+      , randGenerator(time(0))
     {
     }
 
