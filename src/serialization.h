@@ -120,8 +120,23 @@ using UTF8 = rapidjson::UTF8<char>;
 // Writer appears to need about 16 bytes per nested object level (with 64bit size_t)
 using StackAllocator = FixedLinearAllocator<2048>;
 constexpr size_t WriterNestingLevels = 2048 / (2 * sizeof(size_t));
-using JsonWriter =
+using JsonWriterBase =
   rapidjson::Writer<DirectStringBuffer, UTF8, UTF8, StackAllocator, rapidjson::kWriteNoFlags>;
+class JsonWriter : public JsonWriterBase {
+public:
+    DirectStringBuffer stringBuffer_;
+    StackAllocator stackAlloc_;
+
+    JsonWriter(char* dest, size_t maxLen)
+      : JsonWriterBase(stringBuffer_, &stackAlloc_, WriterNestingLevels)
+      , stringBuffer_(dest, maxLen)
+      , stackAlloc_()
+    {
+    }
+
+    size_t Size() const { return stringBuffer_.GetSize(); }
+};
+
 using JsonDocumentBase = rapidjson::GenericDocument<UTF8, PoolAllocator, StackAllocator>;
 class JsonDocument : public JsonDocumentBase {
 public:
