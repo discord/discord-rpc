@@ -39,6 +39,7 @@ bool BaseConnection::Open()
         self->pipe = ::CreateFileW(
           pipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
         if (self->pipe != INVALID_HANDLE_VALUE) {
+            self->isOpen = true;
             return true;
         }
 
@@ -64,6 +65,7 @@ bool BaseConnection::Close()
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
     ::CloseHandle(self->pipe);
     self->pipe = INVALID_HANDLE_VALUE;
+    self->isOpen = false;
     return true;
 }
 
@@ -82,7 +84,13 @@ bool BaseConnection::Read(void* data, size_t length)
             if (::ReadFile(self->pipe, data, length, nullptr, nullptr) == TRUE) {
                 return true;
             }
+            else {
+                Close();
+            }
         }
+    }
+    else {
+        Close();
     }
     return false;
 }

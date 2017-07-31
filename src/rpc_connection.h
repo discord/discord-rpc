@@ -8,6 +8,12 @@
 constexpr size_t MaxRpcFrameSize = 64 * 1024;
 
 struct RpcConnection {
+    enum class ErrorCode : int {
+        Success = 0,
+        PipeClosed = 1,
+        ReadCorrupt = 2,
+    };
+
     enum class Opcode : uint32_t {
         Handshake = 0,
         Frame = 1,

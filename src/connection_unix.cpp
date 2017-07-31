@@ -1,5 +1,6 @@
 #include "connection.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,7 +19,12 @@ struct BaseConnectionUnix : public BaseConnection {
 };
 
 static BaseConnectionUnix Connection;
-sockaddr_un PipeAddr{};
+static sockaddr_un PipeAddr{};
+#ifdef MSG_NOSIGNAL
+static int MsgFlags = MSG_NOSIGNAL;
+#else
+static int MsgFlags = 0;
+#endif
 
 static const char* GetTempPath()
 {
@@ -52,11 +58,17 @@ bool BaseConnection::Open()
         return false;
     }
     fcntl(self->sock, F_SETFL, O_NONBLOCK);
+#ifdef SO_NOSIGPIPE
+    int optval = 1;
+    setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval));
+ #endif
+
     for (int pipeNum = 0; pipeNum < 10; ++pipeNum) {
         snprintf(
           PipeAddr.sun_path, sizeof(PipeAddr.sun_path), "%s/discord-ipc-%d", tempPath, pipeNum);
         int err = connect(self->sock, (const sockaddr*)&PipeAddr, sizeof(PipeAddr));
         if (err == 0) {
+            self->isOpen = true;
             return true;
         }
     }
@@ -72,6 +84,7 @@ bool BaseConnection::Close()
     }
     close(self->sock);
     self->sock = -1;
+    self->isOpen = false;
     return true;
 }
 
@@ -83,7 +96,10 @@ bool BaseConnection::Write(const void* data, size_t length)
         return false;
     }
 
-    ssize_t sentBytes = send(self->sock, data, length, 0);
+    ssize_t sentBytes = send(self->sock, data, length, MsgFlags);
+    if (sentBytes < 0) {
+        Close();
+    }
     return sentBytes == (ssize_t)length;
 }
 
@@ -95,6 +111,12 @@ bool BaseConnection::Read(void* data, size_t length)
         return false;
     }
 
-    int res = recv(self->sock, data, length, 0);
+    int res = recv(self->sock, data, length, MsgFlags);
+    if (res < 0) {
+        if (errno == EAGAIN) {
+            return false;
+        }
+        Close();
+    }
     return res == (int)length;
 }

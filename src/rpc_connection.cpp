@@ -97,13 +97,18 @@ bool RpcConnection::Read(JsonDocument& message)
     for (;;) {
         bool didRead = connection->Read(&readFrame, sizeof(MessageFrameHeader));
         if (!didRead) {
+            if (!connection->isOpen) {
+                lastErrorCode = (int)ErrorCode::PipeClosed;
+                StringCopy(lastErrorMessage, "Pipe closed");
+                Close();
+            }
             return false;
         }
 
         if (readFrame.length > 0) {
             didRead = connection->Read(readFrame.message, readFrame.length);
             if (!didRead) {
-                lastErrorCode = -2;
+                lastErrorCode = (int)ErrorCode::ReadCorrupt;
                 StringCopy(lastErrorMessage, "Partial data in frame");
                 Close();
                 return false;
@@ -132,7 +137,7 @@ bool RpcConnection::Read(JsonDocument& message)
             break;
         default:
             // something bad happened
-            lastErrorCode = -1;
+            lastErrorCode = (int)ErrorCode::ReadCorrupt;
             StringCopy(lastErrorMessage, "Bad ipc frame");
             Close();
             return false;
