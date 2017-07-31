@@ -1,25 +1,37 @@
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 option(ENABLE_IO_THREAD "Start up a separate I/O thread, otherwise I'd need to call an update function" ON)
+option(BUILD_DYNAMIC_LIB "Build library as a DLL" OFF)
 
 if (${ENABLE_IO_THREAD} EQUAL OFF)
     add_definitions(-DDISCORD_DISABLE_IO_THREAD)
 endif (${ENABLE_IO_THREAD} EQUAL OFF)
 
+if (${BUILD_DYNAMIC_LIB} EQUAL ON)
+    set(RPC_LIBRARY_TYPE DYNAMIC)
+else(${BUILD_DYNAMIC_LIB} EQUAL ON)
+    set(RPC_LIBRARY_TYPE STATIC)
+endif(${BUILD_DYNAMIC_LIB} EQUAL ON)
+
 set(BASE_RPC_SRC ${PROJECT_SOURCE_DIR}/include/discord-rpc.h discord-rpc.cpp discord-register.cpp rpc_connection.h rpc_connection.cpp serialization.h serialization.cpp connection.h backoff.h)
 
 if(WIN32)
-    add_library(discord-rpc STATIC ${BASE_RPC_SRC} connection_win.cpp)
+    add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC} connection_win.cpp)
     target_compile_options(discord-rpc PRIVATE /W4)
 endif(WIN32)
 
 if(UNIX)
-    add_library(discord-rpc STATIC ${BASE_RPC_SRC} connection_unix.cpp)
+    add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC} connection_unix.cpp)
     target_link_libraries(discord-rpc PUBLIC pthread)
     target_compile_options(discord-rpc PRIVATE -g -Wall)
 endif(UNIX)
 
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)
+
+if (${BUILD_DYNAMIC_LIB} EQUAL ON)
+    target_compile_definitions(discord-rpc PUBLIC -DDISCORD_DYNAMIC_LIB)
+    target_compile_definitions(discord-rpc PRIVATE -DDISCORD_BUILDING_SDK)
+endif(${BUILD_DYNAMIC_LIB} EQUAL ON)
 
 add_dependencies(discord-rpc clangformat)
 
