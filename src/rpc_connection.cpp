@@ -36,16 +36,9 @@ void RpcConnection::Open()
     if (state == State::SentHandshake) {
         JsonDocument message;
         if (Read(message)) {
-            auto cmd = message.FindMember("cmd");
-            if (cmd == message.MemberEnd() || !cmd->value.IsString()) {
-                return;
-            }
-            auto evt = message.FindMember("evt");
-            if (evt == message.MemberEnd() || !evt->value.IsString()) {
-                return;
-            }
-            if (!strcmp(cmd->value.GetString(), "DISPATCH") &&
-                !strcmp(evt->value.GetString(), "READY")) {
+            auto cmd = GetStrMember(&message, "cmd");
+            auto evt = GetStrMember(&message, "evt");
+            if (cmd && evt && !strcmp(cmd, "DISPATCH") && !strcmp(evt, "READY")) {
                 state = State::Connected;
                 if (onConnect) {
                     onConnect();
