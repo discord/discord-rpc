@@ -41,7 +41,7 @@ struct WriteArray {
 template <typename T>
 void WriteOptionalString(JsonWriter& w, T& k, const char* value)
 {
-    if (value) {
+    if (value && value[0]) {
         w.Key(k, sizeof(T) - 1);
         w.String(value);
     }
@@ -97,8 +97,10 @@ size_t JsonWriteRichPresenceObj(char* dest,
                     }
                 }
 
-                if (presence->largeImageKey || presence->largeImageText ||
-                    presence->smallImageKey || presence->smallImageText) {
+                if ((presence->largeImageKey && presence->largeImageKey[0]) ||
+                    (presence->largeImageText && presence->largeImageText[0]) ||
+                    (presence->smallImageKey && presence->smallImageKey[0]) ||
+                    (presence->smallImageText && presence->smallImageText[0])) {
                     WriteObject assets(writer, "assets");
                     WriteOptionalString(writer, "large_image", presence->largeImageKey);
                     WriteOptionalString(writer, "large_text", presence->largeImageText);
@@ -106,7 +108,8 @@ size_t JsonWriteRichPresenceObj(char* dest,
                     WriteOptionalString(writer, "small_text", presence->smallImageText);
                 }
 
-                if (presence->partyId || presence->partySize || presence->partyMax) {
+                if ((presence->partyId && presence->partyId[0]) || presence->partySize ||
+                    presence->partyMax) {
                     WriteObject party(writer, "party");
                     WriteOptionalString(writer, "id", presence->partyId);
                     if (presence->partySize) {
@@ -118,7 +121,9 @@ size_t JsonWriteRichPresenceObj(char* dest,
                     }
                 }
 
-                if (presence->matchSecret || presence->joinSecret || presence->spectateSecret) {
+                if ((presence->matchSecret && presence->matchSecret[0]) ||
+                    (presence->joinSecret && presence->joinSecret[0]) ||
+                    (presence->spectateSecret && presence->joinSecret[0])) {
                     WriteObject secrets(writer, "secrets");
                     WriteOptionalString(writer, "match", presence->matchSecret);
                     WriteOptionalString(writer, "join", presence->joinSecret);
