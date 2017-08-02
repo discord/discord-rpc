@@ -274,16 +274,26 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
 
 extern "C" void Discord_RunCallbacks()
 {
-    if (GotErrorMessage.exchange(false) && Handlers.errored) {
-        Handlers.errored(LastErrorCode, LastErrorMessage);
-    }
+    // Note on some weirdness: internally we might connect, get other signals, disconnect any number
+    // of times inbetween calls here. Externally, we want the sequence to seem sane, so any other
+    // signals are book-ended by calls to ready and disconnect.
 
-    if (WasJustDisconnected.exchange(false) && Handlers.disconnected) {
-        Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
+    bool wasDisconnected = WasJustDisconnected.exchange(false);
+    bool isConnected = Connection->IsOpen();
+
+    if (isConnected) {
+        // if we are connected, disconnect cb first
+        if (wasDisconnected && Handlers.disconnected) {
+            Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
+        }
     }
 
     if (WasJustConnected.exchange(false) && Handlers.ready) {
         Handlers.ready();
+    }
+
+    if (GotErrorMessage.exchange(false) && Handlers.errored) {
+        Handlers.errored(LastErrorCode, LastErrorMessage);
     }
 
     if (WasJoinGame.exchange(false) && Handlers.joinGame) {
@@ -292,5 +302,12 @@ extern "C" void Discord_RunCallbacks()
 
     if (WasSpectateGame.exchange(false) && Handlers.spectateGame) {
         Handlers.spectateGame(SpectateGameSecret);
+    }
+
+    if (!isConnected) {
+        // if we are not connected, disconnect message last
+        if (wasDisconnected && Handlers.disconnected) {
+            Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
+        }
     }
 }
