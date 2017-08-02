@@ -61,7 +61,7 @@ bool BaseConnection::Open()
 #ifdef SO_NOSIGPIPE
     int optval = 1;
     setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval));
- #endif
+#endif
 
     for (int pipeNum = 0; pipeNum < 10; ++pipeNum) {
         snprintf(
