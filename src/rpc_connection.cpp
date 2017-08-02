@@ -48,8 +48,8 @@ void RpcConnection::Open()
     }
     else {
         sendFrame.opcode = Opcode::Handshake;
-        sendFrame.length =
-          JsonWriteHandshakeObj(sendFrame.message, sizeof(sendFrame.message), RpcVersion, appId);
+        sendFrame.length = (uint32_t)JsonWriteHandshakeObj(
+          sendFrame.message, sizeof(sendFrame.message), RpcVersion, appId);
 
         if (connection->Write(&sendFrame, sizeof(MessageFrameHeader) + sendFrame.length)) {
             state = State::SentHandshake;
@@ -73,7 +73,7 @@ bool RpcConnection::Write(const void* data, size_t length)
 {
     sendFrame.opcode = Opcode::Frame;
     memcpy(sendFrame.message, data, length);
-    sendFrame.length = length;
+    sendFrame.length = (uint32_t)length;
     if (!connection->Write(&sendFrame, sizeof(MessageFrameHeader) + length)) {
         Close();
         return false;

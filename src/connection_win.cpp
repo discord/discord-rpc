@@ -72,7 +72,7 @@ bool BaseConnection::Close()
 bool BaseConnection::Write(const void* data, size_t length)
 {
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
-    return ::WriteFile(self->pipe, data, length, nullptr, nullptr) == TRUE;
+    return ::WriteFile(self->pipe, data, (DWORD)length, nullptr, nullptr) == TRUE;
 }
 
 bool BaseConnection::Read(void* data, size_t length)
@@ -81,7 +81,7 @@ bool BaseConnection::Read(void* data, size_t length)
     DWORD bytesAvailable = 0;
     if (::PeekNamedPipe(self->pipe, nullptr, 0, nullptr, &bytesAvailable, nullptr)) {
         if (bytesAvailable >= length) {
-            if (::ReadFile(self->pipe, data, length, nullptr, nullptr) == TRUE) {
+            if (::ReadFile(self->pipe, data, (DWORD)length, nullptr, nullptr) == TRUE) {
                 return true;
             }
             else {
