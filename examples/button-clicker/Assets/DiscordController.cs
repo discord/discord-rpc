@@ -7,6 +7,8 @@ public class DiscordController : MonoBehaviour {
     public string applicationId;
     public int callbackCalls;
     public int clickCounter;
+    public UnityEngine.Events.UnityEvent onConnect;
+    public UnityEngine.Events.UnityEvent onDisconnect;
 
     DiscordRpc.EventHandlers handlers;
 
@@ -24,12 +26,14 @@ public class DiscordController : MonoBehaviour {
     {
         ++callbackCalls;
         Debug.Log("Discord: ready");
+        onConnect.Invoke();
     }
 
     public void DisconnectedCallback(int errorCode, string message)
     {
         ++callbackCalls;
         Debug.Log(string.Format("Discord: disconnect {0}: {1}", errorCode, message));
+        onDisconnect.Invoke();
     }
 
     public void ErrorCallback(int errorCode, string message)
