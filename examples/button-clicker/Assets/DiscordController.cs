@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class DiscordController : MonoBehaviour {
-    public DiscordRpc.EventHandlers handlers;
     public DiscordRpc.RichPresence presence;
     public string applicationId;
     public int callbackCalls;
     public int clickCounter;
+
+    DiscordRpc.EventHandlers handlers;
 
     public void OnClick()
     {
@@ -50,23 +51,23 @@ public class DiscordController : MonoBehaviour {
     }
 
     void Start () {
-        handlers = new DiscordRpc.EventHandlers();
-        handlers.readyCallback = ReadyCallback;
-        handlers.disconnectedCallback = DisconnectedCallback;
-        handlers.errorCallback = ErrorCallback;
-        handlers.joinCallback = JoinCallback;
-        handlers.spectateCallback = SpectateCallback;
     }
 	
 	void Update () {
-
+        DiscordRpc.RunCallbacks();
     }
-
+    
     void OnEnable()
     {
-        var p = System.Diagnostics.Process.GetCurrentProcess();
-        Debug.Log(string.Format("Discord: init {0}", p.Id));
+        Debug.Log("Discord: init");
         callbackCalls = 0;
+
+        handlers = new DiscordRpc.EventHandlers();
+        handlers.readyCallback = ReadyCallback;
+        handlers.disconnectedCallback += DisconnectedCallback;
+        handlers.errorCallback += ErrorCallback;
+        handlers.joinCallback += JoinCallback;
+        handlers.spectateCallback += SpectateCallback;
         DiscordRpc.Initialize(applicationId, ref handlers, true);
     }
 

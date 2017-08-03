@@ -17,7 +17,6 @@ public class DiscordRpc
     [UnmanagedFunctionPointerAttribute(CallingConvention.Cdecl)]
     public delegate void SpectateCallback(string secret);
 
-    [System.Serializable]
     public struct EventHandlers
     {
         public ReadyCallback readyCallback;

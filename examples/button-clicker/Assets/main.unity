@@ -588,9 +588,9 @@ MonoBehaviour:
     partyId: abcdefg
     partySize: 1
     partyMax: 10
-    matchSecret: asdfasdfsafd
-    joinSecret: klkdkfbnbldknfvb
-    spectateSecret: nwertinvnvldfkvnk
+    matchSecret: 
+    joinSecret: 
+    spectateSecret: 
     instance: 0
   applicationId: 338030514596216832
   callbackCalls: 0
