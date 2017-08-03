@@ -1,6 +1,6 @@
 # Discord RPC
 
-This is a lib and a quick demo that implements the very minimal subset to show current status, and
+This is a lib and quick demos that implement the very minimal subset to show current status, and
 have callbacks for where a more complete game would do more things. You can use the lib directly
 if you like, or use it as a guide to writing your own if it doesn't suit your game as is.
 
@@ -42,3 +42,8 @@ Sometimes I use the generated project files. There are a couple of CMake options
 
 This is a text adventure "game" that inits/deinits the connection to Discord, and sends a presence
 update on each command.
+
+## Sample: button-clicker
+
+This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version of the library, and
+sends presence updates when you click on a button.
