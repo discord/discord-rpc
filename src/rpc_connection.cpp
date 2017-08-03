@@ -17,6 +17,7 @@ static RpcConnection Instance;
 {
     c->Close();
     BaseConnection::Destroy(c->connection);
+    c = nullptr;
 }
 
 void RpcConnection::Open()

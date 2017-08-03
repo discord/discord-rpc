@@ -75,6 +75,18 @@ static int prompt(char* line, size_t size)
     return res;
 }
 
+static void discordInit()
+{
+    DiscordEventHandlers handlers;
+    memset(&handlers, 0, sizeof(handlers));
+    handlers.ready = handleDiscordReady;
+    handlers.disconnected = handleDiscordDisconnected;
+    handlers.errored = handleDiscordError;
+    handlers.joinGame = handleDiscordJoin;
+    handlers.spectateGame = handleDiscordSpectate;
+    Discord_Initialize(APPLICATION_ID, &handlers, 1);
+}
+
 static void gameLoop()
 {
     char line[512];
@@ -88,6 +100,19 @@ static void gameLoop()
             if (line[0] == 'q') {
                 break;
             }
+
+            if (line[0] == 't') {
+                printf("Shutting off Discord.\n");
+                Discord_Shutdown();
+                continue;
+            }
+
+            if (line[0] == 'y') {
+                printf("Reinit Discord.\n");
+                discordInit();
+                continue;
+            }
+
             if (time(NULL) & 1) {
                 printf("I don't understand that.\n");
             }
@@ -113,15 +138,7 @@ static void gameLoop()
 
 int main(int argc, char* argv[])
 {
-    DiscordEventHandlers handlers;
-    memset(&handlers, 0, sizeof(handlers));
-    handlers.ready = handleDiscordReady;
-    handlers.disconnected = handleDiscordDisconnected;
-    handlers.errored = handleDiscordError;
-    handlers.joinGame = handleDiscordJoin;
-    handlers.spectateGame = handleDiscordSpectate;
-
-    Discord_Initialize(APPLICATION_ID, &handlers, 1);
+    discordInit();
 
     gameLoop();
 

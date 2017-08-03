@@ -223,6 +223,10 @@ extern "C" void Discord_Initialize(const char* applicationId,
         Handlers = {};
     }
 
+    if (Connection) {
+        return;
+    }
+
     Connection = RpcConnection::Create(applicationId);
     Connection->onConnect = []() {
         WasJustConnected.exchange(true);
@@ -244,12 +248,16 @@ extern "C" void Discord_Initialize(const char* applicationId,
     };
 
 #ifndef DISCORD_DISABLE_IO_THREAD
+    KeepRunning.store(true);
     IoThread = std::thread(DiscordRpcIo);
 #endif
 }
 
 extern "C" void Discord_Shutdown()
 {
+    if (!Connection) {
+        return;
+    }
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
     Handlers = {};
