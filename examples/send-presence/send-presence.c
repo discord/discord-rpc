@@ -66,7 +66,7 @@ static int prompt(char* line, size_t size)
     char* nl;
     printf("\n> ");
     fflush(stdout);
-    res = fgets(line, size, stdin) ? 1 : 0;
+    res = fgets(line, (int)size, stdin) ? 1 : 0;
     line[size - 1] = 0;
     nl = strchr(line, '\n');
     if (nl) {
