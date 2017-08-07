@@ -102,13 +102,13 @@ typedef struct DiscordRichPresence {
 
 `details` is a catch-all field that you can customize as you please. It's the first line of data displayed under the name of your game, and should display the most prominent data. For example, "Competitive | Match Type (Score)".
 
-`startTimestamp` is the Unix timestamp at which the player entered their most recent instanced state, for example, a new game. Providing `startTimestamp` will cause the display time in the presence popout to count up from `00:00`.
+`startTimestamp` is the Unix timestamp (in seconds) at which the player entered their most recent instanced state, for example, a new game. Providing `startTimestamp` will cause the display time in the presence popout to count up from `00:00`.
 
-`endTimestamp` is also a Unix timestamp, but denotes at what time the player's current instanced state will end. Send this if you want us to do the math and display the timer as counting down to `00:00` from your timestamp.
+`endTimestamp` is also a Unix timestamp (in seconds), but denotes at what time the player's current instanced state will end. Send this if you want us to do the math and display the timer as counting down to `00:00` from your timestamp.
 
 `largeImageKey` and `smallImageKey` are the key values for the artwork you have uploaded to your Developer Dashboard (more on that later!). `largeImageText` and `smallImageText` are the mouseover tooltips on the corresponding artwork.
 
-`partyId` is the public id for the player's current party. Discord uses this to power dynamic party status in the chat embeds.
+`partyId` is the public id for the player's current party. Discord uses this to power party status and render dynamic party slots in the chat embeds. It is also required for join invites, but should not be sent for spectate invites.
 
 `partySize` is the current size of the player's party. Sending `0` is the same as omitting it.
 
@@ -199,7 +199,7 @@ All fields in the `DiscordRichPresence` object are entirely optional. Anything y
 | smallImageKey |&#10003; | | |
 | largeImageText | &#10003;| | |
 | smallImageText |&#10003; | | |
-| partyId | |||&#10003;|&#10003;
+| partyId | ||||&#10003;
 | partySize | | || &#10003;
 | partyMax | | | |&#10003;
 | matchSecret |  | &#10003; |  |
