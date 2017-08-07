@@ -215,7 +215,7 @@ Included with the launch of Rich Presence is an overhaul of Discord's Developer 
 
 OK, well, not entirely. But! Discord _will_ host any and all artwork that you need to have the very richest of presences. Upload an image, tag it with a key—preferrably one you can remember—and **bam**. It's ready for Rich Presence use.
 
-![Rich Presence Dev Dashboard](images/rp-dev-deshboard.png)
+![Rich Presence Dev Dashboard](images/rp-dev-dashboard.png)
 
 ## It's always better when we're together
 
