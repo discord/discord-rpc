@@ -1,10 +1,10 @@
-# Rich Presence RPC-Only Implementation
+# Hard Mode: Roll Your Own Client
 
 Discord's Rich Presence feature is designed as an obfuscated addition to our existing [RPC infrastructure](https://discordapp.com/developers/docs/topics/rpc). The standalone library and header files make it easy for any dev to drop it into their game.
 
 Our library communicates with Discord over the local Discord RPC socket. We've already done the work in connecting properly, handling disconnects and reconnects, and other RPC intracacies, but those who have done this implementation for our private alpha Voice and Chat SDK can simply make use of the new RPC commands and events to implement Rich Presence.
 
-## General Notes
+## Hark! A warning!
 
 By committing to an RPC-only integration, you decide to forego the work our library and header file have done for you in the way of error handling, state storage, disconnecting and reconnecting, and other quality of life abstractions. While simply implementing the new RPC command and events will enable Rich Presence for your game, we highly suggest that you do your best to mimic the functionality of the SDK the most that you can. It ensure not only code quality on your part, but also an excellent experience on the part of your players.
 
@@ -76,5 +76,23 @@ And second is the `GAME_SPECTATE` event:
     "secret": "e7eb30d2ee025ed05c71ea495f770b76454ee4e0"
   },
   "evnt": "GAME_SPECTATE"
+}
+```
+
+In order to receive these events, you need to [subscribe](https://discordapp.com/developers/docs/topics/rpc#subscribe) to them like so:
+
+```json
+{
+    "nonce": "be9a6de3-31d0-4767-a8e9-4818c5690015",
+    "evt": "GAME_JOIN",
+    "cmd": "SUBSCRIBE"
+}
+```
+
+```json
+{
+    "nonce": "ae9qdde3-31d0-8989-a8e9-dnakwy174he",
+    "evt": "GAME_SPECTATE",
+    "cmd": "SUBSCRIBE"
 }
 ```
