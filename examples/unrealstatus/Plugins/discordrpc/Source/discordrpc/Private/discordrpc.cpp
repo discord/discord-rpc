@@ -5,8 +5,6 @@
 #include "ModuleManager.h"
 #include "IPluginManager.h"
 
-#include "discord-rpc.h"
-
 #define LOCTEXT_NAMESPACE "FdiscordrpcModule"
 
 void FdiscordrpcModule::StartupModule()

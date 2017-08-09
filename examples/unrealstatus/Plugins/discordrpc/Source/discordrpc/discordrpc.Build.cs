@@ -35,7 +35,11 @@ public class discordrpc : ModuleRules
         PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+                "CoreUObject",
+                "Engine",
+                "Slate",
+                "SlateCore",
+                "Core",
 				"discordrpcLibrary",
 				"Projects"
 				// ... add other public dependencies that you statically link with here ...
