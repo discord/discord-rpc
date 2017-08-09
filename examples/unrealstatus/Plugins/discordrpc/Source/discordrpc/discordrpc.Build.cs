@@ -6,8 +6,9 @@ public class discordrpc : ModuleRules
 {
 	public discordrpc(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+        Definitions.Add("DISCORD_DYNAMIC_LIB=1");
+        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 				"discordrpc/Public"
@@ -26,7 +27,7 @@ public class discordrpc : ModuleRules
 
         PublicLibraryPaths.AddRange(
             new string[] {
-                "Binaries/ThirdParty/discordrpcLibrary/Win64",
+                System.IO.Path.Combine(ModuleDirectory, "../../Binaries/ThirdParty/discordrpcLibrary/", Target.Platform.ToString()),
 			}
             );
 

@@ -5,8 +5,6 @@
 #include "ModuleManager.h"
 #include "IPluginManager.h"
 
-#define DISCORD_DYNAMIC_LIB
-//#include "../../../../../../../include/discord-rpc.h"
 #include "discord-rpc.h"
 
 #define LOCTEXT_NAMESPACE "FdiscordrpcModule"
@@ -26,15 +24,11 @@ void FdiscordrpcModule::StartupModule()
     LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/discordrpcLibrary/Mac/Release/libdiscord-rpc.dylib"));
 #endif // PLATFORM_WINDOWS
 
-	ExampleLibraryHandle = !LibraryPath.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
+	DiscordLibraryHandle = !LibraryPath.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
 
-	if (ExampleLibraryHandle)
+	if (!DiscordLibraryHandle)
 	{
-        Discord_Initialize("344609418631053312", nullptr, false);
-	}
-	else
-	{
-		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("ThirdPartyLibraryError", "Failed to load example third party library"));
+		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("ThirdPartyLibraryError", "Failed to load discord-rpc library"));
 	}
 }
 
@@ -44,8 +38,8 @@ void FdiscordrpcModule::ShutdownModule()
 	// we call this function before unloading the module.
 
 	// Free the dll handle
-	FPlatformProcess::FreeDllHandle(ExampleLibraryHandle);
-	ExampleLibraryHandle = nullptr;
+	FPlatformProcess::FreeDllHandle(DiscordLibraryHandle);
+	DiscordLibraryHandle = nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE
