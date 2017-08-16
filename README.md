@@ -7,6 +7,10 @@ if you like, or use it as a guide to writing your own if it doesn't suit your ga
 PRs/feedback welcome if you have an improvement everyone might want, or can describe how this
 doesn't meet your needs.
 
+## Documentation
+
+The most up to date documentation for Rich Presence can always be found in our [developer site](https://discordapp.com/developers/docs/topics/rich-presence)!
+
 ## Usage
 
 Zeroith, you should be set up to build things because you are a game developer, right?
