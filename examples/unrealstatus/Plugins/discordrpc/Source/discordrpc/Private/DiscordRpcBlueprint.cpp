@@ -11,13 +11,16 @@ static void ReadyHandler() {
     UE_LOG(Discord, Log, TEXT("Discord connected"));
     if (self) {
         self->IsConnected = true;
+        self->OnConnected.Broadcast();
     }
 }
 
 static void DisconnectHandler(int errorCode, const char* message) {
-    UE_LOG(Discord, Log, TEXT("Discord disconnected (%d): %s"), errorCode, message);
+    auto msg = FString(message);
+    UE_LOG(Discord, Log, TEXT("Discord disconnected (%d): %s"), errorCode, *msg);
     if (self) {
         self->IsConnected = false;
+        self->OnDisconnected.Broadcast(errorCode, msg);
     }
 };
 
