@@ -11,7 +11,7 @@
 
 #include "discord-rpc.h"
 
-static const char* APPLICATION_ID = "338030514596216832";
+static const char* APPLICATION_ID = "345229890980937739";
 static int FrustrationLevel = 0;
 static int64_t StartTime;
 
@@ -25,6 +25,8 @@ static void updateDiscordPresence()
     discordPresence.details = buffer;
     discordPresence.startTimestamp = StartTime;
     discordPresence.endTimestamp = time(0) + 5 * 60;
+    discordPresence.largeImageKey = "canary-large";
+    discordPresence.smallImageKey = "ptb-small";
     discordPresence.partyId = "party1234";
     discordPresence.partySize = 1;
     discordPresence.partyMax = 6;

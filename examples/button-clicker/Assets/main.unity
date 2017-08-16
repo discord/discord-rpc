@@ -656,9 +656,9 @@ MonoBehaviour:
     details: 
     startTimestamp: 0
     endTimestamp: 0
-    largeImageKey: 
+    largeImageKey: stable-large
     largeImageText: 
-    smallImageKey: 
+    smallImageKey: canary-small
     smallImageText: 
     partyId: abcdefg
     partySize: 1
@@ -667,7 +667,7 @@ MonoBehaviour:
     joinSecret: 
     spectateSecret: 
     instance: 0
-  applicationId: 338030514596216832
+  applicationId: 345229890980937739
   callbackCalls: 0
   clickCounter: 0
   onConnect:
