@@ -15,6 +15,46 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordJoin, const FString&, joinSe
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordSpectate, const FString&, spectateSecret);
 
 /**
+ * Rich presence data
+ */
+USTRUCT(BlueprintType)
+struct FDiscordRichPresence {
+    GENERATED_USTRUCT_BODY()
+
+    UPROPERTY(BlueprintReadWrite)
+    FString state;
+    UPROPERTY(BlueprintReadWrite)
+    FString details;
+    // todo, timestamps are 64bit, does that even matter?
+    UPROPERTY(BlueprintReadWrite)
+    int startTimestamp;
+    UPROPERTY(BlueprintReadWrite)
+    int endTimestamp;
+    UPROPERTY(BlueprintReadWrite)
+    FString largeImageKey;
+    UPROPERTY(BlueprintReadWrite)
+    FString largeImageText;
+    UPROPERTY(BlueprintReadWrite)
+    FString smallImageKey;
+    UPROPERTY(BlueprintReadWrite)
+    FString smallImageText;
+    UPROPERTY(BlueprintReadWrite)
+    FString partyId;
+    UPROPERTY(BlueprintReadWrite)
+    int partySize;
+    UPROPERTY(BlueprintReadWrite)
+    int partyMax;
+    UPROPERTY(BlueprintReadWrite)
+    FString matchSecret;
+    UPROPERTY(BlueprintReadWrite)
+    FString joinSecret;
+    UPROPERTY(BlueprintReadWrite)
+    FString spectateSecret;
+    UPROPERTY(BlueprintReadWrite)
+    bool instance;
+};
+
+/**
  * 
  */
 UCLASS(BlueprintType, meta = (DisplayName = "Discord RPC"), Category = "Discord")
@@ -32,6 +72,9 @@ public:
 
     UFUNCTION(BlueprintCallable, meta = (DisplayName = "Check for callbacks", Keywords = "Discord rpc"), Category = "Discord")
     void RunCallbacks();
+
+    UFUNCTION(BlueprintCallable, meta = (DisplayName = "Send presence", Keywords = "Discord rpc"), Category = "Discord")
+    void UpdatePresence();
 
     UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Is Discord connected", Keywords = "Discord rpc"), Category = "Discord")
     bool IsConnected;
@@ -51,4 +94,6 @@ public:
     UPROPERTY(BlueprintAssignable, meta = (DisplayName = "When Discord user presses spectate", Keywords = "Discord rpc"), Category = "Discord")
     FDiscordSpectate OnSpectate;
 
+    UPROPERTY(BlueprintReadWrite, meta = (DisplayName = "Rich presence info", Keywords = "Discord rpc"), Category = "Discord")
+    FDiscordRichPresence RichPresence;
 };

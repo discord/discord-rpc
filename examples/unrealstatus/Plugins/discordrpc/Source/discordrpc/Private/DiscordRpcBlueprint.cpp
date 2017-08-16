@@ -81,3 +81,46 @@ void UDiscordRpc::RunCallbacks()
 {
     Discord_RunCallbacks();
 }
+
+void UDiscordRpc::UpdatePresence()
+{
+    DiscordRichPresence rp{};
+
+    auto state = StringCast<ANSICHAR>(*RichPresence.state);
+    rp.state = state.Get();
+
+    auto details = StringCast<ANSICHAR>(*RichPresence.details);
+    rp.details = details.Get();
+
+    auto largeImageKey = StringCast<ANSICHAR>(*RichPresence.largeImageKey);
+    rp.largeImageKey = largeImageKey.Get();
+
+    auto largeImageText = StringCast<ANSICHAR>(*RichPresence.largeImageText);
+    rp.largeImageText = largeImageText.Get();
+
+    auto smallImageKey = StringCast<ANSICHAR>(*RichPresence.smallImageKey);
+    rp.smallImageKey = smallImageKey.Get();
+
+    auto smallImageText = StringCast<ANSICHAR>(*RichPresence.smallImageText);
+    rp.smallImageText = smallImageText.Get();
+
+    auto partyId = StringCast<ANSICHAR>(*RichPresence.partyId);
+    rp.partyId = partyId.Get();
+
+    auto matchSecret = StringCast<ANSICHAR>(*RichPresence.matchSecret);
+    rp.matchSecret = matchSecret.Get();
+
+    auto joinSecret = StringCast<ANSICHAR>(*RichPresence.joinSecret);
+    rp.joinSecret = joinSecret.Get();
+
+    auto spectateSecret = StringCast<ANSICHAR>(*RichPresence.spectateSecret);
+    rp.spectateSecret = spectateSecret.Get();
+
+    rp.startTimestamp = RichPresence.startTimestamp;
+    rp.endTimestamp = RichPresence.endTimestamp;
+    rp.partySize = RichPresence.partySize;
+    rp.partyMax = RichPresence.partyMax;
+    rp.instance = RichPresence.instance;
+
+    Discord_UpdatePresence(&rp);
+}
