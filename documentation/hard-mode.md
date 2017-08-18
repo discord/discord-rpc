@@ -20,10 +20,11 @@ The one major difference is the `party.size` field. It is an array with a size o
 
 Below is a full example of a `SET_ACTIVITY` command. Field restrictions like size are the same as outlined in the main documentation.
 
-```json
+```
 {
   "cmd": "SET_ACTIVITY",
-  "data": {
+  "args": {
+    "pid": 9999,  // Your application's process id - required field
     "activity": {
       "state": "In a Group",
       "details": "Competitive | In a Match",
