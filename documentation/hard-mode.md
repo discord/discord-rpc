@@ -24,7 +24,7 @@ Below is a full example of a `SET_ACTIVITY` command. Field restrictions like siz
 {
   "cmd": "SET_ACTIVITY",
   "data": {
-    "presence": {
+    "activity": {
       "state": "In a Group",
       "details": "Competitive | In a Match",
       "timestamps": {
