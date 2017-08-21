@@ -34,7 +34,7 @@ endif(WIN32)
 if(UNIX)
     add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC} connection_unix.cpp)
     target_link_libraries(discord-rpc PUBLIC pthread)
-    target_compile_options(discord-rpc PRIVATE -g -Wall)
+    target_compile_options(discord-rpc PRIVATE -g -Wall -std=c++14)
 endif(UNIX)
 
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)

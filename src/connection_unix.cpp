@@ -60,7 +60,7 @@ bool BaseConnection::Open()
     fcntl(self->sock, F_SETFL, O_NONBLOCK);
 #ifdef SO_NOSIGPIPE
     int optval = 1;
-    setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval));
+    setsockopt(self->sock, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval));
 #endif
 
     for (int pipeNum = 0; pipeNum < 10; ++pipeNum) {
