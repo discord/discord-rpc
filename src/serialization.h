@@ -5,7 +5,6 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-#include "rapidjson/internal/itoa.h"
 
 // if only there was a standard library function for this
 template <size_t Len>
@@ -35,8 +34,7 @@ size_t JsonWriteRichPresenceObj(char* dest,
 size_t JsonWriteSubscribeCommand(char* dest, size_t maxLen, int nonce, const char* evtName);
 
 // I want to use as few allocations as I can get away with, and to do that with RapidJson, you need
-// to supply some of
-// your own allocators for stuff rather than use the defaults
+// to supply some of your own allocators for stuff rather than use the defaults
 
 class LinearAllocator {
 public:
