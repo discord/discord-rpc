@@ -123,7 +123,7 @@ size_t JsonWriteRichPresenceObj(char* dest,
 
                 if ((presence->matchSecret && presence->matchSecret[0]) ||
                     (presence->joinSecret && presence->joinSecret[0]) ||
-                    (presence->spectateSecret && presence->joinSecret[0])) {
+                    (presence->spectateSecret && presence->spectateSecret[0])) {
                     WriteObject secrets(writer, "secrets");
                     WriteOptionalString(writer, "match", presence->matchSecret);
                     WriteOptionalString(writer, "join", presence->joinSecret);
