@@ -7,14 +7,9 @@
 #include "unrealstatusGameModeBase.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
-class UNREALSTATUS_API AunrealstatusGameModeBase : public AGameModeBase
-{
-	GENERATED_BODY()
-	
-	
-	
-	
+class UNREALSTATUS_API AunrealstatusGameModeBase : public AGameModeBase {
+    GENERATED_BODY()
 };
