@@ -668,6 +668,7 @@ MonoBehaviour:
     spectateSecret: 
     instance: 0
   applicationId: 345229890980937739
+  optionalSteamId: 
   callbackCalls: 0
   clickCounter: 0
   onConnect:

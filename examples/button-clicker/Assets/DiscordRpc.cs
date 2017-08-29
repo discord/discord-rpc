@@ -47,7 +47,7 @@ public class DiscordRpc
     }
 
     [DllImport("discord-rpc", EntryPoint = "Discord_Initialize")]
-    public static extern void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister);
+    public static extern void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId);
 
     [DllImport("discord-rpc", EntryPoint = "Discord_Shutdown")]
     public static extern void Shutdown();
