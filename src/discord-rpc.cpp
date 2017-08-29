@@ -208,10 +208,16 @@ bool RegisterForEvent(const char* evtName)
 
 extern "C" void Discord_Initialize(const char* applicationId,
                                    DiscordEventHandlers* handlers,
-                                   int autoRegister)
+                                   int autoRegister,
+                                   const char* optionalSteamId)
 {
     if (autoRegister) {
-        Discord_Register(applicationId);
+        if (optionalSteamId && optionalSteamId[0]) {
+            Discord_RegisterSteamGame(applicationId, optionalSteamId);
+        }
+        else {
+            Discord_Register(applicationId, nullptr);
+        }
     }
 
     Pid = GetProcessId();
