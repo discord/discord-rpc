@@ -10,6 +10,7 @@ endif (NOT ${ENABLE_IO_THREAD})
 set(BASE_RPC_SRC
     ${PROJECT_SOURCE_DIR}/include/discord-rpc.h
     discord-rpc.cpp
+    discord-register.h
     discord-register.cpp
     rpc_connection.h
     rpc_connection.cpp

@@ -5,6 +5,7 @@ using UnityEngine;
 public class DiscordController : MonoBehaviour {
     public DiscordRpc.RichPresence presence;
     public string applicationId;
+    public string optionalSteamId;
     public int callbackCalls;
     public int clickCounter;
     public UnityEngine.Events.UnityEvent onConnect;
@@ -72,7 +73,7 @@ public class DiscordController : MonoBehaviour {
         handlers.errorCallback += ErrorCallback;
         handlers.joinCallback += JoinCallback;
         handlers.spectateCallback += SpectateCallback;
-        DiscordRpc.Initialize(applicationId, ref handlers, true);
+        DiscordRpc.Initialize(applicationId, ref handlers, true, optionalSteamId);
     }
 
     void OnDisable()

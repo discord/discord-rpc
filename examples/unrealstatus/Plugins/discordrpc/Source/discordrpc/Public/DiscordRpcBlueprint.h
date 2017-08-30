@@ -6,21 +6,18 @@
 #include "CoreMinimal.h"
 #include "DiscordRpcBlueprint.generated.h"
 
+// unreal's header tool hates clang-format
+// clang-format off
+
 DECLARE_LOG_CATEGORY_EXTERN(Discord, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDiscordConnected);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordDisconnected,
-                                             int,
-                                             errorCode,
-                                             const FString&,
-                                             errorMessage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordErrored,
-                                             int,
-                                             errorCode,
-                                             const FString&,
-                                             errorMessage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordDisconnected, int, errorCode, const FString&, errorMessage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordErrored, int, errorCode, const FString&, errorMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordJoin, const FString&, joinSecret);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordSpectate, const FString&, spectateSecret);
+
+// clang-format on
 
 /**
  * Rich presence data
@@ -73,7 +70,7 @@ public:
     UFUNCTION(BlueprintCallable,
               meta = (DisplayName = "Initialize connection", Keywords = "Discord rpc"),
               Category = "Discord")
-    void Initialize(const FString& applicationId, bool autoRegister);
+    void Initialize(const FString& applicationId, bool autoRegister, const FString& optionalSteamId);
 
     UFUNCTION(BlueprintCallable,
               meta = (DisplayName = "Shut down connection", Keywords = "Discord rpc"),
