@@ -53,7 +53,9 @@ static void SpectateGameHandler(const char* spectateSecret)
     }
 }
 
-void UDiscordRpc::Initialize(const FString& applicationId, bool autoRegister)
+void UDiscordRpc::Initialize(const FString& applicationId,
+                             bool autoRegister,
+                             const FString& optionalSteamId)
 {
     self = this;
     IsConnected = false;
@@ -68,7 +70,8 @@ void UDiscordRpc::Initialize(const FString& applicationId, bool autoRegister)
         handlers.spectateGame = SpectateGameHandler;
     }
     auto appId = StringCast<ANSICHAR>(*applicationId);
-    Discord_Initialize((const char*)appId.Get(), &handlers, autoRegister);
+    auto steamId = StringCast<ANSICHAR>(*optionalSteamId);
+    Discord_Initialize((const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
 }
 
 void UDiscordRpc::Shutdown()
