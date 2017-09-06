@@ -51,3 +51,9 @@ update on each command.
 
 This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version of the library, and
 sends presence updates when you click on a button.
+
+## Sample: unrealstatus
+
+This is a sample [Unreal](https://www.unrealengine.com) project that wraps the DLL version of the
+library with an Unreal plugin, exposes a blueprint class for interacting with it, and uses that to
+make a very simple UI.
