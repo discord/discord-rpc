@@ -71,7 +71,8 @@ void UDiscordRpc::Initialize(const FString& applicationId,
     }
     auto appId = StringCast<ANSICHAR>(*applicationId);
     auto steamId = StringCast<ANSICHAR>(*optionalSteamId);
-    Discord_Initialize((const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
+    Discord_Initialize(
+      (const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
 }
 
 void UDiscordRpc::Shutdown()

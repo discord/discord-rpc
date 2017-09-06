@@ -70,7 +70,9 @@ public:
     UFUNCTION(BlueprintCallable,
               meta = (DisplayName = "Initialize connection", Keywords = "Discord rpc"),
               Category = "Discord")
-    void Initialize(const FString& applicationId, bool autoRegister, const FString& optionalSteamId);
+    void Initialize(const FString& applicationId,
+                    bool autoRegister,
+                    const FString& optionalSteamId);
 
     UFUNCTION(BlueprintCallable,
               meta = (DisplayName = "Shut down connection", Keywords = "Discord rpc"),
