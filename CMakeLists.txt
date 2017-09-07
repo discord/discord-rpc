@@ -52,8 +52,3 @@ add_library(rapidjson STATIC IMPORTED ${RAPIDJSON})
 
 add_subdirectory(src)
 add_subdirectory(examples/send-presence)
-
-add_custom_target(bundle
-    WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}"
-    COMMAND ${CMAKE_COMMAND} -E tar cfvz "${CMAKE_BINARY_DIR}/discord-rpc.tar.gz" .
-)

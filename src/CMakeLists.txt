@@ -3,10 +3,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 option(ENABLE_IO_THREAD "Start up a separate I/O thread, otherwise I'd need to call an update function" ON)
 option(BUILD_DYNAMIC_LIB "Build library as a DLL" OFF)
 
-if (NOT ${ENABLE_IO_THREAD})
-    add_definitions(-DDISCORD_DISABLE_IO_THREAD)
-endif (NOT ${ENABLE_IO_THREAD})
-
 set(BASE_RPC_SRC
     ${PROJECT_SOURCE_DIR}/include/discord-rpc.h
     discord-rpc.cpp
@@ -40,6 +36,10 @@ endif(UNIX)
 
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)
 
+if (NOT ${ENABLE_IO_THREAD})
+    add_definitions(discord-rpc PUBLIC -DDISCORD_DISABLE_IO_THREAD)
+endif (NOT ${ENABLE_IO_THREAD})
+
 if (${BUILD_DYNAMIC_LIB})
     target_compile_definitions(discord-rpc PUBLIC -DDISCORD_DYNAMIC_LIB)
     target_compile_definitions(discord-rpc PRIVATE -DDISCORD_BUILDING_SDK)
@@ -52,9 +52,17 @@ add_dependencies(discord-rpc clangformat)
 install(
     TARGETS discord-rpc
     EXPORT "discord-rpc"
-    LIBRARY DESTINATION "lib"
-    ARCHIVE DESTINATION "lib"
-    INCLUDES DESTINATION "include"
+    RUNTIME
+        DESTINATION "bin"
+        CONFIGURATIONS Release
+    LIBRARY
+        DESTINATION "lib"
+        CONFIGURATIONS Release
+    ARCHIVE
+        DESTINATION "lib"
+        CONFIGURATIONS Release
+    INCLUDES
+        DESTINATION "include"
 )
 
 install(

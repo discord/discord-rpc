@@ -1,7 +1,9 @@
+import click
 import os
 import subprocess
 import sys
 import shutil
+import zipfile
 from contextlib import contextmanager
 
 
@@ -25,10 +27,13 @@ def mkdir_p(path):
         os.makedirs(path)
 
 
-def build(build_path, generator, options):
+def build_lib(build_name, generator, options):
+    build_path = os.path.join(SCRIPT_PATH, 'builds', build_name)
+    install_path = os.path.join(SCRIPT_PATH, 'builds', 'install', build_name)
     mkdir_p(build_path)
+    mkdir_p(install_path)
     with cd(build_path):
-        initial_cmake = ['cmake', SCRIPT_PATH]
+        initial_cmake = ['cmake', SCRIPT_PATH, '-DCMAKE_INSTALL_PREFIX=%s' % os.path.join('..', 'install', build_name)]
         if generator:
             initial_cmake.extend(['-G', generator])
         for key in options:
@@ -36,24 +41,46 @@ def build(build_path, generator, options):
             initial_cmake.append('-D%s=%s' %(key, val))
         subprocess.check_call(initial_cmake)
         subprocess.check_call(['cmake', '--build', '.', '--config', 'Debug'])
-        subprocess.check_call(['cmake', '--build', '.', '--config', 'Release'])
+        subprocess.check_call(['cmake', '--build', '.', '--config', 'Release', '--target', 'install'])
 
 
-def main():
+def create_archive():
+    archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc.zip')
+    archive_file = zipfile.ZipFile(archive_file_path, 'w', zipfile.ZIP_DEFLATED)
+    archive_src_base_path = os.path.join(SCRIPT_PATH, 'builds', 'install')
+    archive_dst_base_path = 'discord-rpc'
+    with cd(archive_src_base_path):
+        for path, subdirs, filenames in os.walk('.'):
+            for fname in filenames:
+                fpath = os.path.join(path, fname)
+                archive_file.write(fpath, os.path.normpath(os.path.join(archive_dst_base_path, fpath)))
+
+
+@click.command()
+@click.option('--clean', is_flag=True)
+def main(clean):
     os.chdir(SCRIPT_PATH)
+
+    if clean:
+        shutil.rmtree('builds', ignore_errors=True)
+
     if sys.platform.startswith('win'):
-        generator = 'Visual Studio 14 2015'
-        build(os.path.join(SCRIPT_PATH, 'builds', 'win32-static'), generator, {})
-        build(os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic'), generator, {'BUILD_DYNAMIC_LIB': True})
-        generator = 'Visual Studio 14 2015 Win64'
-        build(os.path.join(SCRIPT_PATH, 'builds', 'win64-static'), generator, {})
-        build(os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic'), generator, {'BUILD_DYNAMIC_LIB': True})
+        generator32 = 'Visual Studio 14 2015'
+        generator64 = 'Visual Studio 14 2015 Win64'
+
+        build_lib('win32-static', generator32, {})
+        build_lib('win32-dynamic', generator32, {'BUILD_DYNAMIC_LIB': True})
+        build_lib('win64-static', generator64, {})
+        build_lib('win64-dynamic', generator64, {'BUILD_DYNAMIC_LIB': True})
+
         # todo: this in some better way
         src_dll = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release', 'discord-rpc.dll')
-        dst_dll = os.path.join(SCRIPT_PATH, 'examples\\button-clicker\\Assets\\Resources\\discord-rpc.dll')
+        dst_dll = os.path.join(SCRIPT_PATH, 'examples', 'button-clicker', 'Assets', 'Resources', 'discord-rpc.dll')
         shutil.copy(src_dll, dst_dll)
-        dst_dll = os.path.join(SCRIPT_PATH, 'examples\\unrealstatus\\Plugins\\discordrpc\\Binaries\\ThirdParty\\discordrpcLibrary\\Win64\\discord-rpc.dll')
+        dst_dll = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'discordrpc', 'Binaries', 'ThirdParty', 'discordrpcLibrary', 'Win64', 'discord-rpc.dll')
         shutil.copy(src_dll, dst_dll)
+
+    create_archive()
 
 
 if __name__ == '__main__':
