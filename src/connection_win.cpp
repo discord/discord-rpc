@@ -71,13 +71,22 @@ bool BaseConnection::Close()
 
 bool BaseConnection::Write(const void* data, size_t length)
 {
+    if (length == 0) {
+        return true;
+    }
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
+    if (self->pipe == INVALID_HANDLE_VALUE) {
+        return false;
+    }
     return ::WriteFile(self->pipe, data, (DWORD)length, nullptr, nullptr) == TRUE;
 }
 
 bool BaseConnection::Read(void* data, size_t length)
 {
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
+    if (self->pipe == INVALID_HANDLE_VALUE) {
+        return false;
+    }
     DWORD bytesAvailable = 0;
     if (::PeekNamedPipe(self->pipe, nullptr, 0, nullptr, &bytesAvailable, nullptr)) {
         if (bytesAvailable >= length) {

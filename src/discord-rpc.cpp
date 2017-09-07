@@ -95,6 +95,10 @@ static void SendQueueCommitMessage()
 
 extern "C" void Discord_UpdateConnection()
 {
+    if (!Connection) {
+        return;
+    }
+
     if (!Connection->IsOpen()) {
         if (std::chrono::system_clock::now() >= NextConnect) {
             UpdateReconnectTime();
@@ -291,6 +295,10 @@ extern "C" void Discord_RunCallbacks()
     // Note on some weirdness: internally we might connect, get other signals, disconnect any number
     // of times inbetween calls here. Externally, we want the sequence to seem sane, so any other
     // signals are book-ended by calls to ready and disconnect.
+
+    if (!Connection) {
+        return;
+    }
 
     bool wasDisconnected = WasJustDisconnected.exchange(false);
     bool isConnected = Connection->IsOpen();
