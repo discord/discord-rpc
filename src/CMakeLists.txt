@@ -6,8 +6,7 @@ option(BUILD_DYNAMIC_LIB "Build library as a DLL" OFF)
 set(BASE_RPC_SRC
     ${PROJECT_SOURCE_DIR}/include/discord-rpc.h
     discord-rpc.cpp
-    discord-register.h
-    discord-register.cpp
+    discord_register.h
     rpc_connection.h
     rpc_connection.cpp
     serialization.h
@@ -18,20 +17,39 @@ set(BASE_RPC_SRC
 
 if (${BUILD_DYNAMIC_LIB})
     set(RPC_LIBRARY_TYPE SHARED)
-    set(BASE_RPC_SRC ${BASE_RPC_SRC} dllmain.cpp)
+    if(WIN32)
+        set(BASE_RPC_SRC ${BASE_RPC_SRC} dllmain.cpp)
+    endif(WIN32)
 else(${BUILD_DYNAMIC_LIB})
     set(RPC_LIBRARY_TYPE STATIC)
 endif(${BUILD_DYNAMIC_LIB})
 
 if(WIN32)
-    add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC} connection_win.cpp)
+    add_definitions(-DDISCORD_WINDOWS)
+    set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_win.cpp discord_register_win.cpp)
+    add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC})
     target_compile_options(discord-rpc PRIVATE /W4)
 endif(WIN32)
 
 if(UNIX)
-    add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC} connection_unix.cpp)
+    set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_unix.cpp)
+    
+    if (APPLE)
+        add_definitions(-DDISCORD_OSX)
+        set(BASE_RPC_SRC ${BASE_RPC_SRC} discord_register_osx.m)
+    else (APPLE)
+        add_definitions(-DDISCORD_LINUX)
+        set(BASE_RPC_SRC ${BASE_RPC_SRC} discord_register_linux.cpp)
+    endif(APPLE)
+
+    add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC})
     target_link_libraries(discord-rpc PUBLIC pthread)
-    target_compile_options(discord-rpc PRIVATE -g -Wall -std=c++14)
+    target_compile_options(discord-rpc PRIVATE -g -Wall)
+    target_compile_options(discord-rpc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)
+
+    if (APPLE)
+        target_link_libraries(discord-rpc PRIVATE "-framework AppKit")
+    endif (APPLE)
 endif(UNIX)
 
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)

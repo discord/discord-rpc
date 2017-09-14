@@ -1,7 +1,6 @@
 #include "discord-rpc.h"
 #include <stdio.h>
 
-#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMCX
 #define NOSERVICE
@@ -10,9 +9,7 @@
 #include <Psapi.h>
 #include <Strsafe.h>
 #pragma comment(lib, "Psapi.lib")
-#endif
 
-#ifdef _WIN32
 void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
 {
     // https://msdn.microsoft.com/en-us/library/aa767914(v=vs.85).aspx
@@ -76,12 +73,9 @@ void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
     }
     RegCloseKey(key);
 }
-#endif
 
-void Discord_Register(const char* applicationId, const char* command)
+extern "C" void Discord_Register(const char* applicationId, const char* command)
 {
-#ifdef _WIN32
-
     wchar_t appId[32];
     MultiByteToWideChar(CP_UTF8, 0, applicationId, -1, appId, 32);
 
@@ -94,12 +88,10 @@ void Discord_Register(const char* applicationId, const char* command)
     }
 
     Discord_RegisterW(appId, wcommand);
-#endif
 }
 
-void Discord_RegisterSteamGame(const char* applicationId, const char* steamId)
+extern "C" void Discord_RegisterSteamGame(const char* applicationId, const char* steamId)
 {
-#ifdef _WIN32
     wchar_t appId[32];
     MultiByteToWideChar(CP_UTF8, 0, applicationId, -1, appId, 32);
 
@@ -133,5 +125,4 @@ void Discord_RegisterSteamGame(const char* applicationId, const char* steamId)
     StringCbPrintfW(command, sizeof(command), L"\"%s\" steam://run/%s", steamPath, wSteamId);
 
     Discord_RegisterW(appId, command);
-#endif
 }

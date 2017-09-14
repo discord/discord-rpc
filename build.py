@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import click
 import os
 import subprocess
@@ -45,7 +47,7 @@ def build_lib(build_name, generator, options):
 
 
 def create_archive():
-    archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc.zip')
+    archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc-%s.zip' % sys.platform)
     archive_file = zipfile.ZipFile(archive_file_path, 'w', zipfile.ZIP_DEFLATED)
     archive_src_base_path = os.path.join(SCRIPT_PATH, 'builds', 'install')
     archive_dst_base_path = 'discord-rpc'
@@ -64,6 +66,8 @@ def main(clean):
     if clean:
         shutil.rmtree('builds', ignore_errors=True)
 
+    mkdir_p('builds')
+
     if sys.platform.startswith('win'):
         generator32 = 'Visual Studio 14 2015'
         generator64 = 'Visual Studio 14 2015 Win64'
@@ -79,6 +83,9 @@ def main(clean):
         shutil.copy(src_dll, dst_dll)
         dst_dll = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'discordrpc', 'Binaries', 'ThirdParty', 'discordrpcLibrary', 'Win64', 'discord-rpc.dll')
         shutil.copy(src_dll, dst_dll)
+    elif sys.platform == 'darwin':
+        build_lib('osx-static', None, {})
+        build_lib('osx-dynamic', None, {'BUILD_DYNAMIC_LIB': True})
 
     create_archive()
 

@@ -10,7 +10,7 @@ By committing to an RPC-only integration, you decide to forego the work our libr
 
 ## Application Protocol Registration
 
-One thing that cannot be explicitly done over RPC is registering an application protocol for your game. If you choose to do an RPC-only implementation, you will have to register your application protocol yourself in the format of `discord-[your_app_id]://`. You can use `Discord_Register()` from `src/discord-register.cpp` as a good example of how to properly register an application protocol for use with Discord.
+One thing that cannot be explicitly done over RPC is registering an application protocol for your game. If you choose to do an RPC-only implementation, you will have to register your application protocol yourself in the format of `discord-[your_app_id]://`. You can use `Discord_Register()` as a good(?) example of how to properly register an application protocol for use with Discord. For OSX and Linux it is probably simpler to handle the protocol registration as part of your install/packaging.
 
 ## New RPC Command
 

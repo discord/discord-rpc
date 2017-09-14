@@ -1,7 +1,7 @@
 #include "discord-rpc.h"
 
 #include "backoff.h"
-#include "discord-register.h"
+#include "discord_register.h"
 #include "rpc_connection.h"
 #include "serialization.h"
 
@@ -93,7 +93,7 @@ static void SendQueueCommitMessage()
     SendQueuePendingSends++;
 }
 
-extern "C" void Discord_UpdateConnection()
+DISCORD_EXPORT void Discord_UpdateConnection()
 {
     if (!Connection) {
         return;
@@ -210,7 +210,7 @@ bool RegisterForEvent(const char* evtName)
     return false;
 }
 
-extern "C" void Discord_Initialize(const char* applicationId,
+DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                    DiscordEventHandlers* handlers,
                                    int autoRegister,
                                    const char* optionalSteamId)
@@ -263,7 +263,7 @@ extern "C" void Discord_Initialize(const char* applicationId,
 #endif
 }
 
-extern "C" void Discord_Shutdown()
+DISCORD_EXPORT void Discord_Shutdown()
 {
     if (!Connection) {
         return;
@@ -281,7 +281,7 @@ extern "C" void Discord_Shutdown()
     RpcConnection::Destroy(Connection);
 }
 
-extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
+DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     PresenceMutex.lock();
     QueuedPresence.length = JsonWriteRichPresenceObj(
@@ -290,7 +290,7 @@ extern "C" void Discord_UpdatePresence(const DiscordRichPresence* presence)
     SignalIOActivity();
 }
 
-extern "C" void Discord_RunCallbacks()
+DISCORD_EXPORT void Discord_RunCallbacks()
 {
     // Note on some weirdness: internally we might connect, get other signals, disconnect any number
     // of times inbetween calls here. Externally, we want the sequence to seem sane, so any other
