@@ -47,7 +47,11 @@ typedef struct DiscordEventHandlers {
     void (*errored)(int errorCode, const char* message);
     void (*joinGame)(const char* joinSecret);
     void (*spectateGame)(const char* spectateSecret);
+    void (*joinRequest)(const char* requestId, const char* avatarUrl, const char* username);
 } DiscordEventHandlers;
+
+#define DISCORD_REPLY_NO 0
+#define DISCORD_REPLY_YES 1
 
 DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                        DiscordEventHandlers* handlers,
@@ -64,6 +68,8 @@ DISCORD_EXPORT void Discord_UpdateConnection();
 #endif
 
 DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence);
+
+DISCORD_EXPORT void Discord_Respond(const char* requestId, /* DISCORD_REPLY_ */ int reply);
 
 #ifdef __cplusplus
 } /* extern "C" */

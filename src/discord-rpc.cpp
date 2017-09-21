@@ -4,6 +4,7 @@
 #include "discord_register.h"
 #include "rpc_connection.h"
 #include "serialization.h"
+#include "msg_queue.h"
 
 #include <atomic>
 #include <chrono>
@@ -16,6 +17,7 @@
 
 constexpr size_t MaxMessageSize{16 * 1024};
 constexpr size_t MessageQueueSize{8};
+constexpr size_t JoinQueueSize{8};
 
 struct QueuedMessage {
     size_t length;
@@ -28,6 +30,12 @@ struct QueuedMessage {
             memcpy(buffer, other.buffer, length);
         }
     }
+};
+
+struct AskToJoinMessage {
+    char requestId[32];
+    char username[48];
+    char avatarUrl[128];
 };
 
 static RpcConnection* Connection{nullptr};
@@ -45,10 +53,9 @@ static int LastDisconnectErrorCode{0};
 static char LastDisconnectErrorMessage[256];
 static std::mutex PresenceMutex;
 static QueuedMessage QueuedPresence{};
-static QueuedMessage SendQueue[MessageQueueSize]{};
-static std::atomic_uint SendQueueNextAdd{0};
-static std::atomic_uint SendQueueNextSend{0};
-static std::atomic_uint SendQueuePendingSends{0};
+MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
+MsgQueue<AskToJoinMessage, MessageQueueSize> JoinAskQueue;
+
 // We want to auto connect, and retry on failure, but not as fast as possible. This does expoential
 // backoff from 0.5 seconds to 1 minute
 static Backoff ReconnectTimeMs(500, 60 * 1000);
@@ -67,30 +74,6 @@ static void UpdateReconnectTime()
 {
     NextConnect = std::chrono::system_clock::now() +
       std::chrono::duration<int64_t, std::milli>{ReconnectTimeMs.nextDelay()};
-}
-
-static QueuedMessage* SendQueueGetNextAddMessage()
-{
-    // if we are not connected, let's not batch up stale messages for later
-    if (!Connection || !Connection->IsOpen()) {
-        return nullptr;
-    }
-
-    // if we are falling behind, bail
-    if (SendQueuePendingSends.load() >= MessageQueueSize) {
-        return nullptr;
-    }
-    auto index = (SendQueueNextAdd++) % MessageQueueSize;
-    return &SendQueue[index];
-}
-static QueuedMessage* SendQueueGetNextSendMessage()
-{
-    auto index = (SendQueueNextSend++) % MessageQueueSize;
-    return &SendQueue[index];
-}
-static void SendQueueCommitMessage()
-{
-    SendQueuePendingSends++;
 }
 
 DISCORD_EXPORT void Discord_UpdateConnection()
@@ -150,6 +133,19 @@ DISCORD_EXPORT void Discord_UpdateConnection()
                         WasSpectateGame.store(true);
                     }
                 }
+                else if (strcmp(evtName, "GAME_ASK_TO_JOIN") == 0) {
+                    auto data = GetObjMember(&message, "data");
+                    auto requestId = GetStrMember(data, "request_id");
+                    auto username = GetStrMember(data, "username");
+                    auto avatarUrl = GetStrMember(data, "avatar_url");
+                    auto joinReq = JoinAskQueue.GetNextAddMessage();
+                    if (requestId && username && avatarUrl && joinReq) {
+                        StringCopy(joinReq->requestId, requestId);
+                        StringCopy(joinReq->avatarUrl, avatarUrl);
+                        StringCopy(joinReq->username, username);
+                        JoinAskQueue.CommitAdd();
+                    }
+                }
             }
         }
 
@@ -168,10 +164,10 @@ DISCORD_EXPORT void Discord_UpdateConnection()
             }
         }
 
-        while (SendQueuePendingSends.load()) {
-            auto qmessage = SendQueueGetNextSendMessage();
+        while (SendQueue.HavePendingSends()) {
+            auto qmessage = SendQueue.GetNextSendMessage();
             Connection->Write(qmessage->buffer, qmessage->length);
-            --SendQueuePendingSends;
+            SendQueue.CommitSend();
         }
     }
 }
@@ -199,11 +195,11 @@ void SignalIOActivity()
 
 bool RegisterForEvent(const char* evtName)
 {
-    auto qmessage = SendQueueGetNextAddMessage();
+    auto qmessage = SendQueue.GetNextAddMessage();
     if (qmessage) {
         qmessage->length =
           JsonWriteSubscribeCommand(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, evtName);
-        SendQueueCommitMessage();
+        SendQueue.CommitAdd();
         SignalIOActivity();
         return true;
     }
@@ -249,6 +245,10 @@ DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         if (Handlers.spectateGame) {
             RegisterForEvent("GAME_SPECTATE");
         }
+
+        if (Handlers.joinRequest) {
+            RegisterForEvent("GAME_ASK_TO_JOIN");
+        }
     };
     Connection->onDisconnect = [](int err, const char* message) {
         LastDisconnectErrorCode = err;
@@ -290,6 +290,21 @@ DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence)
     SignalIOActivity();
 }
 
+DISCORD_EXPORT void Discord_Respond(const char* requestNonce, /* DISCORD_REPLY_ */ int reply)
+{
+    // if we are not connected, let's not batch up stale messages for later
+    if (!Connection || !Connection->IsOpen()) {
+        return;
+    }
+    auto qmessage = SendQueue.GetNextAddMessage();
+    if (qmessage) {
+        qmessage->length =
+          JsonWriteJoinReply(qmessage->buffer, sizeof(qmessage->buffer), requestNonce, reply);
+        SendQueue.CommitAdd();
+        SignalIOActivity();
+    }
+}
+
 DISCORD_EXPORT void Discord_RunCallbacks()
 {
     // Note on some weirdness: internally we might connect, get other signals, disconnect any number
@@ -324,6 +339,14 @@ DISCORD_EXPORT void Discord_RunCallbacks()
 
     if (WasSpectateGame.exchange(false) && Handlers.spectateGame) {
         Handlers.spectateGame(SpectateGameSecret);
+    }
+
+    while (JoinAskQueue.HavePendingSends()) {
+        auto req = JoinAskQueue.GetNextSendMessage();
+        if (Handlers.joinRequest) {
+            Handlers.joinRequest(req->requestId, req->avatarUrl, req->username);
+        }
+        JoinAskQueue.CommitSend();
     }
 
     if (!isConnected) {

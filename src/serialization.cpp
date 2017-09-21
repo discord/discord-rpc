@@ -197,3 +197,20 @@ size_t JsonWriteSubscribeCommand(char* dest, size_t maxLen, int nonce, const cha
 
     return writer.Size();
 }
+
+size_t JsonWriteJoinReply(char* dest, size_t maxLen, const char* requestNonce, int reply)
+{
+    JsonWriter writer(dest, maxLen);
+
+    {
+        WriteObject obj(writer);
+
+        WriteKey(writer, "nonce");
+        writer.String(requestNonce);
+
+        WriteKey(writer, "reply");
+        writer.Int(reply);
+    }
+
+    return writer.Size();
+}
