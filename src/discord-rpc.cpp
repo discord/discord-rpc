@@ -211,9 +211,9 @@ bool RegisterForEvent(const char* evtName)
 }
 
 DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
-                                   DiscordEventHandlers* handlers,
-                                   int autoRegister,
-                                   const char* optionalSteamId)
+                                       DiscordEventHandlers* handlers,
+                                       int autoRegister,
+                                       const char* optionalSteamId)
 {
     if (autoRegister) {
         if (optionalSteamId && optionalSteamId[0]) {
