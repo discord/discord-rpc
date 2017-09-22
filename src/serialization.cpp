@@ -198,15 +198,18 @@ size_t JsonWriteSubscribeCommand(char* dest, size_t maxLen, int nonce, const cha
     return writer.Size();
 }
 
-size_t JsonWriteJoinReply(char* dest, size_t maxLen, const char* requestNonce, int reply)
+size_t JsonWriteJoinReply(char* dest, size_t maxLen, const char* userId, int reply)
 {
     JsonWriter writer(dest, maxLen);
 
     {
         WriteObject obj(writer);
 
-        WriteKey(writer, "nonce");
-        writer.String(requestNonce);
+        WriteKey(writer, "cmd");
+        writer.String("REPLY_TO_JOIN");
+
+        WriteKey(writer, "user_id");
+        writer.String(userId);
 
         WriteKey(writer, "reply");
         writer.Int(reply);

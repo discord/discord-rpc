@@ -32,12 +32,6 @@ struct QueuedMessage {
     }
 };
 
-struct AskToJoinMessage {
-    char requestId[32];
-    char username[48];
-    char avatarUrl[128];
-};
-
 static RpcConnection* Connection{nullptr};
 static DiscordEventHandlers Handlers{};
 static std::atomic_bool WasJustConnected{false};
@@ -54,7 +48,7 @@ static char LastDisconnectErrorMessage[256];
 static std::mutex PresenceMutex;
 static QueuedMessage QueuedPresence{};
 MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
-MsgQueue<AskToJoinMessage, MessageQueueSize> JoinAskQueue;
+MsgQueue<DiscordJoinRequest, MessageQueueSize> JoinAskQueue;
 
 // We want to auto connect, and retry on failure, but not as fast as possible. This does expoential
 // backoff from 0.5 seconds to 1 minute
@@ -135,14 +129,14 @@ DISCORD_EXPORT void Discord_UpdateConnection()
                 }
                 else if (strcmp(evtName, "GAME_ASK_TO_JOIN") == 0) {
                     auto data = GetObjMember(&message, "data");
-                    auto requestId = GetStrMember(data, "request_id");
+                    auto userId = GetStrMember(data, "user_id");
                     auto username = GetStrMember(data, "username");
                     auto avatarUrl = GetStrMember(data, "avatar_url");
                     auto joinReq = JoinAskQueue.GetNextAddMessage();
-                    if (requestId && username && avatarUrl && joinReq) {
-                        StringCopy(joinReq->requestId, requestId);
-                        StringCopy(joinReq->avatarUrl, avatarUrl);
+                    if (userId && username && avatarUrl && joinReq) {
+                        StringCopy(joinReq->userId, userId);
                         StringCopy(joinReq->username, username);
+                        StringCopy(joinReq->avatarUrl, avatarUrl);
                         JoinAskQueue.CommitAdd();
                     }
                 }
@@ -290,7 +284,7 @@ DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence)
     SignalIOActivity();
 }
 
-DISCORD_EXPORT void Discord_Respond(const char* requestNonce, /* DISCORD_REPLY_ */ int reply)
+DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_REPLY_ */ int reply)
 {
     // if we are not connected, let's not batch up stale messages for later
     if (!Connection || !Connection->IsOpen()) {
@@ -299,7 +293,7 @@ DISCORD_EXPORT void Discord_Respond(const char* requestNonce, /* DISCORD_REPLY_ 
     auto qmessage = SendQueue.GetNextAddMessage();
     if (qmessage) {
         qmessage->length =
-          JsonWriteJoinReply(qmessage->buffer, sizeof(qmessage->buffer), requestNonce, reply);
+          JsonWriteJoinReply(qmessage->buffer, sizeof(qmessage->buffer), userId, reply);
         SendQueue.CommitAdd();
         SignalIOActivity();
     }
@@ -341,10 +335,15 @@ DISCORD_EXPORT void Discord_RunCallbacks()
         Handlers.spectateGame(SpectateGameSecret);
     }
 
+    // Right now this batches up any requests and sends them all in a burst; I could imagine a world
+    // where the implementer would rather sequentially accept/reject each one before the next invite
+    // is sent. I left it this way because I could also imagine wanting to process these all and
+    // maybe show them in one common dialog and/or start fetching the avatars in parallel, and if
+    // not it should be trivial for the implementer to make a queue themselves.
     while (JoinAskQueue.HavePendingSends()) {
         auto req = JoinAskQueue.GetNextSendMessage();
         if (Handlers.joinRequest) {
-            Handlers.joinRequest(req->requestId, req->avatarUrl, req->username);
+            Handlers.joinRequest(req);
         }
         JoinAskQueue.CommitSend();
     }

@@ -2,10 +2,8 @@
 
 #include <atomic>
 
-/*
-    A simple queue. No locks, but only works with a single thread as producer and a single thread as
-   a consumer. Mutex up as needed.
-*/
+// A simple queue. No locks, but only works with a single thread as producer and a single thread as
+// a consumer. Mutex up as needed.
 
 template <typename ElementType, size_t QueueSize>
 class MsgQueue {

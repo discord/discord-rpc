@@ -15,6 +15,21 @@ static const char* APPLICATION_ID = "345229890980937739";
 static int FrustrationLevel = 0;
 static int64_t StartTime;
 
+static int prompt(char* line, size_t size)
+{
+    int res;
+    char* nl;
+    printf("\n> ");
+    fflush(stdout);
+    res = fgets(line, (int)size, stdin) ? 1 : 0;
+    line[size - 1] = 0;
+    nl = strchr(line, '\n');
+    if (nl) {
+        *nl = 0;
+    }
+    return res;
+}
+
 static void updateDiscordPresence()
 {
     char buffer[256];
@@ -62,19 +77,37 @@ static void handleDiscordSpectate(const char* secret)
     printf("\nDiscord: spectate (%s)\n", secret);
 }
 
-static int prompt(char* line, size_t size)
+static void handleDiscordJoinRequest(const DiscordJoinRequest* request)
 {
-    int res;
-    char* nl;
-    printf("\n> ");
-    fflush(stdout);
-    res = fgets(line, (int)size, stdin) ? 1 : 0;
-    line[size - 1] = 0;
-    nl = strchr(line, '\n');
-    if (nl) {
-        *nl = 0;
+    int response = -1;
+    char yn[4];
+    printf("\nDiscord: join request from %s - %s - %s\n",
+           request->username,
+           request->avatarUrl,
+           request->userId);
+    do {
+        printf("Accept? (y/n)");
+        if (!prompt(yn, sizeof(yn))) {
+            break;
+        }
+
+        if (!yn[0]) {
+            continue;
+        }
+
+        if (yn[0] == 'y') {
+            response = DISCORD_REPLY_YES;
+            break;
+        }
+
+        if (yn[0] == 'n') {
+            response = DISCORD_REPLY_NO;
+            break;
+        }
+    } while (1);
+    if (response != -1) {
+        Discord_Respond(request->userId, response);
     }
-    return res;
 }
 
 static void discordInit()
@@ -86,6 +119,7 @@ static void discordInit()
     handlers.errored = handleDiscordError;
     handlers.joinGame = handleDiscordJoin;
     handlers.spectateGame = handleDiscordSpectate;
+    handlers.joinRequest = handleDiscordJoinRequest;
     Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
 }
 
