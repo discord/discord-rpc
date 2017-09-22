@@ -58,6 +58,7 @@ typedef struct DiscordEventHandlers {
 
 #define DISCORD_REPLY_NO 0
 #define DISCORD_REPLY_YES 1
+#define DISCORD_REPLY_IGNORE 2
 
 DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                        DiscordEventHandlers* handlers,
