@@ -111,7 +111,7 @@ DISCORD_EXPORT void Discord_UpdateConnection()
                     continue;
                 }
 
-                if (strcmp(evtName, "GAME_JOIN") == 0) {
+                if (strcmp(evtName, "ACTIVITY_JOIN") == 0) {
                     auto data = GetObjMember(&message, "data");
                     auto secret = GetStrMember(data, "secret");
                     if (secret) {
@@ -119,7 +119,7 @@ DISCORD_EXPORT void Discord_UpdateConnection()
                         WasJoinGame.store(true);
                     }
                 }
-                else if (strcmp(evtName, "GAME_SPECTATE") == 0) {
+                else if (strcmp(evtName, "ACTIVITY_SPECTATE") == 0) {
                     auto data = GetObjMember(&message, "data");
                     auto secret = GetStrMember(data, "secret");
                     if (secret) {
@@ -127,7 +127,7 @@ DISCORD_EXPORT void Discord_UpdateConnection()
                         WasSpectateGame.store(true);
                     }
                 }
-                else if (strcmp(evtName, "GAME_ASK_TO_JOIN") == 0) {
+                else if (strcmp(evtName, "ACTIVITY_JOIN_REQUEST") == 0) {
                     auto data = GetObjMember(&message, "data");
                     auto userId = GetStrMember(data, "user_id");
                     auto username = GetStrMember(data, "username");
@@ -233,15 +233,15 @@ DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         ReconnectTimeMs.reset();
 
         if (Handlers.joinGame) {
-            RegisterForEvent("GAME_JOIN");
+            RegisterForEvent("ACTIVITY_JOIN");
         }
 
         if (Handlers.spectateGame) {
-            RegisterForEvent("GAME_SPECTATE");
+            RegisterForEvent("ACTIVITY_SPECTATE");
         }
 
         if (Handlers.joinRequest) {
-            RegisterForEvent("GAME_ASK_TO_JOIN");
+            RegisterForEvent("ACTIVITY_JOIN_REQUEST");
         }
     };
     Connection->onDisconnect = [](int err, const char* message) {
