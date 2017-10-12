@@ -9,7 +9,7 @@
 
 int GetProcessId()
 {
-    return ::GetCurrentProcessId();
+    return (int)::GetCurrentProcessId();
 }
 
 struct BaseConnectionWin : public BaseConnection {

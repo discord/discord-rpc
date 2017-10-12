@@ -17,9 +17,8 @@ void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
     // Update the HKEY_CURRENT_USER, because it doesn't seem to require special permissions.
 
     wchar_t exeFilePath[MAX_PATH];
-    int exeLen = GetModuleFileNameExW(GetCurrentProcess(), nullptr, exeFilePath, MAX_PATH);
+    DWORD exeLen = GetModuleFileNameExW(GetCurrentProcess(), nullptr, exeFilePath, MAX_PATH);
     wchar_t openCommand[1024];
-    const auto commandBufferLen = sizeof(openCommand) / sizeof(*openCommand);
 
     if (command && command[0]) {
         StringCbPrintfW(openCommand, sizeof(openCommand), L"%s", command);
@@ -46,14 +45,14 @@ void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
     }
     DWORD len;
     LSTATUS result;
-    len = lstrlenW(protocolDescription) + 1;
+    len = (DWORD)lstrlenW(protocolDescription) + 1;
     result =
       RegSetKeyValueW(key, nullptr, nullptr, REG_SZ, protocolDescription, len * sizeof(wchar_t));
     if (FAILED(result)) {
         fprintf(stderr, "Error writing description\n");
     }
 
-    len = lstrlenW(protocolDescription) + 1;
+    len = (DWORD)lstrlenW(protocolDescription) + 1;
     result = RegSetKeyValueW(key, nullptr, L"URL Protocol", REG_SZ, &urlProtocol, sizeof(wchar_t));
     if (FAILED(result)) {
         fprintf(stderr, "Error writing description\n");
@@ -65,7 +64,7 @@ void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
         fprintf(stderr, "Error writing icon\n");
     }
 
-    len = lstrlenW(openCommand) + 1;
+    len = (DWORD)lstrlenW(openCommand) + 1;
     result = RegSetKeyValueW(
       key, L"shell\\open\\command", nullptr, REG_SZ, openCommand, len * sizeof(wchar_t));
     if (FAILED(result)) {

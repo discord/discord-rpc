@@ -29,7 +29,17 @@ if(WIN32)
     add_definitions(-DDISCORD_WINDOWS)
     set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_win.cpp discord_register_win.cpp)
     add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC})
-    target_compile_options(discord-rpc PRIVATE /W4)
+    target_compile_options(discord-rpc PRIVATE /EHsc
+        /Wall
+        /wd4514 # unreferenced inline
+        /wd4625 # copy constructor deleted
+        /wd5026 # move constructor deleted
+        /wd4626 # move assignment operator deleted
+        /wd4710 # function not inlined
+        /wd4820 # structure padding
+        /wd4946 # reinterpret_cast used between related classes
+        /wd5027 # move assignment operator was implicitly defined as deleted
+    )
 endif(WIN32)
 
 if(UNIX)

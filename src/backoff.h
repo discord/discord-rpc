@@ -20,7 +20,7 @@ struct Backoff {
       , maxAmount(max)
       , current(min)
       , fails(0)
-      , randGenerator(time(0))
+      , randGenerator((uint64_t)time(0))
     {
     }
 

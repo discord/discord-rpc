@@ -2,9 +2,19 @@
 
 #include <stdint.h>
 
+#pragma warning(push)
+
+#pragma warning(disable : 4061) // enum is not explicitly handled by a case label
+#pragma warning(disable : 4365) // signed/unsigned mismatch
+#pragma warning(disable : 4464) // relative include path contains
+#pragma warning(disable : 4668) // is not defined as a preprocessor macro
+#pragma warning(disable : 6313) // Incorrect operator
+
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+
+#pragma warning(pop)
 
 // if only there was a standard library function for this
 template <size_t Len>
@@ -111,7 +121,7 @@ public:
         }
     }
     void Flush() {}
-    size_t GetSize() const { return current_ - buffer_; }
+    size_t GetSize() const { return (size_t)(current_ - buffer_); }
 };
 
 using MallocAllocator = rapidjson::CrtAllocator;

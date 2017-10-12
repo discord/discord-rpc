@@ -129,6 +129,7 @@ bool RpcConnection::Read(JsonDocument& message)
             break;
         case Opcode::Pong:
             break;
+        case Opcode::Handshake:
         default:
             // something bad happened
             lastErrorCode = (int)ErrorCode::ReadCorrupt;
