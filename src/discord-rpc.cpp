@@ -129,14 +129,20 @@ DISCORD_EXPORT void Discord_UpdateConnection()
                 }
                 else if (strcmp(evtName, "ACTIVITY_JOIN_REQUEST") == 0) {
                     auto data = GetObjMember(&message, "data");
-                    auto userId = GetStrMember(data, "user_id");
-                    auto username = GetStrMember(data, "username");
-                    auto avatarUrl = GetStrMember(data, "avatar_url");
+                    auto user = GetObjMember(data, "user");
+                    auto userId = GetStrMember(user, "id");
+                    auto username = GetStrMember(user, "username");
+                    auto avatarUrl = GetStrMember(user, "avatar");
                     auto joinReq = JoinAskQueue.GetNextAddMessage();
-                    if (userId && username && avatarUrl && joinReq) {
+                    if (userId && username && joinReq) {
                         StringCopy(joinReq->userId, userId);
                         StringCopy(joinReq->username, username);
-                        StringCopy(joinReq->avatarUrl, avatarUrl);
+                        if (avatarUrl) {
+                            StringCopy(joinReq->avatarUrl, avatarUrl);
+                        }
+                        else {
+                            joinReq->avatarUrl[0] = 0;
+                        }
                         JoinAskQueue.CommitAdd();
                     }
                 }
@@ -293,7 +299,7 @@ DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_REPLY_ */ int
     auto qmessage = SendQueue.GetNextAddMessage();
     if (qmessage) {
         qmessage->length =
-          JsonWriteJoinReply(qmessage->buffer, sizeof(qmessage->buffer), userId, reply);
+          JsonWriteJoinReply(qmessage->buffer, sizeof(qmessage->buffer), userId, reply, Nonce++);
         SendQueue.CommitAdd();
         SignalIOActivity();
     }
