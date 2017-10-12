@@ -13,6 +13,7 @@ set(BASE_RPC_SRC
     serialization.cpp
     connection.h
     backoff.h
+    msg_queue.h
 )
 
 if (${BUILD_DYNAMIC_LIB})

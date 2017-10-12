@@ -4,6 +4,7 @@
 #include "discord_register.h"
 #include "rpc_connection.h"
 #include "serialization.h"
+#include "msg_queue.h"
 
 #include <atomic>
 #include <chrono>
@@ -16,6 +17,7 @@
 
 constexpr size_t MaxMessageSize{16 * 1024};
 constexpr size_t MessageQueueSize{8};
+constexpr size_t JoinQueueSize{8};
 
 struct QueuedMessage {
     size_t length;
@@ -45,10 +47,9 @@ static int LastDisconnectErrorCode{0};
 static char LastDisconnectErrorMessage[256];
 static std::mutex PresenceMutex;
 static QueuedMessage QueuedPresence{};
-static QueuedMessage SendQueue[MessageQueueSize]{};
-static std::atomic_uint SendQueueNextAdd{0};
-static std::atomic_uint SendQueueNextSend{0};
-static std::atomic_uint SendQueuePendingSends{0};
+MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
+MsgQueue<DiscordJoinRequest, MessageQueueSize> JoinAskQueue;
+
 // We want to auto connect, and retry on failure, but not as fast as possible. This does expoential
 // backoff from 0.5 seconds to 1 minute
 static Backoff ReconnectTimeMs(500, 60 * 1000);
@@ -67,30 +68,6 @@ static void UpdateReconnectTime()
 {
     NextConnect = std::chrono::system_clock::now() +
       std::chrono::duration<int64_t, std::milli>{ReconnectTimeMs.nextDelay()};
-}
-
-static QueuedMessage* SendQueueGetNextAddMessage()
-{
-    // if we are not connected, let's not batch up stale messages for later
-    if (!Connection || !Connection->IsOpen()) {
-        return nullptr;
-    }
-
-    // if we are falling behind, bail
-    if (SendQueuePendingSends.load() >= MessageQueueSize) {
-        return nullptr;
-    }
-    auto index = (SendQueueNextAdd++) % MessageQueueSize;
-    return &SendQueue[index];
-}
-static QueuedMessage* SendQueueGetNextSendMessage()
-{
-    auto index = (SendQueueNextSend++) % MessageQueueSize;
-    return &SendQueue[index];
-}
-static void SendQueueCommitMessage()
-{
-    SendQueuePendingSends++;
 }
 
 DISCORD_EXPORT void Discord_UpdateConnection()
@@ -134,7 +111,7 @@ DISCORD_EXPORT void Discord_UpdateConnection()
                     continue;
                 }
 
-                if (strcmp(evtName, "GAME_JOIN") == 0) {
+                if (strcmp(evtName, "ACTIVITY_JOIN") == 0) {
                     auto data = GetObjMember(&message, "data");
                     auto secret = GetStrMember(data, "secret");
                     if (secret) {
@@ -142,12 +119,31 @@ DISCORD_EXPORT void Discord_UpdateConnection()
                         WasJoinGame.store(true);
                     }
                 }
-                else if (strcmp(evtName, "GAME_SPECTATE") == 0) {
+                else if (strcmp(evtName, "ACTIVITY_SPECTATE") == 0) {
                     auto data = GetObjMember(&message, "data");
                     auto secret = GetStrMember(data, "secret");
                     if (secret) {
                         StringCopy(SpectateGameSecret, secret);
                         WasSpectateGame.store(true);
+                    }
+                }
+                else if (strcmp(evtName, "ACTIVITY_JOIN_REQUEST") == 0) {
+                    auto data = GetObjMember(&message, "data");
+                    auto user = GetObjMember(data, "user");
+                    auto userId = GetStrMember(user, "id");
+                    auto username = GetStrMember(user, "username");
+                    auto avatarUrl = GetStrMember(user, "avatar");
+                    auto joinReq = JoinAskQueue.GetNextAddMessage();
+                    if (userId && username && joinReq) {
+                        StringCopy(joinReq->userId, userId);
+                        StringCopy(joinReq->username, username);
+                        if (avatarUrl) {
+                            StringCopy(joinReq->avatarUrl, avatarUrl);
+                        }
+                        else {
+                            joinReq->avatarUrl[0] = 0;
+                        }
+                        JoinAskQueue.CommitAdd();
                     }
                 }
             }
@@ -168,10 +164,10 @@ DISCORD_EXPORT void Discord_UpdateConnection()
             }
         }
 
-        while (SendQueuePendingSends.load()) {
-            auto qmessage = SendQueueGetNextSendMessage();
+        while (SendQueue.HavePendingSends()) {
+            auto qmessage = SendQueue.GetNextSendMessage();
             Connection->Write(qmessage->buffer, qmessage->length);
-            --SendQueuePendingSends;
+            SendQueue.CommitSend();
         }
     }
 }
@@ -199,11 +195,11 @@ void SignalIOActivity()
 
 bool RegisterForEvent(const char* evtName)
 {
-    auto qmessage = SendQueueGetNextAddMessage();
+    auto qmessage = SendQueue.GetNextAddMessage();
     if (qmessage) {
         qmessage->length =
           JsonWriteSubscribeCommand(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, evtName);
-        SendQueueCommitMessage();
+        SendQueue.CommitAdd();
         SignalIOActivity();
         return true;
     }
@@ -243,11 +239,15 @@ DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         ReconnectTimeMs.reset();
 
         if (Handlers.joinGame) {
-            RegisterForEvent("GAME_JOIN");
+            RegisterForEvent("ACTIVITY_JOIN");
         }
 
         if (Handlers.spectateGame) {
-            RegisterForEvent("GAME_SPECTATE");
+            RegisterForEvent("ACTIVITY_SPECTATE");
+        }
+
+        if (Handlers.joinRequest) {
+            RegisterForEvent("ACTIVITY_JOIN_REQUEST");
         }
     };
     Connection->onDisconnect = [](int err, const char* message) {
@@ -290,6 +290,21 @@ DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence)
     SignalIOActivity();
 }
 
+DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_REPLY_ */ int reply)
+{
+    // if we are not connected, let's not batch up stale messages for later
+    if (!Connection || !Connection->IsOpen()) {
+        return;
+    }
+    auto qmessage = SendQueue.GetNextAddMessage();
+    if (qmessage) {
+        qmessage->length =
+          JsonWriteJoinReply(qmessage->buffer, sizeof(qmessage->buffer), userId, reply, Nonce++);
+        SendQueue.CommitAdd();
+        SignalIOActivity();
+    }
+}
+
 DISCORD_EXPORT void Discord_RunCallbacks()
 {
     // Note on some weirdness: internally we might connect, get other signals, disconnect any number
@@ -324,6 +339,19 @@ DISCORD_EXPORT void Discord_RunCallbacks()
 
     if (WasSpectateGame.exchange(false) && Handlers.spectateGame) {
         Handlers.spectateGame(SpectateGameSecret);
+    }
+
+    // Right now this batches up any requests and sends them all in a burst; I could imagine a world
+    // where the implementer would rather sequentially accept/reject each one before the next invite
+    // is sent. I left it this way because I could also imagine wanting to process these all and
+    // maybe show them in one common dialog and/or start fetching the avatars in parallel, and if
+    // not it should be trivial for the implementer to make a queue themselves.
+    while (JoinAskQueue.HavePendingSends()) {
+        auto req = JoinAskQueue.GetNextSendMessage();
+        if (Handlers.joinRequest) {
+            Handlers.joinRequest(req);
+        }
+        JoinAskQueue.CommitSend();
     }
 
     if (!isConnected) {
