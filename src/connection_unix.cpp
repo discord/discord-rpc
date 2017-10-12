@@ -111,7 +111,7 @@ bool BaseConnection::Read(void* data, size_t length)
         return false;
     }
 
-    int res = recv(self->sock, data, length, MsgFlags);
+    int res = (int)recv(self->sock, data, length, MsgFlags);
     if (res < 0) {
         if (errno == EAGAIN) {
             return false;

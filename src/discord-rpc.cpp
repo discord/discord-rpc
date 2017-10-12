@@ -47,8 +47,8 @@ static int LastDisconnectErrorCode{0};
 static char LastDisconnectErrorMessage[256];
 static std::mutex PresenceMutex;
 static QueuedMessage QueuedPresence{};
-MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
-MsgQueue<DiscordJoinRequest, MessageQueueSize> JoinAskQueue;
+static MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
+static MsgQueue<DiscordJoinRequest, JoinQueueSize> JoinAskQueue;
 
 // We want to auto connect, and retry on failure, but not as fast as possible. This does expoential
 // backoff from 0.5 seconds to 1 minute
@@ -70,7 +70,11 @@ static void UpdateReconnectTime()
       std::chrono::duration<int64_t, std::milli>{ReconnectTimeMs.nextDelay()};
 }
 
-DISCORD_EXPORT void Discord_UpdateConnection()
+#ifdef DISCORD_DISABLE_IO_THREAD
+DISCORD_EXPORT void Discord_UpdateConnection(void)
+#else
+static void Discord_UpdateConnection(void)
+#endif
 {
     if (!Connection) {
         return;
@@ -173,7 +177,7 @@ DISCORD_EXPORT void Discord_UpdateConnection()
 }
 
 #ifndef DISCORD_DISABLE_IO_THREAD
-void DiscordRpcIo()
+static void DiscordRpcIo(void)
 {
     const std::chrono::duration<int64_t, std::milli> maxWait{500LL};
 
@@ -186,14 +190,14 @@ void DiscordRpcIo()
 }
 #endif
 
-void SignalIOActivity()
+static void SignalIOActivity()
 {
 #ifndef DISCORD_DISABLE_IO_THREAD
     WaitForIOActivity.notify_all();
 #endif
 }
 
-bool RegisterForEvent(const char* evtName)
+static bool RegisterForEvent(const char* evtName)
 {
     auto qmessage = SendQueue.GetNextAddMessage();
     if (qmessage) {

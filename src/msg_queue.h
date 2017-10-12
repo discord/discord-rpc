@@ -13,7 +13,7 @@ class MsgQueue {
     std::atomic_uint pendingSends_{0};
 
 public:
-    MsgQueue(){};
+    MsgQueue(){}
 
     ElementType* GetNextAddMessage()
     {

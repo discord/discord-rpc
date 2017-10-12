@@ -3,6 +3,8 @@
 
 #import <AppKit/AppKit.h>
 
+#include "discord_register.h"
+
 static bool Mkdir(const char* path)
 {
     int result = mkdir(path, 0755);
@@ -39,7 +41,7 @@ static void RegisterCommand(const char* applicationId, const char* command)
     if (f) {
         char jsonBuffer[2048];
         int len = snprintf(jsonBuffer, sizeof(jsonBuffer), "{\"command\": \"%s\"}", command);
-        fwrite(jsonBuffer, len, 1, f);
+        fwrite(jsonBuffer, (size_t)len, 1, f);
         fclose(f);
     }
 }

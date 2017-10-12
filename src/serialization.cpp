@@ -72,7 +72,7 @@ void WriteOptionalString(JsonWriter& w, T& k, const char* value)
     }
 }
 
-void JsonWriteNonce(JsonWriter& writer, int nonce)
+static void JsonWriteNonce(JsonWriter& writer, int nonce)
 {
     WriteKey(writer, "nonce");
     char nonceBuffer[32];

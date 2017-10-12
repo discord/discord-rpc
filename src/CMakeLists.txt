@@ -44,7 +44,7 @@ endif(WIN32)
 
 if(UNIX)
     set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_unix.cpp)
-    
+
     if (APPLE)
         add_definitions(-DDISCORD_OSX)
         set(BASE_RPC_SRC ${BASE_RPC_SRC} discord_register_osx.m)
@@ -55,7 +55,19 @@ if(UNIX)
 
     add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC})
     target_link_libraries(discord-rpc PUBLIC pthread)
-    target_compile_options(discord-rpc PRIVATE -g -Wall)
+    target_compile_options(discord-rpc PRIVATE
+        -g
+        -Weverything
+        -Wno-unknown-pragmas # pragma push thing doesn't work on clang
+        -Wno-old-style-cast # it's fine
+        -Wno-c++98-compat # that was almost 2 decades ago
+        -Wno-c++98-compat-pedantic
+        -Wno-missing-noreturn
+        -Wno-padded # structure padding
+        -Wno-covered-switch-default
+        -Wno-exit-time-destructors # not sure about these
+        -Wno-global-constructors
+    )
     target_compile_options(discord-rpc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)
 
     if (APPLE)
