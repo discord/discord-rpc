@@ -71,7 +71,7 @@ static void UpdateReconnectTime()
 }
 
 #ifdef DISCORD_DISABLE_IO_THREAD
-DISCORD_EXPORT void Discord_UpdateConnection(void)
+extern "C" DISCORD_EXPORT void Discord_UpdateConnection(void)
 #else
 static void Discord_UpdateConnection(void)
 #endif
@@ -210,10 +210,10 @@ static bool RegisterForEvent(const char* evtName)
     return false;
 }
 
-DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
-                                       DiscordEventHandlers* handlers,
-                                       int autoRegister,
-                                       const char* optionalSteamId)
+extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
+                                                  DiscordEventHandlers* handlers,
+                                                  int autoRegister,
+                                                  const char* optionalSteamId)
 {
     if (autoRegister) {
         if (optionalSteamId && optionalSteamId[0]) {
@@ -267,7 +267,7 @@ DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
 #endif
 }
 
-DISCORD_EXPORT void Discord_Shutdown()
+extern "C" DISCORD_EXPORT void Discord_Shutdown()
 {
     if (!Connection) {
         return;
@@ -285,7 +285,7 @@ DISCORD_EXPORT void Discord_Shutdown()
     RpcConnection::Destroy(Connection);
 }
 
-DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence)
+extern "C" DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
     PresenceMutex.lock();
     QueuedPresence.length = JsonWriteRichPresenceObj(
@@ -294,7 +294,7 @@ DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence)
     SignalIOActivity();
 }
 
-DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_REPLY_ */ int reply)
+extern "C" DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_REPLY_ */ int reply)
 {
     // if we are not connected, let's not batch up stale messages for later
     if (!Connection || !Connection->IsOpen()) {
@@ -309,7 +309,7 @@ DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_REPLY_ */ int
     }
 }
 
-DISCORD_EXPORT void Discord_RunCallbacks()
+extern "C" DISCORD_EXPORT void Discord_RunCallbacks()
 {
     // Note on some weirdness: internally we might connect, get other signals, disconnect any number
     // of times inbetween calls here. Externally, we want the sequence to seem sane, so any other
