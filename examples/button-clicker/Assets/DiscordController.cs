@@ -51,9 +51,15 @@ public class DiscordController : MonoBehaviour {
     {
         ++callbackCalls;
         Debug.Log(string.Format("Discord: spectate ({0})", secret));
-    }
+	}
 
-    void Start () {
+	public void RequestCallback(DiscordRpc.JoinRequest request)
+	{
+		++callbackCalls;
+		Debug.Log(string.Format("Discord: join request {0}: {1}", request.username, request.userId));
+	}
+
+	void Start () {
     }
 	
 	void Update () {
@@ -71,6 +77,7 @@ public class DiscordController : MonoBehaviour {
         handlers.errorCallback += ErrorCallback;
         handlers.joinCallback += JoinCallback;
         handlers.spectateCallback += SpectateCallback;
+		handlers.requestCallback += RequestCallback;
         DiscordRpc.Initialize(applicationId, ref handlers, true, optionalSteamId);
     }
 
