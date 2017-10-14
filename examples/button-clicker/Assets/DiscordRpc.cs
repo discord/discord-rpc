@@ -17,18 +17,18 @@ public class DiscordRpc
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void SpectateCallback(string secret);
 
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	public delegate void RequestCallback(JoinRequest request);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void RequestCallback(JoinRequest request);
 
-	public struct EventHandlers
+    public struct EventHandlers
     {
         public ReadyCallback readyCallback;
         public DisconnectedCallback disconnectedCallback;
         public ErrorCallback errorCallback;
         public JoinCallback joinCallback;
         public SpectateCallback spectateCallback;
-		public RequestCallback requestCallback;
-	}
+        public RequestCallback requestCallback;
+    }
 
     [System.Serializable]
     public struct RichPresence
@@ -50,23 +50,23 @@ public class DiscordRpc
         public bool instance;
     }
 
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-	public struct JoinRequest
-	{
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 24)]
-		public string userId;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 48)]
-		public string username;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-		public string avatarUrl;
-	}
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public struct JoinRequest
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 24)]
+        public string userId;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 48)]
+        public string username;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string avatarUrl;
+    }
 
-	public enum Reply
-	{
-		No = 0,
-		Yes = 1,
-		Ignore = 2
-	}
+    public enum Reply
+    {
+        No = 0,
+        Yes = 1,
+        Ignore = 2
+    }
 
     [DllImport("discord-rpc", EntryPoint = "Discord_Initialize", CallingConvention = CallingConvention.Cdecl)]
     public static extern void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId);
@@ -80,7 +80,7 @@ public class DiscordRpc
     [DllImport("discord-rpc", EntryPoint = "Discord_UpdatePresence", CallingConvention = CallingConvention.Cdecl)]
     public static extern void UpdatePresence(ref RichPresence presence);
 
-	[DllImport("discord-rpc", EntryPoint = "Discord_Respond", CallingConvention = CallingConvention.Cdecl)]
-	public static extern void Respond(string userId, Reply reply);
+    [DllImport("discord-rpc", EntryPoint = "Discord_Respond", CallingConvention = CallingConvention.Cdecl)]
+    public static extern void Respond(string userId, Reply reply);
 }
 
