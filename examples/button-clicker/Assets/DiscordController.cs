@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
-public class DiscordController : MonoBehaviour {
+public class DiscordController : MonoBehaviour
+{
     public DiscordRpc.RichPresence presence;
     public string applicationId;
     public string optionalSteamId;
@@ -51,21 +52,23 @@ public class DiscordController : MonoBehaviour {
     {
         ++callbackCalls;
         Debug.Log(string.Format("Discord: spectate ({0})", secret));
-	}
-
-	public void RequestCallback(DiscordRpc.JoinRequest request)
-	{
-		++callbackCalls;
-		Debug.Log(string.Format("Discord: join request {0}: {1}", request.username, request.userId));
-	}
-
-	void Start () {
     }
-	
-	void Update () {
+
+    public void RequestCallback(DiscordRpc.JoinRequest request)
+    {
+        ++callbackCalls;
+        Debug.Log(string.Format("Discord: join request {0}: {1}", request.username, request.userId));
+    }
+
+    void Start()
+    {
+    }
+
+    void Update()
+    {
         DiscordRpc.RunCallbacks();
     }
-    
+
     void OnEnable()
     {
         Debug.Log("Discord: init");
@@ -77,7 +80,7 @@ public class DiscordController : MonoBehaviour {
         handlers.errorCallback += ErrorCallback;
         handlers.joinCallback += JoinCallback;
         handlers.spectateCallback += SpectateCallback;
-		handlers.requestCallback += RequestCallback;
+        handlers.requestCallback += RequestCallback;
         DiscordRpc.Initialize(applicationId, ref handlers, true, optionalSteamId);
     }
 
@@ -89,6 +92,6 @@ public class DiscordController : MonoBehaviour {
 
     void OnDestroy()
     {
-        
+
     }
 }
