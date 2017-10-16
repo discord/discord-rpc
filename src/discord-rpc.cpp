@@ -2,9 +2,9 @@
 
 #include "backoff.h"
 #include "discord_register.h"
+#include "msg_queue.h"
 #include "rpc_connection.h"
 #include "serialization.h"
-#include "msg_queue.h"
 
 #include <atomic>
 #include <chrono>
@@ -136,16 +136,16 @@ static void Discord_UpdateConnection(void)
                     auto user = GetObjMember(data, "user");
                     auto userId = GetStrMember(user, "id");
                     auto username = GetStrMember(user, "username");
-                    auto avatarUrl = GetStrMember(user, "avatar");
+                    auto avatar = GetStrMember(user, "avatar");
                     auto joinReq = JoinAskQueue.GetNextAddMessage();
                     if (userId && username && joinReq) {
                         StringCopy(joinReq->userId, userId);
                         StringCopy(joinReq->username, username);
-                        if (avatarUrl) {
-                            StringCopy(joinReq->avatarUrl, avatarUrl);
+                        if (avatar) {
+                            StringCopy(joinReq->avatar, avatar);
                         }
                         else {
-                            joinReq->avatarUrl[0] = 0;
+                            joinReq->avatar[0] = 0;
                         }
                         JoinAskQueue.CommitAdd();
                     }

@@ -83,7 +83,7 @@ static void handleDiscordJoinRequest(const DiscordJoinRequest* request)
     char yn[4];
     printf("\nDiscord: join request from %s - %s - %s\n",
            request->username,
-           request->avatarUrl,
+           request->avatar,
            request->userId);
     do {
         printf("Accept? (y/n)");
