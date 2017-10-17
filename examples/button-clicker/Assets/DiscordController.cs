@@ -1,5 +1,14 @@
 ﻿using UnityEngine;
 
+[System.Serializable]
+public class DiscordJoinEvent : UnityEngine.Events.UnityEvent<string> { }
+
+[System.Serializable]
+public class DiscordSpectateEvent : UnityEngine.Events.UnityEvent<string> { }
+
+[System.Serializable]
+public class DiscordJoinRequestEvent : UnityEngine.Events.UnityEvent<DiscordRpc.JoinRequest> { }
+
 public class DiscordController : MonoBehaviour
 {
     public DiscordRpc.RichPresence presence;
@@ -9,6 +18,9 @@ public class DiscordController : MonoBehaviour
     public int clickCounter;
     public UnityEngine.Events.UnityEvent onConnect;
     public UnityEngine.Events.UnityEvent onDisconnect;
+    public DiscordJoinEvent onJoin;
+    public DiscordJoinEvent onSpectate;
+    public DiscordJoinRequestEvent onJoinRequest;
 
     DiscordRpc.EventHandlers handlers;
 
@@ -46,18 +58,21 @@ public class DiscordController : MonoBehaviour
     {
         ++callbackCalls;
         Debug.Log(string.Format("Discord: join ({0})", secret));
+        onJoin.Invoke(secret);
     }
 
     public void SpectateCallback(string secret)
     {
         ++callbackCalls;
         Debug.Log(string.Format("Discord: spectate ({0})", secret));
+        onSpectate.Invoke(secret);
     }
 
     public void RequestCallback(DiscordRpc.JoinRequest request)
     {
         ++callbackCalls;
         Debug.Log(string.Format("Discord: join request {0}: {1}", request.username, request.userId));
+        onJoinRequest.Invoke(request);
     }
 
     void Start()
