@@ -58,7 +58,7 @@ public class DiscordRpc
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 48)]
         public string username;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string avatarUrl;
+        public string avatar;
     }
 
     public enum Reply
