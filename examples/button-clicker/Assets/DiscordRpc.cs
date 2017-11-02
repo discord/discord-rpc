@@ -50,14 +50,11 @@ public class DiscordRpc
         public bool instance;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [System.Serializable]
     public struct JoinRequest
     {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 24)]
         public string userId;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 48)]
         public string username;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string avatar;
     }
 

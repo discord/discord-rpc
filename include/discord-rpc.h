@@ -42,9 +42,9 @@ typedef struct DiscordRichPresence {
 } DiscordRichPresence;
 
 typedef struct DiscordJoinRequest {
-    char userId[24];
-    char username[48];
-    char avatar[128];
+    const char* userId;
+    const char* username;
+    const char* avatar;
 } DiscordJoinRequest;
 
 typedef struct DiscordEventHandlers {

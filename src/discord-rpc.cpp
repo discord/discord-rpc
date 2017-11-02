@@ -32,6 +32,12 @@ struct QueuedMessage {
     }
 };
 
+struct JoinRequest {
+    char userId[24];
+    char username[48];
+    char avatar[128];
+};
+
 static RpcConnection* Connection{nullptr};
 static DiscordEventHandlers Handlers{};
 static std::atomic_bool WasJustConnected{false};
@@ -48,7 +54,7 @@ static char LastDisconnectErrorMessage[256];
 static std::mutex PresenceMutex;
 static QueuedMessage QueuedPresence{};
 static MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
-static MsgQueue<DiscordJoinRequest, JoinQueueSize> JoinAskQueue;
+static MsgQueue<JoinRequest, JoinQueueSize> JoinAskQueue;
 
 // We want to auto connect, and retry on failure, but not as fast as possible. This does expoential
 // backoff from 0.5 seconds to 1 minute
@@ -353,7 +359,8 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks()
     while (JoinAskQueue.HavePendingSends()) {
         auto req = JoinAskQueue.GetNextSendMessage();
         if (Handlers.joinRequest) {
-            Handlers.joinRequest(req);
+            DiscordJoinRequest djr{req->userId, req->username, req->avatar};
+            Handlers.joinRequest(&djr);
         }
         JoinAskQueue.CommitSend();
     }
