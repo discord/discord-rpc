@@ -33,9 +33,15 @@ struct QueuedMessage {
 };
 
 struct JoinRequest {
-    char userId[24];
-    char username[48];
-    char avatar[128];
+    // snowflake (64bit int), turned into a ascii decimal string, at most 20 chars +1 null
+    // terminator = 21
+    char userId[22];
+    // 32 unicode glyphs is max name size => 4 bytes per glyph in the worst case, +1 for null
+    // terminator = 129
+    char username[130];
+    // optional 'a_' + md5 hex digest (32 bytes) + null terminator = 35
+    char avatar[36];
+    // +1 on each because: it's even / I'm paranoid
 };
 
 static RpcConnection* Connection{nullptr};
