@@ -24,6 +24,8 @@ function.
 Download a release package, extract it, add `/include` to your compile includes, `/lib` to your
 linker paths, and link with `discord-rpc`.
 
+Note that the release packages were compiled using Visual Studio 2015, so the [Visual C++ Redistributable for VS2015](https://www.microsoft.com/en-us/download/details.aspx?id=48145) will be a requirement for your game. If you wish to avoid this dependency, you should compile the libraries yourself using whatever dependencies are already in your game.
+
 ### From repo
 
 There's a [CMake](https://cmake.org/download/) file that should be able to generate the lib for
