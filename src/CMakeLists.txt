@@ -30,6 +30,7 @@ if(WIN32)
     set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_win.cpp discord_register_win.cpp)
     add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC})
     target_compile_options(discord-rpc PRIVATE /EHsc
+        /MT
         /Wall
         /wd4100 # unreferenced formal parameter
         /wd4514 # unreferenced inline
