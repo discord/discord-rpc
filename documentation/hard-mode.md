@@ -56,7 +56,9 @@ Below is a full example of a `SET_ACTIVITY` command. Field restrictions like siz
 
 ## New RPC Events
 
-The two new RPC events for Rich Presence power the ability to join and spectate your friends' games. First is the `GAME_JOIN` event:
+The three new RPC events for Rich Presence power the ability to join and spectate your friends' games.
+
+First is the `ACTIVITY_JOIN` event:
 
 ```json
 {
@@ -64,11 +66,11 @@ The two new RPC events for Rich Presence power the ability to join and spectate 
   "data": {
     "secret": "025ed05c71f639de8bfaa0d679d7c94b2fdce12f"
   },
-  "evnt": "GAME_JOIN"
+  "evnt": "ACTIVITY_JOIN"
 }
 ```
 
-And second is the `GAME_SPECTATE` event:
+Second is the `ACTIVITY_SPECTATE` event:
 
 ```json
 {
@@ -76,7 +78,25 @@ And second is the `GAME_SPECTATE` event:
   "data": {
     "secret": "e7eb30d2ee025ed05c71ea495f770b76454ee4e0"
   },
-  "evnt": "GAME_SPECTATE"
+  "evnt": "ACTIVITY_SPECTATE"
+}
+```
+
+And third is the `ACTIVITY_JOIN_REQUEST` event:
+
+```json
+{
+  "cmd": "DISPATCH",
+  "data": {
+    "user": {
+      "id": "53908232506183680",
+      "username": "Mason",
+      "discriminator": "1337",
+      "avatar": "a_bab14f271d565501444b2ca3be944b25"
+    },
+    "secret": "e459ca99273f59909dd16ed97865f3ad"
+  },
+  "evnt": "ACTIVITY_JOIN_REQUEST"
 }
 ```
 
@@ -85,7 +105,7 @@ In order to receive these events, you need to [subscribe](https://discordapp.com
 ```json
 {
     "nonce": "be9a6de3-31d0-4767-a8e9-4818c5690015",
-    "evt": "GAME_JOIN",
+    "evt": "ACTIVITY_JOIN",
     "cmd": "SUBSCRIBE"
 }
 ```
@@ -93,7 +113,15 @@ In order to receive these events, you need to [subscribe](https://discordapp.com
 ```json
 {
     "nonce": "ae9qdde3-31d0-8989-a8e9-dnakwy174he",
-    "evt": "GAME_SPECTATE",
+    "evt": "ACTIVITY_SPECTATE",
+    "cmd": "SUBSCRIBE"
+}
+```
+
+```json
+{
+    "nonce": "5dc0c062-98c6-47a0-8922-bbb52e9d6afa",
+    "evt": "ACTIVITY_JOIN_REQUEST",
     "cmd": "SUBSCRIBE"
 }
 ```
