@@ -96,7 +96,7 @@ And third is the `ACTIVITY_JOIN_REQUEST` event:
     },
     "secret": "e459ca99273f59909dd16ed97865f3ad"
   },
-  "evnt": "ACTIVITY_SPECTATE"
+  "evnt": "ACTIVITY_JOIN_REQUEST"
 }
 ```
 
