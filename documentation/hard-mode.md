@@ -58,7 +58,7 @@ Below is a full example of a `SET_ACTIVITY` command. Field restrictions like siz
 
 The three new RPC events for Rich Presence power the ability to join and spectate your friends' games.
 
-First is the `ACTIVITY` event:
+First is the `ACTIVITY_JOIN` event:
 
 ```json
 {
