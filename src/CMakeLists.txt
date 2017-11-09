@@ -61,6 +61,9 @@ if(UNIX)
     target_compile_options(discord-rpc PRIVATE
         -g
         -Wall
+        -Wextra
+        -Wpedantic
+        -Werror
         -Wno-unknown-pragmas # pragma push thing doesn't work on clang
         -Wno-old-style-cast # it's fine
         -Wno-c++98-compat # that was almost 2 decades ago
