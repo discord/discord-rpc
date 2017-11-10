@@ -4,8 +4,8 @@
 #define NOMCX
 #define NOSERVICE
 #define NOIME
-#include <windows.h>
 #include <assert.h>
+#include <windows.h>
 
 int GetProcessId()
 {

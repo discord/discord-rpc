@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdint.h>
 #include <algorithm>
 #include <random>
+#include <stdint.h>
 #include <time.h>
 
 struct Backoff {
