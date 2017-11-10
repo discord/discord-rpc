@@ -79,6 +79,9 @@ public:
         }
         // allocate how much you need in the first place
         assert(!originalPtr && !originalSize);
+        // unused parameter warning
+        (void)(originalPtr);
+        (void)(originalSize);
         return Malloc(newSize);
     }
     static void Free(void* ptr)
