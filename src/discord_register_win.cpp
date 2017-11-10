@@ -121,7 +121,7 @@ extern "C" void Discord_RegisterSteamGame(const char* applicationId, const char*
     }
 
     wchar_t command[1024];
-    StringCbPrintfW(command, sizeof(command), L"\"%s\" steam://run/%s", steamPath, wSteamId);
+    StringCbPrintfW(command, sizeof(command), L"\"%s\" steam://rungameid/%s", steamPath, wSteamId);
 
     Discord_RegisterW(appId, command);
 }
