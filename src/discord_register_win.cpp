@@ -5,9 +5,9 @@
 #define NOMCX
 #define NOSERVICE
 #define NOIME
+#include <windows.h>
 #include <Psapi.h>
 #include <Strsafe.h>
-#include <windows.h>
 #pragma comment(lib, "Psapi.lib")
 
 void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
