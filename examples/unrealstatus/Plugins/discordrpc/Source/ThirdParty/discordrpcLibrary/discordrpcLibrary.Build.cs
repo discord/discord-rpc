@@ -12,6 +12,7 @@ public class discordrpcLibrary : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			// Add the import library
+			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Include"));
 			PublicLibraryPaths.Add(Path.Combine(ModuleDirectory, "x64", "Release"));
 			PublicAdditionalLibraries.Add("discord-rpc.lib");
 
