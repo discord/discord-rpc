@@ -2,8 +2,8 @@
 
 #include "discordrpc.h"
 #include "Core.h"
-#include "ModuleManager.h"
 #include "IPluginManager.h"
+#include "ModuleManager.h"
 
 #define LOCTEXT_NAMESPACE "FdiscordrpcModule"
 
