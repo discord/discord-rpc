@@ -1,29 +1,29 @@
 version: '{build}'
 install:
-- cmd: >-
-    mkdir thirdparty
+  - mkdir thirdparty
+  - cd thirdparty
+  - set CMAKE_URL="https://cmake.org/files/v3.8/cmake-3.8.0-win64-x64.zip"
+  - appveyor DownloadFile %CMAKE_URL% -FileName cmake.zip
+  - 7z x cmake.zip -o%cd% > nul
+  - move cmake-* cmake
+  - set PATH=%cd%\cmake\bin;%PATH%
+  - cmake --version
+  - cd ..
+  - python --version
+  - python -m pip install click
 
-    cd thirdparty
-
-    set CMAKE_URL="https://cmake.org/files/v3.8/cmake-3.8.0-win64-x64.zip"
-
-    appveyor DownloadFile %CMAKE_URL% -FileName cmake.zip
-
-    7z x cmake.zip -o%cd% > nul
-
-    move cmake-* cmake
-
-    set PATH=%cd%\cmake\bin;%PATH%
-
-    cmake --version
-
-    cd ..
 build_script:
-- cmd: >-
-    mkdir build
+  - python --version
+  - python -m pip install click
+  - mkdir examples\unrealstatus\Plugins\discordrpc\Binaries\ThirdParty\discordrpcLibrary\Win64
+  - python build.py
 
-    cd build
-
-    cmake .. -DCMAKE_INSTALL_PREFIX="C:\Program Files (x86)\DiscordRPC"
-
-    cmake --build . --config Release --target install
+artifacts:
+- path: builds\win32-dynamic
+  name: win32-dynamic
+- path: builds\win32-static
+  name: win32-static
+- path: builds\win64-dynamic
+  name: win64-dynamic
+- path: builds\win64-static
+  name: win64-static
