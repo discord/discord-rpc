@@ -92,6 +92,6 @@ void Discord_Register(const char* applicationId, const char* command)
 void Discord_RegisterSteamGame(const char* applicationId, const char* steamId)
 {
     char command[256];
-    sprintf(command, "steam://run/%s", steamId);
+    sprintf(command, "steam://rungameid/%s", steamId);
     Discord_Register(applicationId, command);
 }
