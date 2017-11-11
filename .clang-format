@@ -30,6 +30,15 @@ DerivePointerAlignment: false
 DisableFormat: false
 ExperimentalAutoDetectBinPacking: false
 ForEachMacros: [ foreach ]
+IncludeCategories:
+  - Regex: '^("|<)stdafx\.h(pp)?("|>)'
+    Priority: -1
+  - Regex: '^("|<)(W|w)indows\.h("|>)'
+    Priority: 1
+  - Regex: '^<.*'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 10
 IndentCaseLabels: false
 IndentWidth: 4
 IndentWrappedFunctionNames: false
