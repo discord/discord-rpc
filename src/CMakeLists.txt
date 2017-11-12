@@ -27,7 +27,6 @@ if(WIN32)
     add_library(discord-rpc ${BASE_RPC_SRC})
     if (MSVC)
     target_compile_options(discord-rpc PRIVATE /EHsc
-        /MT
         /Wall
         /wd4100 # unreferenced formal parameter
         /wd4514 # unreferenced inline
@@ -105,13 +104,10 @@ install(
     EXPORT "discord-rpc"
     RUNTIME
         DESTINATION "bin"
-        CONFIGURATIONS Release
     LIBRARY
         DESTINATION "lib"
-        CONFIGURATIONS Release
     ARCHIVE
         DESTINATION "lib"
-        CONFIGURATIONS Release
     INCLUDES
         DESTINATION "include"
 )
