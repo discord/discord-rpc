@@ -85,7 +85,9 @@ extern "C" void Discord_Register(const char* applicationId, const char* command)
              "xdg-mime default discord-%s.desktop x-scheme-handler/discord-%s",
              applicationId,
              applicationId);
-    system(xdgMimeCommand);
+    if (system(xdgMimeCommand) < 0) {
+        fprintf(stderr, "Failed to register mime handler\n");
+    }
 }
 
 extern "C" void Discord_RegisterSteamGame(const char* applicationId, const char* steamId)
