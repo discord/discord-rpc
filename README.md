@@ -42,7 +42,7 @@ Sometimes I use the generated project files. There are a couple of CMake options
 | flag | default | does |
 |------|---------|------|
 | `ENABLE_IO_THREAD` | `ON` | When enabled, we start up a thread to do io processing, if disabled you should call `Discord_UpdateConnection` yourself.
-| `BUILD_DYNAMIC_LIB` | `OFF` | Build library as a DLL
+| `BUILD_SHARED_LIBS` | `OFF` | Build library as a DLL
 
 ## Sample: send-presence
 

@@ -73,9 +73,9 @@ def main(clean):
         generator64 = 'Visual Studio 14 2015 Win64'
 
         build_lib('win32-static', generator32, {})
-        build_lib('win32-dynamic', generator32, {'BUILD_DYNAMIC_LIB': True})
+        build_lib('win32-dynamic', generator32, {'BUILD_SHARED_LIBS': True})
         build_lib('win64-static', generator64, {})
-        build_lib('win64-dynamic', generator64, {'BUILD_DYNAMIC_LIB': True})
+        build_lib('win64-dynamic', generator64, {'BUILD_SHARED_LIBS': True})
 
         # todo: this in some better way
         src_dll = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release', 'discord-rpc.dll')
@@ -85,7 +85,7 @@ def main(clean):
         shutil.copy(src_dll, dst_dll)
     elif sys.platform == 'darwin':
         build_lib('osx-static', None, {})
-        build_lib('osx-dynamic', None, {'BUILD_DYNAMIC_LIB': True})
+        build_lib('osx-dynamic', None, {'BUILD_SHARED_LIBS': True})
 
     create_archive()
 
