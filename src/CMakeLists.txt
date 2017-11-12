@@ -76,6 +76,10 @@ if(UNIX)
     )
     target_compile_options(discord-rpc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)
 
+    if (${BUILD_SHARED_LIBS})
+        target_compile_options(discord-rpc PRIVATE -fPIC)
+    endif (${BUILD_SHARED_LIBS})
+
     if (APPLE)
         target_link_libraries(discord-rpc PRIVATE "-framework AppKit")
     endif (APPLE)
