@@ -85,7 +85,7 @@ endif(UNIX)
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)
 
 if (NOT ${ENABLE_IO_THREAD})
-    add_definitions(discord-rpc PUBLIC -DDISCORD_DISABLE_IO_THREAD)
+    target_compile_definitions(discord-rpc PUBLIC -DDISCORD_DISABLE_IO_THREAD)
 endif (NOT ${ENABLE_IO_THREAD})
 
 if (${BUILD_DYNAMIC_LIB})
