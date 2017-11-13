@@ -1,6 +1,7 @@
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 option(ENABLE_IO_THREAD "Start up a separate I/O thread, otherwise I'd need to call an update function" ON)
+option(USE_STATIC_CRT "Use /MT[d] for dynamic library" OFF)
 
 set(BASE_RPC_SRC
     ${PROJECT_SOURCE_DIR}/include/discord-rpc.h
@@ -22,11 +23,21 @@ if (${BUILD_SHARED_LIBS})
 endif(${BUILD_SHARED_LIBS})
 
 if(WIN32)
+    set(CRT_FLAGS)
+    if(USE_STATIC_CRT)
+        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set(CRT_FLAGS /MTd)
+        else()
+            set(CRT_FLAGS /MT)
+        endif()
+    endif(USE_STATIC_CRT)
+
     add_definitions(-DDISCORD_WINDOWS)
     set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_win.cpp discord_register_win.cpp)
     add_library(discord-rpc ${BASE_RPC_SRC})
     if (MSVC)
     target_compile_options(discord-rpc PRIVATE /EHsc
+        ${CRT_FLAGS}
         /Wall
         /wd4100 # unreferenced formal parameter
         /wd4514 # unreferenced inline
