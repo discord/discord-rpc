@@ -1,5 +1,5 @@
-#include "discord-rpc.h"
 #include <stdio.h>
+#include "discord-rpc.h"
 
 #include <errno.h>
 #include <stdlib.h>
