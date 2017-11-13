@@ -73,9 +73,9 @@ def main(clean):
         generator64 = 'Visual Studio 14 2015 Win64'
 
         build_lib('win32-static', generator32, {})
-        build_lib('win32-dynamic', generator32, {'BUILD_SHARED_LIBS': True})
+        build_lib('win32-dynamic', generator32, {'BUILD_SHARED_LIBS': True, 'USE_STATIC_CRT': True})
         build_lib('win64-static', generator64, {})
-        build_lib('win64-dynamic', generator64, {'BUILD_SHARED_LIBS': True})
+        build_lib('win64-dynamic', generator64, {'BUILD_SHARED_LIBS': True, 'USE_STATIC_CRT': True})
 
         # todo: this in some better way
         src_dll = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release', 'discord-rpc.dll')
