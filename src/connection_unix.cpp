@@ -19,7 +19,7 @@ struct BaseConnectionUnix : public BaseConnection {
 };
 
 static BaseConnectionUnix Connection;
-static sockaddr_un PipeAddr{};
+static sockaddr_un PipeAddr;
 #ifdef MSG_NOSIGNAL
 static int MsgFlags = MSG_NOSIGNAL;
 #else
