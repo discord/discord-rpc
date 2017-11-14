@@ -27,12 +27,12 @@ else(CLANG_FORMAT_CMD)
 endif(CLANG_FORMAT_CMD)
 
 # thirdparty stuff
-execute_process( 
+execute_process(
     COMMAND mkdir ${CMAKE_SOURCE_DIR}/thirdparty
     ERROR_QUIET
 )
 
-find_file(RAPIDJSONTEST NAMES rapidjson rapidjson-1.1.0 PATHS ${CMAKE_SOURCE_DIR}/thirdparty)
+find_file(RAPIDJSONTEST NAMES rapidjson rapidjson-1.1.0 PATHS ${CMAKE_SOURCE_DIR}/thirdparty CMAKE_FIND_ROOT_PATH_BOTH)
 if (NOT RAPIDJSONTEST)
     message("no rapidjson, download")
     set(RJ_TAR_FILE ${CMAKE_SOURCE_DIR}/thirdparty/v1.1.0.tar.gz)
@@ -44,7 +44,7 @@ if (NOT RAPIDJSONTEST)
     file(REMOVE ${RJ_TAR_FILE})
 endif(NOT RAPIDJSONTEST)
 
-find_file(RAPIDJSON NAMES rapidjson rapidjson-1.1.0 PATHS ${CMAKE_SOURCE_DIR}/thirdparty)
+find_file(RAPIDJSON NAMES rapidjson rapidjson-1.1.0 PATHS ${CMAKE_SOURCE_DIR}/thirdparty CMAKE_FIND_ROOT_PATH_BOTH)
 
 add_library(rapidjson STATIC IMPORTED ${RAPIDJSON})
 

@@ -1,3 +1,9 @@
+#ifdef __MINGW32__
+// 0x0600 == vista
+#define WINVER 0x0600
+#define _WIN32_WINNT 0x0600
+#endif // __MINGW32__
+
 #include "discord-rpc.h"
 #include <stdio.h>
 
@@ -6,9 +12,8 @@
 #define NOSERVICE
 #define NOIME
 #include <windows.h>
-#include <Psapi.h>
-#include <Strsafe.h>
-#pragma comment(lib, "Psapi.lib")
+#include <psapi.h>
+#include <strsafe.h>
 
 void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
 {
@@ -24,7 +29,7 @@ void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
         StringCbPrintfW(openCommand, sizeof(openCommand), L"%s", command);
     }
     else {
-        lstrcpyW(openCommand, exeFilePath);
+        StringCbCopyW(openCommand, sizeof(openCommand), exeFilePath);
     }
 
     wchar_t protocolName[64];
