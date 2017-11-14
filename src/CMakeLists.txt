@@ -29,6 +29,7 @@ if(WIN32)
     add_definitions(-DDISCORD_WINDOWS)
     set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_win.cpp discord_register_win.cpp)
     add_library(discord-rpc ${RPC_LIBRARY_TYPE} ${BASE_RPC_SRC})
+    if (MSVC)
     target_compile_options(discord-rpc PRIVATE /EHsc
         /MT
         /Wall
@@ -44,6 +45,8 @@ if(WIN32)
         /wd4946 # reinterpret_cast used between related classes
         /wd5027 # move assignment operator was implicitly defined as deleted
     )
+    endif(MSVC)
+    target_link_libraries(discord-rpc PRIVATE psapi)
 endif(WIN32)
 
 if(UNIX)
