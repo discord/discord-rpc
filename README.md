@@ -44,6 +44,8 @@ Sometimes I use the generated project files. There are a couple of CMake options
 | `ENABLE_IO_THREAD` | `ON` | When enabled, we start up a thread to do io processing, if disabled you should call `Discord_UpdateConnection` yourself.
 | `BUILD_DYNAMIC_LIB` | `OFF` | Build library as a DLL
 
+You can also try the `build.py` script for an easy compile for whatever OS you are on.
+
 ## Sample: send-presence
 
 This is a text adventure "game" that inits/deinits the connection to Discord, and sends a presence
