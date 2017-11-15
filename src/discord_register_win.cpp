@@ -1,3 +1,9 @@
+/*
+ * MinGW defaults to WINNT 5.1 (aka XP), however some of functions used here
+ * require WINNT >= 6.0 APIs, which are only visible when WINVER and
+ * _WIN32_WINNT defines are set properly before including any system headers.
+ * Such API is e.g. RegSetKeyValueW.
+ */
 #ifdef __MINGW32__
 // 0x0600 == vista
 #define WINVER 0x0600
