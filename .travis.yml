@@ -1,0 +1,41 @@
+language: cpp
+
+addons:
+  apt:
+    sources:
+      - llvm-toolchain-trusty-5.0
+    packages:
+      - clang-format-5.0 # needed for formatting
+
+env:
+  global:
+    - CLANG_FORMAT_SUFFIX="-5.0"
+
+matrix:
+  include:
+    - os: linux
+      env: MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+    - os: linux
+      env: MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0 # note this is *NOT* the same version as clang-format
+
+# prevent Travis from overwriting our CXX variables
+before_install:
+    - eval "${MATRIX_EVAL}"
+
+script:
+    - mkdir build
+    - cd build
+    - cmake -DCLANG_FORMAT_SUFFIX=$CLANG_FORMAT_SUFFIX --config Release ..
+    - cmake --build . -- -j2

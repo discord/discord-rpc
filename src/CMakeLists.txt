@@ -3,6 +3,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 option(ENABLE_IO_THREAD "Start up a separate I/O thread, otherwise I'd need to call an update function" ON)
 option(USE_STATIC_CRT "Use /MT[d] for dynamic library" OFF)
 
+set(CMAKE_CXX_STANDARD 14)
+
 set(BASE_RPC_SRC
     ${PROJECT_SOURCE_DIR}/include/discord-rpc.h
     discord-rpc.cpp
@@ -83,7 +85,6 @@ if(UNIX)
         -Wno-exit-time-destructors # not sure about these
         -Wno-global-constructors
     )
-    target_compile_options(discord-rpc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)
 
     if (${BUILD_SHARED_LIBS})
         target_compile_options(discord-rpc PRIVATE -fPIC)
