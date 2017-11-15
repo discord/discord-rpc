@@ -23,34 +23,33 @@ if (${BUILD_SHARED_LIBS})
 endif(${BUILD_SHARED_LIBS})
 
 if(WIN32)
-    set(CRT_FLAGS)
-    if(USE_STATIC_CRT)
-        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set(CRT_FLAGS /MTd)
-        else()
-            set(CRT_FLAGS /MT)
-        endif()
-    endif(USE_STATIC_CRT)
-
     add_definitions(-DDISCORD_WINDOWS)
     set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_win.cpp discord_register_win.cpp)
     add_library(discord-rpc ${BASE_RPC_SRC})
     if (MSVC)
-    target_compile_options(discord-rpc PRIVATE /EHsc
-        ${CRT_FLAGS}
-        /Wall
-        /wd4100 # unreferenced formal parameter
-        /wd4514 # unreferenced inline
-        /wd4625 # copy constructor deleted
-        /wd5026 # move constructor deleted
-        /wd4626 # move assignment operator deleted
-        /wd4668 # not defined preprocessor macro
-        /wd4710 # function not inlined
-        /wd4711 # function was inlined
-        /wd4820 # structure padding
-        /wd4946 # reinterpret_cast used between related classes
-        /wd5027 # move assignment operator was implicitly defined as deleted
-    )
+        set(CRT_FLAGS)
+        if(USE_STATIC_CRT)
+            if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+                set(CRT_FLAGS /MTd)
+            else()
+                set(CRT_FLAGS /MT)
+            endif()
+        endif(USE_STATIC_CRT)
+        target_compile_options(discord-rpc PRIVATE /EHsc
+            ${CRT_FLAGS}
+            /Wall
+            /wd4100 # unreferenced formal parameter
+            /wd4514 # unreferenced inline
+            /wd4625 # copy constructor deleted
+            /wd5026 # move constructor deleted
+            /wd4626 # move assignment operator deleted
+            /wd4668 # not defined preprocessor macro
+            /wd4710 # function not inlined
+            /wd4711 # function was inlined
+            /wd4820 # structure padding
+            /wd4946 # reinterpret_cast used between related classes
+            /wd5027 # move assignment operator was implicitly defined as deleted
+        )
     endif(MSVC)
     target_link_libraries(discord-rpc PRIVATE psapi)
 endif(WIN32)
