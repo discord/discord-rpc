@@ -29,6 +29,14 @@ matrix:
             - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0 # note this is *NOT* the same version as clang-format
+    - os: linux
+      env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
 
 # prevent Travis from overwriting our CXX variables
 before_install:
