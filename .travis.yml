@@ -1,15 +1,10 @@
 language: cpp
 
-addons:
-  apt:
-    sources:
-      - llvm-toolchain-trusty-5.0
-    packages:
-      - clang-format-5.0 # needed for formatting
-
 env:
   global:
-    - CLANG_FORMAT_SUFFIX="-5.0"
+    - CLANG_FORMAT_SUFFIX="-dummy" # don't use formatting on Travis, this is
+                                   # needed not to use default 3.5 version
+                                   # which is too old.
 
 matrix:
   include:
@@ -28,7 +23,7 @@ matrix:
           sources:
             - llvm-toolchain-trusty-4.0
           packages:
-            - clang-4.0 # note this is *NOT* the same version as clang-format
+            - clang-4.0
     - os: linux
       env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
       addons:
