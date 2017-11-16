@@ -113,13 +113,13 @@ install(
     TARGETS discord-rpc
     EXPORT "discord-rpc"
     RUNTIME
-        DESTINATION "bin"
+        DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY
-        DESTINATION "lib"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE
-        DESTINATION "lib"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     INCLUDES
-        DESTINATION "include"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
 install(
