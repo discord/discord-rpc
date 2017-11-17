@@ -35,13 +35,15 @@ struct QueuedMessage {
 struct JoinRequest {
     // snowflake (64bit int), turned into a ascii decimal string, at most 20 chars +1 null
     // terminator = 21
-    char userId[22];
+    char userId[32];
     // 32 unicode glyphs is max name size => 4 bytes per glyph in the worst case, +1 for null
     // terminator = 129
-    char username[130];
+    char username[344];
+    // 4 decimal digits + 1 null terminator = 5
+    char discriminator[8];
     // optional 'a_' + md5 hex digest (32 bytes) + null terminator = 35
-    char avatar[36];
-    // +1 on each because: it's even / I'm paranoid
+    char avatar[128];
+    // Rounded way up because I'm paranoid about games breaking from future changes in these sizes
 };
 
 static RpcConnection* Connection{nullptr};
@@ -127,8 +129,9 @@ static void Discord_UpdateConnection(void)
                     continue;
                 }
 
+                auto data = GetObjMember(&message, "data");
+
                 if (strcmp(evtName, "ACTIVITY_JOIN") == 0) {
-                    auto data = GetObjMember(&message, "data");
                     auto secret = GetStrMember(data, "secret");
                     if (secret) {
                         StringCopy(JoinGameSecret, secret);
@@ -136,7 +139,6 @@ static void Discord_UpdateConnection(void)
                     }
                 }
                 else if (strcmp(evtName, "ACTIVITY_SPECTATE") == 0) {
-                    auto data = GetObjMember(&message, "data");
                     auto secret = GetStrMember(data, "secret");
                     if (secret) {
                         StringCopy(SpectateGameSecret, secret);
@@ -144,7 +146,6 @@ static void Discord_UpdateConnection(void)
                     }
                 }
                 else if (strcmp(evtName, "ACTIVITY_JOIN_REQUEST") == 0) {
-                    auto data = GetObjMember(&message, "data");
                     auto user = GetObjMember(data, "user");
                     auto userId = GetStrMember(user, "id");
                     auto username = GetStrMember(user, "username");
