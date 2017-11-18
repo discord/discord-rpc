@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DiscordRpcBlueprint.generated.h"
 #include "Engine.h"
+#include "DiscordRpcBlueprint.generated.h"
 
 // unreal's header tool hates clang-format
 // clang-format off
