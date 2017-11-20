@@ -1,7 +1,5 @@
-
-
 #include "DiscordRpcBlueprint.h"
-
+#include "Blueprint/AsyncTaskDownloadImage.h"
 #include "discord-rpc.h"
 
 DEFINE_LOG_CATEGORY(Discord)
@@ -9,122 +7,210 @@ DEFINE_LOG_CATEGORY(Discord)
 static UDiscordRpc* self = nullptr;
 static void ReadyHandler()
 {
-    UE_LOG(Discord, Log, TEXT("Discord connected"));
-    if (self) {
-        self->IsConnected = true;
-        self->OnConnected.Broadcast();
-    }
+	UE_LOG(Discord, Log, TEXT("Discord connected"));
+	if (self) {
+		self->IsConnected = true;
+		self->OnConnected.Broadcast();
+	}
 }
 
 static void DisconnectHandler(int errorCode, const char* message)
 {
-    auto msg = FString(message);
-    UE_LOG(Discord, Log, TEXT("Discord disconnected (%d): %s"), errorCode, *msg);
-    if (self) {
-        self->IsConnected = false;
-        self->OnDisconnected.Broadcast(errorCode, msg);
-    }
+	auto msg = FString(message);
+	UE_LOG(Discord, Log, TEXT("Discord disconnected (%d): %s"), errorCode, *msg);
+	if (self) {
+		self->IsConnected = false;
+		self->OnDisconnected.Broadcast(errorCode, msg);
+	}
 }
 
 static void ErroredHandler(int errorCode, const char* message)
 {
-    auto msg = FString(message);
-    UE_LOG(Discord, Log, TEXT("Discord error (%d): %s"), errorCode, *msg);
-    if (self) {
-        self->OnErrored.Broadcast(errorCode, msg);
-    }
+	auto msg = FString(message);
+	UE_LOG(Discord, Log, TEXT("Discord error (%d): %s"), errorCode, *msg);
+	if (self) {
+		self->OnErrored.Broadcast(errorCode, msg);
+	}
 }
 
 static void JoinGameHandler(const char* joinSecret)
 {
-    auto secret = FString(joinSecret);
-    UE_LOG(Discord, Log, TEXT("Discord join %s"), *secret);
-    if (self) {
-        self->OnJoin.Broadcast(secret);
-    }
+	auto secret = FString(joinSecret);
+	UE_LOG(Discord, Log, TEXT("Discord join %s"), *secret);
+	if (self) {
+		self->OnJoin.Broadcast(secret);
+	}
 }
 
 static void SpectateGameHandler(const char* spectateSecret)
 {
-    auto secret = FString(spectateSecret);
-    UE_LOG(Discord, Log, TEXT("Discord spectate %s"), *secret);
-    if (self) {
-        self->OnSpectate.Broadcast(secret);
-    }
+	auto secret = FString(spectateSecret);
+	UE_LOG(Discord, Log, TEXT("Discord spectate %s"), *secret);
+	if (self) {
+		self->OnSpectate.Broadcast(secret);
+	}
+}
+
+static void JoinRequestReceiveHandler(const DiscordJoinRequest* joinRequestPayload)
+{
+	if (!joinRequestPayload)
+	{
+		UE_LOG(Discord, Log, TEXT("received invalid Discord join request payload"));
+		return;
+	}
+
+	// wrap the payload with USTRUCT
+	FDiscordJoinRequestPayload payloadContainer(joinRequestPayload);
+
+	UE_LOG(Discord, Log, TEXT("Discord join request from username: %s, UserID: %s, Avatar: %s"), *payloadContainer.Username, 
+		*payloadContainer.UserID, 
+		*payloadContainer.Avatar);
+
+	if (self) {
+		// add to pending requests map
+		self->PendingJoinRequests.Add(payloadContainer.UserID, payloadContainer);
+
+		self->OnJoinRequest.Broadcast(payloadContainer);
+	}
 }
 
 void UDiscordRpc::Initialize(const FString& applicationId,
-                             bool autoRegister,
-                             const FString& optionalSteamId)
+							 bool autoRegister,
+							 const FString& optionalSteamId)
 {
-    self = this;
-    IsConnected = false;
-    DiscordEventHandlers handlers{};
-    handlers.ready = ReadyHandler;
-    handlers.disconnected = DisconnectHandler;
-    handlers.errored = ErroredHandler;
-    if (OnJoin.IsBound()) {
-        handlers.joinGame = JoinGameHandler;
-    }
-    if (OnSpectate.IsBound()) {
-        handlers.spectateGame = SpectateGameHandler;
-    }
-    auto appId = StringCast<ANSICHAR>(*applicationId);
-    auto steamId = StringCast<ANSICHAR>(*optionalSteamId);
-    Discord_Initialize(
-      (const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
+	self = this;
+	IsConnected = false;
+	DiscordEventHandlers handlers{};
+	handlers.ready = ReadyHandler;
+	handlers.disconnected = DisconnectHandler;
+	handlers.errored = ErroredHandler;
+	if (OnJoinRequest.IsBound())
+	{
+		handlers.joinRequest = JoinRequestReceiveHandler;
+	}
+	if (OnJoin.IsBound()) {
+		handlers.joinGame = JoinGameHandler;
+	}
+	if (OnSpectate.IsBound()) {
+		handlers.spectateGame = SpectateGameHandler;
+	}
+	auto appId = StringCast<ANSICHAR>(*applicationId);
+	auto steamId = StringCast<ANSICHAR>(*optionalSteamId);
+	Discord_Initialize(
+		(const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
 }
 
 void UDiscordRpc::Shutdown()
 {
-    Discord_Shutdown();
-    self = nullptr;
+	Discord_Shutdown();
+	self = nullptr;
 }
 
 void UDiscordRpc::RunCallbacks()
 {
-    Discord_RunCallbacks();
+	Discord_RunCallbacks();
 }
 
 void UDiscordRpc::UpdatePresence()
 {
-    DiscordRichPresence rp{};
+	DiscordRichPresence rp{};
 
-    auto state = StringCast<ANSICHAR>(*RichPresence.state);
-    rp.state = state.Get();
+	auto state = StringCast<ANSICHAR>(*RichPresence.state);
+	rp.state = state.Get();
 
-    auto details = StringCast<ANSICHAR>(*RichPresence.details);
-    rp.details = details.Get();
+	auto details = StringCast<ANSICHAR>(*RichPresence.details);
+	rp.details = details.Get();
 
-    auto largeImageKey = StringCast<ANSICHAR>(*RichPresence.largeImageKey);
-    rp.largeImageKey = largeImageKey.Get();
+	auto largeImageKey = StringCast<ANSICHAR>(*RichPresence.largeImageKey);
+	rp.largeImageKey = largeImageKey.Get();
 
-    auto largeImageText = StringCast<ANSICHAR>(*RichPresence.largeImageText);
-    rp.largeImageText = largeImageText.Get();
+	auto largeImageText = StringCast<ANSICHAR>(*RichPresence.largeImageText);
+	rp.largeImageText = largeImageText.Get();
 
-    auto smallImageKey = StringCast<ANSICHAR>(*RichPresence.smallImageKey);
-    rp.smallImageKey = smallImageKey.Get();
+	auto smallImageKey = StringCast<ANSICHAR>(*RichPresence.smallImageKey);
+	rp.smallImageKey = smallImageKey.Get();
 
-    auto smallImageText = StringCast<ANSICHAR>(*RichPresence.smallImageText);
-    rp.smallImageText = smallImageText.Get();
+	auto smallImageText = StringCast<ANSICHAR>(*RichPresence.smallImageText);
+	rp.smallImageText = smallImageText.Get();
 
-    auto partyId = StringCast<ANSICHAR>(*RichPresence.partyId);
-    rp.partyId = partyId.Get();
+	auto partyId = StringCast<ANSICHAR>(*RichPresence.partyId);
+	rp.partyId = partyId.Get();
 
-    auto matchSecret = StringCast<ANSICHAR>(*RichPresence.matchSecret);
-    rp.matchSecret = matchSecret.Get();
+	auto matchSecret = StringCast<ANSICHAR>(*RichPresence.matchSecret);
+	rp.matchSecret = matchSecret.Get();
 
-    auto joinSecret = StringCast<ANSICHAR>(*RichPresence.joinSecret);
-    rp.joinSecret = joinSecret.Get();
+	auto joinSecret = StringCast<ANSICHAR>(*RichPresence.joinSecret);
+	rp.joinSecret = joinSecret.Get();
 
-    auto spectateSecret = StringCast<ANSICHAR>(*RichPresence.spectateSecret);
-    rp.spectateSecret = spectateSecret.Get();
+	auto spectateSecret = StringCast<ANSICHAR>(*RichPresence.spectateSecret);
+	rp.spectateSecret = spectateSecret.Get();
 
-    rp.startTimestamp = RichPresence.startTimestamp;
-    rp.endTimestamp = RichPresence.endTimestamp;
-    rp.partySize = RichPresence.partySize;
-    rp.partyMax = RichPresence.partyMax;
-    rp.instance = RichPresence.instance;
+	rp.startTimestamp = RichPresence.startTimestamp;
+	rp.endTimestamp = RichPresence.endTimestamp;
+	rp.partySize = RichPresence.partySize;
+	rp.partyMax = RichPresence.partyMax;
+	rp.instance = RichPresence.instance;
 
-    Discord_UpdatePresence(&rp);
+	Discord_UpdatePresence(&rp);
+}
+
+void UDiscordRpc::RespondToDiscordJoinRequest(FString DiscordUserID, EDiscordJoinRequestResponse response)
+{
+	// send the response to discord
+	Discord_Respond(TCHAR_TO_ANSI(*DiscordUserID), static_cast<int>(response));
+
+	// remove userID entry from current join requests map
+	PendingJoinRequests.FindAndRemoveChecked(DiscordUserID);
+}
+
+UAsyncDiscordFetchAvatar::UAsyncDiscordFetchAvatar(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	if (HasAnyFlags(RF_ClassDefaultObject) == false)
+	{
+		AddToRoot();
+	}
+}
+
+UAsyncDiscordFetchAvatar* UAsyncDiscordFetchAvatar::DiscordFetchAvatar(FString UserID, FString Avatar)
+{
+	FString userProfileUrl = FString("http://cdn.discordapp.com/avatars/") + UserID + FString("/") + Avatar + FString(".jpg?size=512");
+
+	UE_LOG(Discord, Log, TEXT("Pulling Discord profile avatar image from %s"), *userProfileUrl);
+
+	// create the download image async task
+	UAsyncTaskDownloadImage* asyncImageDl = UAsyncTaskDownloadImage::DownloadImage(userProfileUrl);
+
+	UAsyncDiscordFetchAvatar* fetchAsyncTask = NewObject<UAsyncDiscordFetchAvatar>();
+
+	if (fetchAsyncTask)
+	{
+		fetchAsyncTask->BindDelegates(asyncImageDl);
+		fetchAsyncTask->ImageTask = asyncImageDl;
+	}
+	
+	return fetchAsyncTask;
+}
+
+void UAsyncDiscordFetchAvatar::BindDelegates(UAsyncTaskDownloadImage* imageTask)
+{
+	if (imageTask)
+	{
+		imageTask->OnSuccess.AddDynamic(this, &UAsyncDiscordFetchAvatar::OnImageDownloadSuccess);
+		imageTask->OnFail.AddDynamic(this, &UAsyncDiscordFetchAvatar::OnImageDownloadFailed);
+	}
+}
+
+void UAsyncDiscordFetchAvatar::OnImageDownloadSuccess(UTexture2DDynamic* texture)
+{
+	Successful.Broadcast(texture, UserID);
+
+	RemoveFromRoot();
+}
+
+void UAsyncDiscordFetchAvatar::OnImageDownloadFailed(UTexture2DDynamic* texture)
+{
+	Failed.Broadcast(texture, UserID);
+
+	RemoveFromRoot();
 }
