@@ -2,3 +2,4 @@
 /.vscode/
 /thirdparty/
 .vs/
+/node_modules/

@@ -1,0 +1,17 @@
+{
+  "name": "discord-rpc",
+  "version": "1.0.0",
+  "main": "js/index.js",
+  "gypfile": true,
+  "scripts": {
+    "build": "node-gyp build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/discordapp/discord-rpc.git"
+  },
+  "dependencies": {
+    "bindings": "^1.3.0",
+    "node-addon-api": "^1.0.0"
+  }
+}
