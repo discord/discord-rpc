@@ -3,19 +3,57 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Kismet/BlueprintAsyncActionBase.h"
+#include "discord-rpc.h"
 #include "DiscordRpcBlueprint.generated.h"
-#include "Engine.h"
 
 // unreal's header tool hates clang-format
 // clang-format off
 
 DECLARE_LOG_CATEGORY_EXTERN(Discord, Log, All);
 
+USTRUCT(BlueprintType)
+struct FDiscordJoinRequestPayload
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	FString UserID;
+	UPROPERTY(BlueprintReadWrite)
+	FString Username;
+	UPROPERTY(BlueprintReadWrite)
+	FString Avatar;
+
+	FDiscordJoinRequestPayload()
+	{
+	
+	}
+
+	FDiscordJoinRequestPayload(const DiscordJoinRequest* request)
+	{
+		if (request)
+		{
+			UserID = FString(ANSI_TO_TCHAR(request->userId));
+			Username = FString(ANSI_TO_TCHAR(request->username));
+			Avatar = FString(ANSI_TO_TCHAR(request->avatar));
+		}	
+	}
+};
+
+UENUM(BlueprintType)
+enum class EDiscordJoinRequestResponse : uint8
+{
+	DJR_NO = DISCORD_REPLY_NO UMETA(DisplayName = "Yes"),
+	DJR_YES = DISCORD_REPLY_YES UMETA(DisplayName = "No"),
+	DJR_IGNORE = DISCORD_REPLY_IGNORE UMETA(DisplayName = "Ignore")
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDiscordConnected);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordDisconnected, int, errorCode, const FString&, errorMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordErrored, int, errorCode, const FString&, errorMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordJoin, const FString&, joinSecret);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordSpectate, const FString&, spectateSecret);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordJoinRequest, FDiscordJoinRequestPayload, request);
 
 // clang-format on
 
@@ -114,6 +152,12 @@ public:
               Category = "Discord")
     FDiscordJoin OnJoin;
 
+	// when a user presses ask to join, this will trigger on the user that is getting the request
+	UPROPERTY(BlueprintAssignable,
+		meta = (DisplayName = "When Discord user presses Ask to join, this will be called on the client requested", Keywords = "Discord rpc"),
+		Category = "Discord")
+	FDiscordJoinRequest OnJoinRequest;
+
     UPROPERTY(BlueprintAssignable,
               meta = (DisplayName = "When Discord user presses spectate", Keywords = "Discord rpc"),
               Category = "Discord")
@@ -123,4 +167,46 @@ public:
               meta = (DisplayName = "Rich presence info", Keywords = "Discord rpc"),
               Category = "Discord")
     FDiscordRichPresence RichPresence;
+
+	/** This map stores all of the current pending join requests*/
+	UPROPERTY(BlueprintReadOnly, meta = (Keywords = "Discord rpc"), Category = "Discord")
+	TMap<FString, FDiscordJoinRequestPayload> PendingJoinRequests;
+
+	UFUNCTION(BlueprintCallable, meta = (Keywords = "Discord rpc"), Category = "Discord")
+	void RespondToDiscordJoinRequest(FString DiscordUserID, EDiscordJoinRequestResponse response);
+};
+
+class UTexture2DDynamic;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordFetchAvatarCompleted, UTexture2DDynamic*, Texture, FString, UserID);
+
+UCLASS()
+class DISCORDRPC_API UAsyncDiscordFetchAvatar : public UBlueprintAsyncActionBase
+{
+	GENERATED_UCLASS_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", Keywords = "Discord rpc"), Category = "Discord")
+	static UAsyncDiscordFetchAvatar* DiscordFetchAvatar(FString UserID, FString Avatar);
+
+	UFUNCTION()
+	void BindDelegates(UAsyncTaskDownloadImage* imageTask);
+
+	UPROPERTY(BlueprintAssignable)
+	FDiscordFetchAvatarCompleted Successful;
+
+	UPROPERTY(BlueprintAssignable)
+	FDiscordFetchAvatarCompleted Failed;
+
+	UPROPERTY()
+	UAsyncTaskDownloadImage* ImageTask;
+
+	UPROPERTY()
+	FString UserID;
+
+	UFUNCTION()
+	void OnImageDownloadSuccess(UTexture2DDynamic* texture);
+
+	UFUNCTION()
+	void OnImageDownloadFailed(UTexture2DDynamic* texture);
 };
