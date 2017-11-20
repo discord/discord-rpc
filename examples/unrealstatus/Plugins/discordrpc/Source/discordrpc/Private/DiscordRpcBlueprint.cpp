@@ -1,3 +1,5 @@
+
+
 #include "DiscordRpcBlueprint.h"
 #include "Blueprint/AsyncTaskDownloadImage.h"
 #include "discord-rpc.h"
@@ -75,8 +77,8 @@ static void JoinRequestReceiveHandler(const DiscordJoinRequest* joinRequestPaylo
 }
 
 void UDiscordRpc::Initialize(const FString& applicationId,
-							 bool autoRegister,
-							 const FString& optionalSteamId)
+                             bool autoRegister,
+                             const FString& optionalSteamId)
 {
 	self = this;
 	IsConnected = false;
@@ -214,3 +216,4 @@ void UAsyncDiscordFetchAvatar::OnImageDownloadFailed(UTexture2DDynamic* texture)
 
 	RemoveFromRoot();
 }
+
