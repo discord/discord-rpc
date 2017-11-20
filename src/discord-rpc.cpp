@@ -47,7 +47,7 @@ struct JoinRequest {
 };
 
 static RpcConnection* Connection{nullptr};
-static DiscordEventHandlers Handlers{};
+static DiscordEventHandlers Handlers = DiscordEventHandlers();
 static std::atomic_bool WasJustConnected{false};
 static std::atomic_bool WasJustDisconnected{false};
 static std::atomic_bool GotErrorMessage{false};
@@ -60,7 +60,7 @@ static char LastErrorMessage[256];
 static int LastDisconnectErrorCode{0};
 static char LastDisconnectErrorMessage[256];
 static std::mutex PresenceMutex;
-static QueuedMessage QueuedPresence{};
+static QueuedMessage QueuedPresence = QueuedMessage();
 static MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
 static MsgQueue<JoinRequest, JoinQueueSize> JoinAskQueue;
 
@@ -243,7 +243,7 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         Handlers = *handlers;
     }
     else {
-        Handlers = {};
+        Handlers = DiscordEventHandlers();
     }
 
     if (Connection) {
@@ -287,7 +287,7 @@ extern "C" DISCORD_EXPORT void Discord_Shutdown()
     }
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
-    Handlers = {};
+    Handlers = DiscordEventHandlers();
 #ifndef DISCORD_DISABLE_IO_THREAD
     KeepRunning.exchange(false);
     SignalIOActivity();
