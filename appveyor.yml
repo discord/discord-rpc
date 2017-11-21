@@ -7,11 +7,11 @@ build_script:
   - python build.py
 
 artifacts:
-- path: builds\win32-dynamic
+- path: builds\install\win32-dynamic
   name: win32-dynamic
-- path: builds\win32-static
+- path: builds\install\win32-static
   name: win32-static
-- path: builds\win64-dynamic
+- path: builds\install\win64-dynamic
   name: win64-dynamic
-- path: builds\win64-static
+- path: builds\install\win64-static
   name: win64-static
