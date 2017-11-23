@@ -1,15 +1,25 @@
 #!/usr/bin/env python
 
-import click
 import os
 import subprocess
 import sys
 import shutil
 import zipfile
 from contextlib import contextmanager
+import click
 
 
 SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+
+def platform():
+    """ a name for the platform """
+    if sys.platform.startswith('win'):
+        return 'win'
+    elif sys.platform == 'darwin':
+        return 'osx'
+    elif sys.platform.startswith('linux'):
+        return 'linux'
+    raise Exception('Unsupported platform ' + sys.platform)
 
 
 @contextmanager
@@ -26,28 +36,54 @@ def cd(new_dir):
 def mkdir_p(path):
     """ mkdir -p """
     if not os.path.isdir(path):
+        click.secho('Making ' + path, fg='yellow')
         os.makedirs(path)
 
 
+@click.group(invoke_without_command=True)
+@click.pass_context
+@click.option('--clean', is_flag=True)
+def cli(ctx, clean):
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(libs, clean=clean)
+        ctx.invoke(archive)
+
+
+@cli.command()
+def unity():
+    pass
+
+
+@cli.command()
+def unreal():
+    pass
+
+
 def build_lib(build_name, generator, options):
+    """ Create a dir under builds, run build and install in it """
     build_path = os.path.join(SCRIPT_PATH, 'builds', build_name)
     install_path = os.path.join(SCRIPT_PATH, 'builds', 'install', build_name)
     mkdir_p(build_path)
     mkdir_p(install_path)
     with cd(build_path):
-        initial_cmake = ['cmake', SCRIPT_PATH, '-DCMAKE_INSTALL_PREFIX=%s' % os.path.join('..', 'install', build_name)]
+        initial_cmake = [
+            'cmake',
+            SCRIPT_PATH,
+            '-DCMAKE_INSTALL_PREFIX=%s' % os.path.join('..', 'install', build_name)
+        ]
         if generator:
             initial_cmake.extend(['-G', generator])
         for key in options:
             val = 'ON' if options[key] else 'OFF'
-            initial_cmake.append('-D%s=%s' %(key, val))
+            initial_cmake.append('-D%s=%s' % (key, val))
         subprocess.check_call(initial_cmake)
         subprocess.check_call(['cmake', '--build', '.', '--config', 'Debug'])
         subprocess.check_call(['cmake', '--build', '.', '--config', 'Release', '--target', 'install'])
 
 
-def create_archive():
-    archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc-%s.zip' % sys.platform)
+@cli.command()
+def archive():
+    archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc-%s.zip' % platform())
     archive_file = zipfile.ZipFile(archive_file_path, 'w', zipfile.ZIP_DEFLATED)
     archive_src_base_path = os.path.join(SCRIPT_PATH, 'builds', 'install')
     archive_dst_base_path = 'discord-rpc'
@@ -58,9 +94,9 @@ def create_archive():
                 archive_file.write(fpath, os.path.normpath(os.path.join(archive_dst_base_path, fpath)))
 
 
-@click.command()
+@cli.command()
 @click.option('--clean', is_flag=True)
-def main(clean):
+def libs(clean):
     os.chdir(SCRIPT_PATH)
 
     if clean:
@@ -68,27 +104,22 @@ def main(clean):
 
     mkdir_p('builds')
 
-    if sys.platform.startswith('win'):
+    plat = platform()
+
+    if plat == 'win':
         generator32 = 'Visual Studio 14 2015'
         generator64 = 'Visual Studio 14 2015 Win64'
-
         build_lib('win32-static', generator32, {})
         build_lib('win32-dynamic', generator32, {'BUILD_SHARED_LIBS': True, 'USE_STATIC_CRT': True})
         build_lib('win64-static', generator64, {})
         build_lib('win64-dynamic', generator64, {'BUILD_SHARED_LIBS': True, 'USE_STATIC_CRT': True})
-
-        # todo: this in some better way
-        src_dll = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release', 'discord-rpc.dll')
-        dst_dll = os.path.join(SCRIPT_PATH, 'examples', 'button-clicker', 'Assets', 'Resources', 'discord-rpc.dll')
-        shutil.copy(src_dll, dst_dll)
-        dst_dll = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'discordrpc', 'Binaries', 'ThirdParty', 'discordrpcLibrary', 'Win64', 'discord-rpc.dll')
-        shutil.copy(src_dll, dst_dll)
-    elif sys.platform == 'darwin':
+    elif plat == 'osx':
         build_lib('osx-static', None, {})
         build_lib('osx-dynamic', None, {'BUILD_SHARED_LIBS': True})
-
-    create_archive()
+    elif plat == 'linux':
+        build_lib('linux-static', None, {})
+        build_lib('linux-dynamic', None, {'BUILD_SHARED_LIBS': True})
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(cli())
