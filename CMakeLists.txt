@@ -4,6 +4,7 @@ project (DiscordRPC)
 include(GNUInstallDirs)
 
 option(BUILD_EXAMPLES "Build example apps" ON)
+option(SIGN_BUILD "Sign resulting dll with digital cert" OFF)
 
 # format
 file(GLOB_RECURSE ALL_SOURCE_FILES
@@ -59,3 +60,15 @@ add_subdirectory(src)
 if (BUILD_EXAMPLES)
     add_subdirectory(examples/send-presence)
 endif(BUILD_EXAMPLES)
+
+# sign builds
+
+if (SIGN_BUILD)
+    if(WIN32)
+        find_program(SIGNTOOL_EXECUTABLE signtool)
+    endif(WIN32)
+    if (APPLE)
+        find_program(SIGNTOOL_EXECUTABLE codesign)
+    endif(APPLE)
+    # todo linux? gpg sign a hash maybe? does anyone care/check these?
+endif(SIGN_BUILD)

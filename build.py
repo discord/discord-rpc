@@ -10,8 +10,11 @@ import click
 
 
 SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+# we use Buildkite which sets this env variable by default
+IS_BUILD_MACHINE = os.environ.get('CI', '') == 'true'
 
-def platform():
+
+def get_platform():
     """ a name for the platform """
     if sys.platform.startswith('win'):
         return 'win'
@@ -44,6 +47,7 @@ def mkdir_p(path):
 @click.pass_context
 @click.option('--clean', is_flag=True)
 def cli(ctx, clean):
+    """ click wrapper for command line stuff """
     if ctx.invoked_subcommand is None:
         ctx.invoke(libs, clean=clean)
         ctx.invoke(archive)
@@ -51,11 +55,13 @@ def cli(ctx, clean):
 
 @cli.command()
 def unity():
+    """ todo: build unity project """
     pass
 
 
 @cli.command()
 def unreal():
+    """ todo: build unreal project """
     pass
 
 
@@ -83,43 +89,94 @@ def build_lib(build_name, generator, options):
 
 @cli.command()
 def archive():
-    archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc-%s.zip' % platform())
+    """ create zip of install dir """
+    archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc-%s.zip' % get_platform())
     archive_file = zipfile.ZipFile(archive_file_path, 'w', zipfile.ZIP_DEFLATED)
     archive_src_base_path = os.path.join(SCRIPT_PATH, 'builds', 'install')
     archive_dst_base_path = 'discord-rpc'
     with cd(archive_src_base_path):
-        for path, subdirs, filenames in os.walk('.'):
+        for path, _, filenames in os.walk('.'):
             for fname in filenames:
                 fpath = os.path.join(path, fname)
                 archive_file.write(fpath, os.path.normpath(os.path.join(archive_dst_base_path, fpath)))
 
 
 @cli.command()
+@click.option('--tool', type=click.Path(exists=True, file_okay=True, dir_okay=False))
+@click.argument('install_paths', required=True, nargs=-1)
+def sign(install_paths, tool):
+    """ Do code signing or within specified directory using our cert """
+    platform = get_platform()
+    signable_extensions = set()
+    if platform == 'win':
+        signable_extensions.add('.dll')
+        sign_command_base = [
+            tool,
+            'sign',
+            '/n', 'Hammer & Chisel Inc.',
+            '/a',
+            '/tr', 'http://timestamp.digicert.com/rfc3161',
+            '/as',
+            '/td', 'sha256',
+            '/fd', 'sha256',
+        ]
+    elif platform == 'osx':
+        signable_extensions.add('.dylib')
+        sign_command_base = [
+            tool,
+            '--keychain', os.path.expanduser('~/Library/Keychains/login.keychain'),
+            '-vvvv',
+            '--deep',
+            '--force',
+            '--sign', 'Developer ID Application: Hammer & Chisel Inc. (53Q6R32WPB)',
+        ]
+    else:
+        click.secho('Not signing things on this platform yet', fg='red')
+        return
+
+    for install_path in install_paths:
+        for fname in os.listdir(install_path):
+            ext = os.path.splitext(fname)[1]
+            if ext not in signable_extensions:
+                continue
+            fpath = os.path.join(install_path, fname)
+            click.secho("sign '%s'" % (fpath), fg='yellow')
+            sign_command = sign_command_base + [fpath]
+            subprocess.check_call(sign_command)
+
+
+@cli.command()
 @click.option('--clean', is_flag=True)
 def libs(clean):
-    os.chdir(SCRIPT_PATH)
-
+    """ Do all the builds for this platform """
     if clean:
         shutil.rmtree('builds', ignore_errors=True)
 
     mkdir_p('builds')
 
-    plat = platform()
+    platform = get_platform()
 
-    if plat == 'win':
+    if platform == 'win':
         generator32 = 'Visual Studio 14 2015'
         generator64 = 'Visual Studio 14 2015 Win64'
-        build_lib('win32-static', generator32, {})
-        build_lib('win32-dynamic', generator32, {'BUILD_SHARED_LIBS': True, 'USE_STATIC_CRT': True})
-        build_lib('win64-static', generator64, {})
-        build_lib('win64-dynamic', generator64, {'BUILD_SHARED_LIBS': True, 'USE_STATIC_CRT': True})
-    elif plat == 'osx':
+        static_options = {}
+        dynamic_options = {
+            'BUILD_SHARED_LIBS': True,
+            'USE_STATIC_CRT': True,
+            'SIGN_BUILD': IS_BUILD_MACHINE
+        }
+        build_lib('win32-static', generator32, static_options)
+        build_lib('win32-dynamic', generator32, dynamic_options)
+        build_lib('win64-static', generator64, static_options)
+        build_lib('win64-dynamic', generator64, dynamic_options)
+    elif platform == 'osx':
         build_lib('osx-static', None, {})
-        build_lib('osx-dynamic', None, {'BUILD_SHARED_LIBS': True})
-    elif plat == 'linux':
+        build_lib('osx-dynamic', None, {'BUILD_SHARED_LIBS': True, 'SIGN_BUILD': IS_BUILD_MACHINE})
+    elif platform == 'linux':
         build_lib('linux-static', None, {})
         build_lib('linux-dynamic', None, {'BUILD_SHARED_LIBS': True})
 
 
 if __name__ == '__main__':
+    os.chdir(SCRIPT_PATH)
     sys.exit(cli())
