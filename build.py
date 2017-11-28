@@ -82,14 +82,17 @@ def build_lib(build_name, generator, options):
         for key in options:
             val = 'ON' if options[key] else 'OFF'
             initial_cmake.append('-D%s=%s' % (key, val))
+        click.echo('--- Building ' + build_name)
         subprocess.check_call(initial_cmake)
-        subprocess.check_call(['cmake', '--build', '.', '--config', 'Debug'])
+        if not IS_BUILD_MACHINE:
+            subprocess.check_call(['cmake', '--build', '.', '--config', 'Debug'])
         subprocess.check_call(['cmake', '--build', '.', '--config', 'Release', '--target', 'install'])
 
 
 @cli.command()
 def archive():
     """ create zip of install dir """
+    click.echo('--- Archiving')
     archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc-%s.zip' % get_platform())
     archive_file = zipfile.ZipFile(archive_file_path, 'w', zipfile.ZIP_DEFLATED)
     archive_src_base_path = os.path.join(SCRIPT_PATH, 'builds', 'install')
@@ -98,7 +101,9 @@ def archive():
         for path, _, filenames in os.walk('.'):
             for fname in filenames:
                 fpath = os.path.join(path, fname)
-                archive_file.write(fpath, os.path.normpath(os.path.join(archive_dst_base_path, fpath)))
+                dst_path = os.path.normpath(os.path.join(archive_dst_base_path, fpath))
+                click.echo('Adding ' + dst_path)
+                archive_file.write(fpath, dst_path)
 
 
 @cli.command()
@@ -134,13 +139,14 @@ def sign(install_paths, tool):
         click.secho('Not signing things on this platform yet', fg='red')
         return
 
+    click.echo('--- Signing')
     for install_path in install_paths:
         for fname in os.listdir(install_path):
             ext = os.path.splitext(fname)[1]
             if ext not in signable_extensions:
                 continue
             fpath = os.path.join(install_path, fname)
-            click.secho("sign '%s'" % (fpath), fg='yellow')
+            click.echo('Sign ' + fpath)
             sign_command = sign_command_base + [fpath]
             subprocess.check_call(sign_command)
 
