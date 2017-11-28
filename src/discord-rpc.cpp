@@ -72,11 +72,50 @@ static int Pid{0};
 static int Nonce{1};
 
 #ifndef DISCORD_DISABLE_IO_THREAD
-static std::atomic_bool KeepRunning{true};
-static std::mutex WaitForIOMutex;
-static std::condition_variable WaitForIOActivity;
-static std::thread IoThread;
+static void Discord_UpdateConnection(void);
+class IoThreadHolder {
+private:
+    std::atomic_bool keepRunning{true};
+    std::mutex waitForIOMutex;
+    std::condition_variable waitForIOActivity;
+    std::thread ioThread;
+
+public:
+    void Start()
+    {
+        keepRunning.store(true);
+        ioThread = std::thread([&]() {
+            const std::chrono::duration<int64_t, std::milli> maxWait{500LL};
+            while (keepRunning.load()) {
+                Discord_UpdateConnection();
+                std::unique_lock<std::mutex> lock(waitForIOMutex);
+                waitForIOActivity.wait_for(lock, maxWait);
+            }
+        });
+    }
+
+    void Notify() { waitForIOActivity.notify_all(); }
+
+    void Stop()
+    {
+        keepRunning.exchange(false);
+        Notify();
+        if (ioThread.joinable()) {
+            ioThread.join();
+        }
+    }
+
+    ~IoThreadHolder() { Stop(); }
+};
+#else
+class IoThreadHolder {
+public:
+    void Start() {}
+    void Stop() {}
+    void Notify() {}
+};
 #endif // DISCORD_DISABLE_IO_THREAD
+static IoThreadHolder IoThread;
 
 static void UpdateReconnectTime()
 {
@@ -189,25 +228,9 @@ static void Discord_UpdateConnection(void)
     }
 }
 
-#ifndef DISCORD_DISABLE_IO_THREAD
-static void DiscordRpcIo(void)
-{
-    const std::chrono::duration<int64_t, std::milli> maxWait{500LL};
-
-    while (KeepRunning.load()) {
-        Discord_UpdateConnection();
-
-        std::unique_lock<std::mutex> lock(WaitForIOMutex);
-        WaitForIOActivity.wait_for(lock, maxWait);
-    }
-}
-#endif
-
 static void SignalIOActivity()
 {
-#ifndef DISCORD_DISABLE_IO_THREAD
-    WaitForIOActivity.notify_all();
-#endif
+    IoThread.Notify();
 }
 
 static bool RegisterForEvent(const char* evtName)
@@ -274,10 +297,7 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         UpdateReconnectTime();
     };
 
-#ifndef DISCORD_DISABLE_IO_THREAD
-    KeepRunning.store(true);
-    IoThread = std::thread(DiscordRpcIo);
-#endif
+    IoThread.Start();
 }
 
 extern "C" DISCORD_EXPORT void Discord_Shutdown()
@@ -288,13 +308,7 @@ extern "C" DISCORD_EXPORT void Discord_Shutdown()
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
     Handlers = {};
-#ifndef DISCORD_DISABLE_IO_THREAD
-    KeepRunning.exchange(false);
-    SignalIOActivity();
-    if (IoThread.joinable()) {
-        IoThread.join();
-    }
-#endif
+    IoThread.Stop();
     RpcConnection::Destroy(Connection);
 }
 
