@@ -79,6 +79,9 @@ def build_lib(build_name, generator, options):
         ]
         if generator:
             initial_cmake.extend(['-G', generator])
+        if IS_BUILD_MACHINE:
+            # disable formatting on CI builds
+            initial_cmake.append('-DCLANG_FORMAT_SUFFIX=none')
         for key in options:
             val = 'ON' if options[key] else 'OFF'
             initial_cmake.append('-D%s=%s' % (key, val))

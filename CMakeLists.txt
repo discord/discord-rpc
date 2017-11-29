@@ -25,11 +25,6 @@ if (CLANG_FORMAT_CMD)
         DEPENDS
         ${ALL_SOURCE_FILES}
     )
-else(CLANG_FORMAT_CMD)
-    add_custom_target(
-        clangformat
-        COMMENT "no clang format"
-    )
 endif(CLANG_FORMAT_CMD)
 
 # thirdparty stuff
