@@ -9,11 +9,6 @@ from contextlib import contextmanager
 import click
 
 
-SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
-# we use Buildkite which sets this env variable by default
-IS_BUILD_MACHINE = os.environ.get('CI', '') == 'true'
-
-
 def get_platform():
     """ a name for the platform """
     if sys.platform.startswith('win'):
@@ -23,6 +18,22 @@ def get_platform():
     elif sys.platform.startswith('linux'):
         return 'linux'
     raise Exception('Unsupported platform ' + sys.platform)
+
+
+SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+# we use Buildkite which sets this env variable by default
+IS_BUILD_MACHINE = os.environ.get('CI', '') == 'true'
+PLATFORM = get_platform()
+INSTALL_ROOT = os.path.join(SCRIPT_PATH, 'builds', 'install')
+
+
+def get_signtool():
+    """ get path to code signing tool """
+    if PLATFORM == 'win':
+        sdk_dir = os.environ['WindowsSdkDir']
+        return os.path.join(sdk_dir, 'bin', 'x86', 'signtool.exe')
+    elif PLATFORM == 'osx':
+        return '/usr/bin/codesign'
 
 
 @contextmanager
@@ -50,6 +61,8 @@ def cli(ctx, clean):
     """ click wrapper for command line stuff """
     if ctx.invoked_subcommand is None:
         ctx.invoke(libs, clean=clean)
+        if IS_BUILD_MACHINE:
+            ctx.invoke(sign)    
         ctx.invoke(archive)
 
 
@@ -68,7 +81,7 @@ def unreal():
 def build_lib(build_name, generator, options):
     """ Create a dir under builds, run build and install in it """
     build_path = os.path.join(SCRIPT_PATH, 'builds', build_name)
-    install_path = os.path.join(SCRIPT_PATH, 'builds', 'install', build_name)
+    install_path = os.path.join(INSTALL_ROOT, build_name)
     mkdir_p(build_path)
     mkdir_p(install_path)
     with cd(build_path):
@@ -98,7 +111,7 @@ def archive():
     click.echo('--- Archiving')
     archive_file_path = os.path.join(SCRIPT_PATH, 'builds', 'discord-rpc-%s.zip' % get_platform())
     archive_file = zipfile.ZipFile(archive_file_path, 'w', zipfile.ZIP_DEFLATED)
-    archive_src_base_path = os.path.join(SCRIPT_PATH, 'builds', 'install')
+    archive_src_base_path = INSTALL_ROOT
     archive_dst_base_path = 'discord-rpc'
     with cd(archive_src_base_path):
         for path, _, filenames in os.walk('.'):
@@ -110,13 +123,11 @@ def archive():
 
 
 @cli.command()
-@click.option('--tool', type=click.Path(exists=True, file_okay=True, dir_okay=False))
-@click.argument('install_paths', required=True, nargs=-1)
-def sign(install_paths, tool):
-    """ Do code signing or within specified directory using our cert """
-    platform = get_platform()
+def sign():
+    """ Do code signing within install directory using our cert """
+    tool = get_signtool()
     signable_extensions = set()
-    if platform == 'win':
+    if PLATFORM == 'win':
         signable_extensions.add('.dll')
         sign_command_base = [
             tool,
@@ -128,7 +139,7 @@ def sign(install_paths, tool):
             '/td', 'sha256',
             '/fd', 'sha256',
         ]
-    elif platform == 'osx':
+    elif PLATFORM == 'osx':
         signable_extensions.add('.dylib')
         sign_command_base = [
             tool,
@@ -141,14 +152,14 @@ def sign(install_paths, tool):
     else:
         click.secho('Not signing things on this platform yet', fg='red')
         return
-
+    
     click.echo('--- Signing')
-    for install_path in install_paths:
-        for fname in os.listdir(install_path):
+    for path, _, filenames in os.walk(INSTALL_ROOT):
+        for fname in filenames:
             ext = os.path.splitext(fname)[1]
             if ext not in signable_extensions:
                 continue
-            fpath = os.path.join(install_path, fname)
+            fpath = os.path.join(path, fname)
             click.echo('Sign ' + fpath)
             sign_command = sign_command_base + [fpath]
             subprocess.check_call(sign_command)
@@ -163,9 +174,7 @@ def libs(clean):
 
     mkdir_p('builds')
 
-    platform = get_platform()
-
-    if platform == 'win':
+    if PLATFORM == 'win':
         generator32 = 'Visual Studio 14 2015'
         generator64 = 'Visual Studio 14 2015 Win64'
         static_options = {}
@@ -178,10 +187,10 @@ def libs(clean):
         build_lib('win32-dynamic', generator32, dynamic_options)
         build_lib('win64-static', generator64, static_options)
         build_lib('win64-dynamic', generator64, dynamic_options)
-    elif platform == 'osx':
+    elif PLATFORM == 'osx':
         build_lib('osx-static', None, {})
         build_lib('osx-dynamic', None, {'BUILD_SHARED_LIBS': True, 'SIGN_BUILD': IS_BUILD_MACHINE})
-    elif platform == 'linux':
+    elif PLATFORM == 'linux':
         build_lib('linux-static', None, {})
         build_lib('linux-dynamic', None, {'BUILD_SHARED_LIBS': True})
 

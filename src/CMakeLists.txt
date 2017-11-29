@@ -130,7 +130,3 @@ install(
         "../include/discord-rpc.h"
     DESTINATION "include"
 )
-
-if (SIGNTOOL_EXECUTABLE)
-    install(CODE "execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/build.py sign --tool \"${SIGNTOOL_EXECUTABLE}\" \"${CMAKE_INSTALL_PREFIX}/bin\")")
-endif(SIGNTOOL_EXECUTABLE)
