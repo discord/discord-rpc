@@ -8,11 +8,20 @@
 
 #include <atomic>
 #include <chrono>
+
 #include <mutex>
+#if defined _WIN32 && defined __GNUC__ && !defined _GLIBCXX_HAS_GTHREADS
+#include "../mingw-std-threads/mingw.mutex.h"
+#endif
 
 #ifndef DISCORD_DISABLE_IO_THREAD
+#if defined _WIN32 && defined __GNUC__ && !defined _GLIBCXX_HAS_GTHREADS
+#include "../mingw-std-threads/mingw.condition_variable.h"
+#include "../mingw-std-threads/mingw.thread.h"
+#else
 #include <condition_variable>
 #include <thread>
+#endif
 #endif
 
 constexpr size_t MaxMessageSize{16 * 1024};
