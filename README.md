@@ -62,3 +62,17 @@ This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version 
 ## Sample: unrealstatus
 
 This is a sample [Unreal](https://www.unrealengine.com) project that wraps the DLL version of the library with an Unreal plugin, exposes a blueprint class for interacting with it, and uses that to make a very simple UI.
+
+## Wrappers and Implementations
+
+Below is a table of unofficial, community-developed wrappers for and implementations of Rich Presence in various languages. If you would like to have yours added, please make a pull request adding your repository to the table. The repository should include:
+
+- The code
+- A brief ReadMe of how to use it
+- A working example
+
+###### Rich Presence Wrappers and Implementations
+
+| Name | Language |
+|------|----------|
+| Be the first! | |
