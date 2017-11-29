@@ -28,7 +28,7 @@ void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
     // Update the HKEY_CURRENT_USER, because it doesn't seem to require special permissions.
 
     wchar_t exeFilePath[MAX_PATH];
-    DWORD exeLen = GetModuleFileNameExW(GetCurrentProcess(), nullptr, exeFilePath, MAX_PATH);
+    DWORD exeLen = GetModuleFileNameW(nullptr, exeFilePath, MAX_PATH);
     wchar_t openCommand[1024];
 
     if (command && command[0]) {
