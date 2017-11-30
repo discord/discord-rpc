@@ -181,7 +181,6 @@ def libs(clean):
         dynamic_options = {
             'BUILD_SHARED_LIBS': True,
             'USE_STATIC_CRT': True,
-            'SIGN_BUILD': IS_BUILD_MACHINE
         }
         build_lib('win32-static', generator32, static_options)
         build_lib('win32-dynamic', generator32, dynamic_options)
@@ -189,7 +188,7 @@ def libs(clean):
         build_lib('win64-dynamic', generator64, dynamic_options)
     elif PLATFORM == 'osx':
         build_lib('osx-static', None, {})
-        build_lib('osx-dynamic', None, {'BUILD_SHARED_LIBS': True, 'SIGN_BUILD': IS_BUILD_MACHINE})
+        build_lib('osx-dynamic', None, {'BUILD_SHARED_LIBS': True})
     elif PLATFORM == 'linux':
         build_lib('linux-static', None, {})
         build_lib('linux-dynamic', None, {'BUILD_SHARED_LIBS': True})
