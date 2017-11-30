@@ -653,7 +653,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   presence:
     state: Button clicking
-    details: 
+    details: Best game ever
     startTimestamp: 0
     endTimestamp: 0
     largeImageKey: stable-large
@@ -663,10 +663,10 @@ MonoBehaviour:
     partyId: abcdefg
     partySize: 1
     partyMax: 10
-    matchSecret: 
-    joinSecret: 
-    spectateSecret: 
-    instance: 0
+    matchSecret: match_secret
+    joinSecret: join_secret
+    spectateSecret: spectate_secret
+    instance: 1
   applicationId: 345229890980937739
   optionalSteamId: 
   callbackCalls: 0
