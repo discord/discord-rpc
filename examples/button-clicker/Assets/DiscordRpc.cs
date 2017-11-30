@@ -18,7 +18,7 @@ public class DiscordRpc
     public delegate void SpectateCallback(string secret);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void RequestCallback(JoinRequest request);
+    public delegate void RequestCallback(ref JoinRequest request);
 
     public struct EventHandlers
     {
