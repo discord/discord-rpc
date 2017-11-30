@@ -7,6 +7,7 @@
 DEFINE_LOG_CATEGORY(Discord)
 
 static UDiscordRpc* self = nullptr;
+
 static void ReadyHandler()
 {
     UE_LOG(Discord, Log, TEXT("Discord connected"));
@@ -53,6 +54,19 @@ static void SpectateGameHandler(const char* spectateSecret)
     }
 }
 
+static void JoinRequestHandler(const DiscordJoinRequest* request)
+{
+    FDiscordJoinRequestData jr;
+    jr.userId = ANSI_TO_TCHAR(request->userId);
+    jr.username = ANSI_TO_TCHAR(request->username);
+    jr.discriminator = ANSI_TO_TCHAR(request->discriminator);
+    jr.avatar = ANSI_TO_TCHAR(request->avatar);
+    UE_LOG(Discord, Log, TEXT("Discord join request from %s#%s"), *jr.username, *jr.discriminator);
+    if (self) {
+        self->OnJoinRequest.Broadcast(jr);
+    }
+}
+
 void UDiscordRpc::Initialize(const FString& applicationId,
                              bool autoRegister,
                              const FString& optionalSteamId)
@@ -68,6 +82,9 @@ void UDiscordRpc::Initialize(const FString& applicationId,
     }
     if (OnSpectate.IsBound()) {
         handlers.spectateGame = SpectateGameHandler;
+    }
+    if (OnJoinRequest.IsBound()) {
+        handlers.joinRequest = JoinRequestHandler;
     }
     auto appId = StringCast<ANSICHAR>(*applicationId);
     auto steamId = StringCast<ANSICHAR>(*optionalSteamId);
