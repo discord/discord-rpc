@@ -75,4 +75,4 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 
 | Name | Language |
 |------|----------|
-| Be the first! | |
+| [drpc4k](https://github.com/Bluexin/drpc4k) | [Kotlin](https://kotlinlang.org/) |
