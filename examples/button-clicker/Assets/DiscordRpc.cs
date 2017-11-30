@@ -55,6 +55,7 @@ public class DiscordRpc
     {
         public string userId;
         public string username;
+        public string discriminator;
         public string avatar;
     }
 
