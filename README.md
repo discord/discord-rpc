@@ -75,4 +75,4 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 
 | Name | Language |
 |------|----------|
-| Be the first! | |
+| [discord-rpc.jar](https://github.com/Vatuu/discord-rpc "Discord-RPC.jar") | Java |
