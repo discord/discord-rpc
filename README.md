@@ -76,5 +76,6 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 | Name | Language |
 |------|----------|
 | [Java-DiscordRPC](https://github.com/MinnDevelopment/Java-DiscordRPC) | Java |
+| [Discord-IPC](https://github.com/jagrosh/DiscordIPC) | Java |
 | [drpc4k](https://github.com/Bluexin/drpc4k) | [Kotlin](https://kotlinlang.org/) |
 | [SwordRPC](https://github.com/Azoy/SwordRPC) | [Swift](https://swift.org) |
