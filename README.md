@@ -75,4 +75,4 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 
 | Name | Language |
 |------|----------|
-| Be the first! | |
+| [Java-DiscordRPC](https://github.com/MinnDevelopment/Java-DiscordRPC) | Java |
