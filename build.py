@@ -76,7 +76,14 @@ def unity():
 @click.pass_context
 def for_unity(ctx):
     """ build just dynamic libs for use in unity project """
-    ctx.invoke(libs, clean=False, static=False, shared=True, skip_formatter=False)
+    ctx.invoke(
+        libs,
+        clean=False,
+        static=False,
+        shared=True,
+        skip_formatter=True,
+        just_release=True
+    )
 
 
 @cli.command()
@@ -85,7 +92,7 @@ def unreal():
     pass
 
 
-def build_lib(build_name, generator, options):
+def build_lib(build_name, generator, options, just_release):
     """ Create a dir under builds, run build and install in it """
     build_path = os.path.join(SCRIPT_PATH, 'builds', build_name)
     install_path = os.path.join(INSTALL_ROOT, build_name)
@@ -99,9 +106,6 @@ def build_lib(build_name, generator, options):
         ]
         if generator:
             initial_cmake.extend(['-G', generator])
-        if IS_BUILD_MACHINE:
-            # disable formatting on CI builds
-            initial_cmake.append('-DCLANG_FORMAT_SUFFIX=none')
         for key in options:
             val = options[key]
             if type(val) is bool:
@@ -109,7 +113,7 @@ def build_lib(build_name, generator, options):
             initial_cmake.append('-D%s=%s' % (key, val))
         click.echo('--- Building ' + build_name)
         subprocess.check_call(initial_cmake)
-        if not IS_BUILD_MACHINE:
+        if not just_release:
             subprocess.check_call(['cmake', '--build', '.', '--config', 'Debug'])
         subprocess.check_call(['cmake', '--build', '.', '--config', 'Release', '--target', 'install'])
 
@@ -179,7 +183,8 @@ def sign():
 @click.option('--static', is_flag=True)
 @click.option('--shared', is_flag=True)
 @click.option('--skip_formatter', is_flag=True)
-def libs(clean, static, shared, skip_formatter):
+@click.option('--just_release', is_flag=True)
+def libs(clean, static, shared, skip_formatter, just_release):
     """ Do all the builds for this platform """
     if clean:
         shutil.rmtree('builds', ignore_errors=True)
@@ -196,29 +201,32 @@ def libs(clean, static, shared, skip_formatter):
         'USE_STATIC_CRT': True,
     }
 
-    if skip_formatter:
-        static_options['CLANG_FORMAT_SUFFIX'] = 'nope'
-        dynamic_options['CLANG_FORMAT_SUFFIX'] = 'nope'
+    if skip_formatter or IS_BUILD_MACHINE:
+        static_options['CLANG_FORMAT_SUFFIX'] = 'none'
+        dynamic_options['CLANG_FORMAT_SUFFIX'] = 'none'
+
+    if IS_BUILD_MACHINE:
+        just_release = True
 
     if PLATFORM == 'win':
         generator32 = 'Visual Studio 14 2015'
         generator64 = 'Visual Studio 14 2015 Win64'
         if static:
-            build_lib('win32-static', generator32, static_options)
-            build_lib('win64-static', generator64, static_options)
+            build_lib('win32-static', generator32, static_options, just_release)
+            build_lib('win64-static', generator64, static_options, just_release)
         if shared:
-            build_lib('win32-dynamic', generator32, dynamic_options)
-            build_lib('win64-dynamic', generator64, dynamic_options)
+            build_lib('win32-dynamic', generator32, dynamic_options, just_release)
+            build_lib('win64-dynamic', generator64, dynamic_options, just_release)
     elif PLATFORM == 'osx':
         if static:
-            build_lib('osx-static', None, static_options)
+            build_lib('osx-static', None, static_options, just_release)
         if shared:
-            build_lib('osx-dynamic', None, dynamic_options)
+            build_lib('osx-dynamic', None, dynamic_options, just_release)
     elif PLATFORM == 'linux':
         if static:
-            build_lib('linux-static', None, static_options)
+            build_lib('linux-static', None, static_options, just_release)
         if shared:
-            build_lib('linux-dynamic', None, dynamic_options)
+            build_lib('linux-dynamic', None, dynamic_options, just_release)
 
 
 if __name__ == '__main__':
