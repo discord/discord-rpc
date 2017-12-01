@@ -27,7 +27,7 @@ public class ScriptBatch
 		proc.StartInfo.EnvironmentVariables["PATH"] = newPath;
 #endif
 		proc.StartInfo.FileName = "python";
-		proc.StartInfo.Arguments = "build.py";
+		proc.StartInfo.Arguments = "build.py for_unity";
 		proc.StartInfo.WorkingDirectory = "../..";
 		proc.Start();
 		proc.WaitForExit();
