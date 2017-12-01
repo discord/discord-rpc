@@ -5,52 +5,97 @@ using System.IO;
 [InitializeOnLoad]
 public class ScriptBatch
 {
-    static ScriptBatch()
-    {
-        EnsureDLL();
-    }
+	static ScriptBatch()
+	{
+		EnsureDLL();
+	}
 
-    public static bool FileExists(string filename)
-    {
-        return new FileInfo(filename).Exists;
-    }
-    
-    public static void EnsureDLL()
-    {
-        UnityEngine.Debug.Log("Make sure Discord dll exists");
+	public static bool FileExists(string filename)
+	{
+		return new FileInfo(filename).Exists;
+	}
 
-        string dstDll32 = "Assets/Plugins/x86/discord-rpc.dll";
-        string dstDll64 = "Assets/Plugins/x86_64/discord-rpc.dll";
+	public static bool RunRpcBuildScript()
+	{
+		UnityEngine.Debug.Log("Try to run build script");
 
-        if (!FileExists(dstDll32) || !FileExists(dstDll64))
-        {
-            string srcDll32 = "../../builds/install/win64-dynamic/bin/discord-rpc.dll";
-            string srcDll64 = "../../builds/install/win64-dynamic/bin/discord-rpc.dll";
+		Process proc = new Process();
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+		proc.StartInfo.UseShellExecute = false;
+		// brew installs cmake in /usr/local/bin, which Unity seems to strip from PATH?
+		string newPath = proc.StartInfo.EnvironmentVariables["PATH"] + ":/usr/local/bin";
+		proc.StartInfo.EnvironmentVariables["PATH"] = newPath;
+#endif
+		proc.StartInfo.FileName = "python";
+		proc.StartInfo.Arguments = "build.py";
+		proc.StartInfo.WorkingDirectory = "../..";
+		proc.Start();
+		proc.WaitForExit();
+		return proc.ExitCode == 0;
+	}
 
-            if (!FileExists(srcDll32) || !FileExists(srcDll64))
-            {
-                UnityEngine.Debug.Log("Try to run build script");
-                Process proc = new Process();
-                proc.StartInfo.FileName = "python";
-                proc.StartInfo.Arguments = "build.py";
-                proc.StartInfo.WorkingDirectory = "../..";
-                proc.Start();
-                proc.WaitForExit();
-                if (proc.ExitCode != 0)
-                {
-                    UnityEngine.Debug.LogError("Build failed");
-                    return;
-                }
-            }
+	public static void EnsureDLL()
+	{
+		#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+		string[] dstDirs = { "Assets/Plugins", "Assets/Plugins/x86", "Assets/Plugins/x86_64" };
+		string[] dstDlls = { "Assets/Plugins/x86/discord-rpc.dll", "Assets/Plugins/x86_64/discord-rpc.dll" };
+		string[] srcDlls = { "../../builds/install/win64-dynamic/bin/discord-rpc.dll", "../../builds/install/win64-dynamic/bin/discord-rpc.dll" };
+		#elif UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+		string[] dstDirs = { "Assets/Plugins" };
+		string[] dstDlls = { "Assets/Plugins/discord-rpc.bundle" };
+		string[] srcDlls = { "../../builds/install/osx-dynamic/lib/libdiscord-rpc.dylib" };
+		#else
+		string[] dstDirs = { "Assets/Plugins", "Assets/Plugins/x86", "Assets/Plugins/x86_64" };
+		string[] dstDlls = { "Assets/Plugins/x86/discord-rpc.so", "Assets/Plugins/x86_64/discord-rpc.so" };
+		string[] srcDlls = { "../../builds/install/linux-dynamic/bin/discord-rpc.dll", "../../builds/install/win64-dynamic/bin/discord-rpc.dll" };
+		#endif
 
-            // make sure the dirs exist
-            Directory.CreateDirectory("Assets/Plugins");
-            Directory.CreateDirectory("Assets/Plugins/x86");
-            Directory.CreateDirectory("Assets/Plugins/x86_64");
+		Debug.Assert(dstDlls.Length == srcDlls.Length);
 
-            // Copy dlls
-            FileUtil.CopyFileOrDirectory("../../builds/install/win64-dynamic/bin/discord-rpc.dll", dstDll64);
-            FileUtil.CopyFileOrDirectory("../../builds/install/win32-dynamic/bin/discord-rpc.dll", dstDll32);
-        }
-    }
+		bool exists = true;
+		foreach (string fname in dstDlls)
+		{
+			if (!FileExists(fname))
+			{
+				exists = false;
+				break;
+			}
+		}
+
+		if (exists)
+		{
+			return;
+		}
+
+		exists = true;
+		foreach (string fname in srcDlls)
+		{
+			if (!FileExists(fname))
+			{
+				exists = false;
+				break;
+			}
+		}
+
+		if (!exists)
+		{
+			if (!RunRpcBuildScript())
+			{
+				UnityEngine.Debug.LogError("Build failed");
+				return;
+			}
+		}
+
+		// make sure the dirs exist
+		foreach (string dirname in dstDirs)
+		{
+			Directory.CreateDirectory(dirname);
+		}
+
+		// Copy dlls
+		for (int i = 0; i < dstDlls.Length; ++i)
+		{
+			FileUtil.CopyFileOrDirectory(srcDlls[i], dstDlls[i]);
+		}
+	}
 }
