@@ -68,10 +68,10 @@ public class DiscordController : MonoBehaviour
         onSpectate.Invoke(secret);
     }
 
-    public void RequestCallback(DiscordRpc.JoinRequest request)
+    public void RequestCallback(ref DiscordRpc.JoinRequest request)
     {
         ++callbackCalls;
-        Debug.Log(string.Format("Discord: join request {0}: {1}", request.username, request.userId));
+        Debug.Log(string.Format("Discord: join request {0}#{1}: {2}", request.username, request.discriminator, request.userId));
         onJoinRequest.Invoke(request);
     }
 

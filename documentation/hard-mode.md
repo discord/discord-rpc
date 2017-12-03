@@ -66,7 +66,7 @@ First is the `ACTIVITY_JOIN` event:
   "data": {
     "secret": "025ed05c71f639de8bfaa0d679d7c94b2fdce12f"
   },
-  "evnt": "ACTIVITY_JOIN"
+  "evt": "ACTIVITY_JOIN"
 }
 ```
 
@@ -78,7 +78,7 @@ Second is the `ACTIVITY_SPECTATE` event:
   "data": {
     "secret": "e7eb30d2ee025ed05c71ea495f770b76454ee4e0"
   },
-  "evnt": "ACTIVITY_SPECTATE"
+  "evt": "ACTIVITY_SPECTATE"
 }
 ```
 
@@ -96,7 +96,7 @@ And third is the `ACTIVITY_JOIN_REQUEST` event:
     },
     "secret": "e459ca99273f59909dd16ed97865f3ad"
   },
-  "evnt": "ACTIVITY_JOIN_REQUEST"
+  "evt": "ACTIVITY_JOIN_REQUEST"
 }
 ```
 

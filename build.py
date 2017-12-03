@@ -73,12 +73,26 @@ def unity():
 
 
 @cli.command()
+@click.pass_context
+def for_unity(ctx):
+    """ build just dynamic libs for use in unity project """
+    ctx.invoke(
+        libs,
+        clean=False,
+        static=False,
+        shared=True,
+        skip_formatter=True,
+        just_release=True
+    )
+
+
+@cli.command()
 def unreal():
     """ todo: build unreal project """
     pass
 
 
-def build_lib(build_name, generator, options):
+def build_lib(build_name, generator, options, just_release):
     """ Create a dir under builds, run build and install in it """
     build_path = os.path.join(SCRIPT_PATH, 'builds', build_name)
     install_path = os.path.join(INSTALL_ROOT, build_name)
@@ -92,15 +106,14 @@ def build_lib(build_name, generator, options):
         ]
         if generator:
             initial_cmake.extend(['-G', generator])
-        if IS_BUILD_MACHINE:
-            # disable formatting on CI builds
-            initial_cmake.append('-DCLANG_FORMAT_SUFFIX=none')
         for key in options:
-            val = 'ON' if options[key] else 'OFF'
+            val = options[key]
+            if type(val) is bool:
+                val = 'ON' if val else 'OFF'
             initial_cmake.append('-D%s=%s' % (key, val))
         click.echo('--- Building ' + build_name)
         subprocess.check_call(initial_cmake)
-        if not IS_BUILD_MACHINE:
+        if not just_release:
             subprocess.check_call(['cmake', '--build', '.', '--config', 'Debug'])
         subprocess.check_call(['cmake', '--build', '.', '--config', 'Release', '--target', 'install'])
 
@@ -167,32 +180,53 @@ def sign():
 
 @cli.command()
 @click.option('--clean', is_flag=True)
-def libs(clean):
+@click.option('--static', is_flag=True)
+@click.option('--shared', is_flag=True)
+@click.option('--skip_formatter', is_flag=True)
+@click.option('--just_release', is_flag=True)
+def libs(clean, static, shared, skip_formatter, just_release):
     """ Do all the builds for this platform """
     if clean:
         shutil.rmtree('builds', ignore_errors=True)
 
     mkdir_p('builds')
 
+    if not (static or shared):
+        static = True
+        shared = True
+
+    static_options = {}
+    dynamic_options = {
+        'BUILD_SHARED_LIBS': True,
+        'USE_STATIC_CRT': True,
+    }
+
+    if skip_formatter or IS_BUILD_MACHINE:
+        static_options['CLANG_FORMAT_SUFFIX'] = 'none'
+        dynamic_options['CLANG_FORMAT_SUFFIX'] = 'none'
+
+    if IS_BUILD_MACHINE:
+        just_release = True
+
     if PLATFORM == 'win':
         generator32 = 'Visual Studio 14 2015'
         generator64 = 'Visual Studio 14 2015 Win64'
-        static_options = {}
-        dynamic_options = {
-            'BUILD_SHARED_LIBS': True,
-            'USE_STATIC_CRT': True,
-            'SIGN_BUILD': IS_BUILD_MACHINE
-        }
-        build_lib('win32-static', generator32, static_options)
-        build_lib('win32-dynamic', generator32, dynamic_options)
-        build_lib('win64-static', generator64, static_options)
-        build_lib('win64-dynamic', generator64, dynamic_options)
+        if static:
+            build_lib('win32-static', generator32, static_options, just_release)
+            build_lib('win64-static', generator64, static_options, just_release)
+        if shared:
+            build_lib('win32-dynamic', generator32, dynamic_options, just_release)
+            build_lib('win64-dynamic', generator64, dynamic_options, just_release)
     elif PLATFORM == 'osx':
-        build_lib('osx-static', None, {})
-        build_lib('osx-dynamic', None, {'BUILD_SHARED_LIBS': True, 'SIGN_BUILD': IS_BUILD_MACHINE})
+        if static:
+            build_lib('osx-static', None, static_options, just_release)
+        if shared:
+            build_lib('osx-dynamic', None, dynamic_options, just_release)
     elif PLATFORM == 'linux':
-        build_lib('linux-static', None, {})
-        build_lib('linux-dynamic', None, {'BUILD_SHARED_LIBS': True})
+        if static:
+            build_lib('linux-static', None, static_options, just_release)
+        if shared:
+            build_lib('linux-dynamic', None, dynamic_options, just_release)
 
 
 if __name__ == '__main__':
