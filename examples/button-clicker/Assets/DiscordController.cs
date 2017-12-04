@@ -16,8 +16,10 @@ public class DiscordController : MonoBehaviour
     public string optionalSteamId;
     public int callbackCalls;
     public int clickCounter;
+    public DiscordRpc.JoinRequest joinRequest;
     public UnityEngine.Events.UnityEvent onConnect;
     public UnityEngine.Events.UnityEvent onDisconnect;
+    public UnityEngine.Events.UnityEvent hasResponded;
     public DiscordJoinEvent onJoin;
     public DiscordJoinEvent onSpectate;
     public DiscordJoinRequestEvent onJoinRequest;
@@ -32,6 +34,20 @@ public class DiscordController : MonoBehaviour
         presence.details = string.Format("Button clicked {0} times", clickCounter);
 
         DiscordRpc.UpdatePresence(ref presence);
+    }
+
+    public void RequestRespondYes()
+    {
+        Debug.Log("Discord: responding yes to Ask to Join request");
+        DiscordRpc.Respond(joinRequest.userId, DiscordRpc.Reply.Yes);
+        hasResponded.Invoke();
+    }
+
+    public void RequestRespondNo()
+    {
+        Debug.Log("Discord: responding no to Ask to Join request");
+        DiscordRpc.Respond(joinRequest.userId, DiscordRpc.Reply.No);
+        hasResponded.Invoke();
     }
 
     public void ReadyCallback()
@@ -72,6 +88,7 @@ public class DiscordController : MonoBehaviour
     {
         ++callbackCalls;
         Debug.Log(string.Format("Discord: join request {0}#{1}: {2}", request.username, request.discriminator, request.userId));
+        joinRequest = request;
         onJoinRequest.Invoke(request);
     }
 
