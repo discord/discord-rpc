@@ -193,6 +193,10 @@ static void Discord_UpdateConnection(void)
                     if (userId && username && joinReq) {
                         StringCopy(joinReq->userId, userId);
                         StringCopy(joinReq->username, username);
+                        auto discriminator = GetStrMember(user, "discriminator");
+                        if (discriminator) {
+                            StringCopy(joinReq->discriminator, discriminator);
+                        }
                         if (avatar) {
                             StringCopy(joinReq->avatar, avatar);
                         }
@@ -380,7 +384,7 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks()
     while (JoinAskQueue.HavePendingSends()) {
         auto req = JoinAskQueue.GetNextSendMessage();
         if (Handlers.joinRequest) {
-            DiscordJoinRequest djr{req->userId, req->username, req->avatar};
+            DiscordJoinRequest djr{req->userId, req->username, req->discriminator, req->avatar};
             Handlers.joinRequest(&djr);
         }
         JoinAskQueue.CommitSend();

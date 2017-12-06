@@ -44,6 +44,7 @@ typedef struct DiscordRichPresence {
 typedef struct DiscordJoinRequest {
     const char* userId;
     const char* username;
+    const char* discriminator;
     const char* avatar;
 } DiscordJoinRequest;
 
