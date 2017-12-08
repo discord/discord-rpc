@@ -75,6 +75,7 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 
 | Name | Language |
 |------|----------|
+| [Discord Rich Presence](https://npmjs.org/discord-rich-presence) | JavaScript |
 | [Java-DiscordRPC](https://github.com/MinnDevelopment/Java-DiscordRPC) | Java |
 | [Discord-IPC](https://github.com/jagrosh/DiscordIPC) | Java |
 | [drpc4k](https://github.com/Bluexin/drpc4k) | [Kotlin](https://kotlinlang.org/) |
