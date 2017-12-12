@@ -7,7 +7,7 @@ have callbacks for where a more complete game would do more things (joining, spe
 
 ## Documentation
 
-The most up to date documentation for Rich Presence can always be found in our [developer site](https://discordapp.com/developers/docs/topics/rich-presence)!
+The most up to date documentation for Rich Presence can always be found in our [developer site](https://discordapp.com/developers/docs/rich-presence/how-to)!
 
 ## Basic Usage
 
