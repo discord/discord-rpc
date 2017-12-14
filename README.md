@@ -31,7 +31,7 @@ There's a [CMake](https://cmake.org/download/) file that should be able to gener
 ```
 There is a wrapper build script `build.py` that runs `cmake` with a few different options.
 
-Usually, I run `build.py` to get things started, then use the generated project files as I work on things.
+Usually, I run `build.py` to get things started, then use the generated project files as I work on things. It does depend on `click` library, so do a quick `pip install click` to make sure you have it if you want to run `build.py`.
 
 There are some CMake options you might care about:
 
