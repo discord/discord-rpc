@@ -1,17 +1,4 @@
-/*
- * MinGW defaults to WINNT 5.1 (aka XP), however some of functions used here
- * require WINNT >= 6.0 APIs, which are only visible when WINVER and
- * _WIN32_WINNT defines are set properly before including any system headers.
- * Such API is e.g. RegSetKeyValueW.
- */
-#ifdef __MINGW32__
-// 0x0600 == vista
-#define WINVER 0x0600
-#define _WIN32_WINNT 0x0600
-#endif // __MINGW32__
-
 #include "discord-rpc.h"
-#include <stdio.h>
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMCX
@@ -19,7 +6,51 @@
 #define NOIME
 #include <windows.h>
 #include <psapi.h>
+#include <cwchar>
+#include <stdio.h>
+
+/**
+ * Updated fixes for MinGW and WinXP
+ * This block is written the way it does not involve changing the rest of the code
+ * Checked to be compiling
+ * 1) strsafe.h belongs to Windows SDK and cannot be added to MinGW
+ * #include guarded, functions redirected to <string.h> substitutes
+ * 2) RegSetKeyValueW and LSTATUS are not declared in <winreg.h>
+ * The entire function is rewritten
+ */
+#ifdef __MINGW32__
+/// strsafe.h fixes
+#define StringCbPrintfW snwprintf
+LPWSTR StringCbCopyW(LPWSTR a, size_t l, LPCWSTR b)
+{
+	a[l-1] = 0;
+	return wcsncpy(a, b, l - 1); // does not set the last byte to 0 on overflow, so it's set to 0 above
+}
+#else
 #include <strsafe.h>
+#endif // __MINGW32__
+
+/// winreg.h fixes
+#ifndef LSTATUS
+#define LSTATUS LONG
+#endif
+#ifdef RegSetKeyValueW
+#undefine RegSetKeyValueW
+#endif
+#define RegSetKeyValueW regset
+LSTATUS regset(HKEY hkey, LPCWSTR subkey, LPCWSTR name, DWORD type, const void *data, DWORD len)
+{
+	HKEY hsubkey = NULL;
+	LSTATUS ret;
+	if (subkey && subkey[0])  /* need to create the subkey */
+	{
+		if ((ret = RegCreateKeyW( hkey, subkey, &hsubkey )) != ERROR_SUCCESS) return ret;
+		hkey = hsubkey;
+	}
+	ret = RegSetValueExW( hkey, name, 0, type, (const BYTE*)data, len );
+	if (hsubkey) RegCloseKey( hsubkey );
+	return ret;
+}
 
 void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
 {
