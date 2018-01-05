@@ -102,6 +102,7 @@ size_t JsonWriteRichPresenceObj(char* dest,
             WriteKey(writer, "pid");
             writer.Int(pid);
 
+            if (presence != nullptr)
             {
                 WriteObject activity(writer, "activity");
 

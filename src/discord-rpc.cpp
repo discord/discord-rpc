@@ -325,6 +325,11 @@ extern "C" DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence*
     SignalIOActivity();
 }
 
+extern "C" DISCORD_EXPORT void Discord_ClearPresence()
+{
+    Discord_UpdatePresence(nullptr);
+}
+
 extern "C" DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_REPLY_ */ int reply)
 {
     // if we are not connected, let's not batch up stale messages for later

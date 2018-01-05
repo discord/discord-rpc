@@ -108,6 +108,11 @@ public:
               Category = "Discord")
     void UpdatePresence();
 
+    UFUNCTION(BlueprintCallable,
+              meta = (DisplayName = "Clear presence", Keywords = "Discord rpc"),
+              Category = "Discord")
+    void ClearPresence();
+
     UPROPERTY(BlueprintReadOnly,
               meta = (DisplayName = "Is Discord connected", Keywords = "Discord rpc"),
               Category = "Discord")

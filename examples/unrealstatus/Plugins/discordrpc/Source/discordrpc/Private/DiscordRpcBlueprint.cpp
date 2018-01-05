@@ -145,3 +145,8 @@ void UDiscordRpc::UpdatePresence()
 
     Discord_UpdatePresence(&rp);
 }
+
+void UDiscordRpc::ClearPresence()
+{
+    Discord_ClearPresence();
+}
