@@ -87,7 +87,8 @@ def for_unity(ctx):
 
 
 @cli.command()
-def unreal():
+@click.pass_context
+def unreal(ctx):
     """ build libs and copy them into the unreal project """
     ctx.invoke(
         libs,
@@ -97,6 +98,8 @@ def unreal():
         skip_formatter=True,
         just_release=True
     )
+
+    click.echo('--- Copying libs and header into unreal example')
 
     UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'plugins', 'discordrpc')
     BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
