@@ -57,7 +57,7 @@ static void updateDiscordPresence()
     }
 }
 
-static void handleDiscordReady()
+static void handleDiscordReady(void)
 {
     printf("\nDiscord: ready\n");
 }

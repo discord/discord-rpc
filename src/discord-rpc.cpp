@@ -304,7 +304,7 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     IoThread.Start();
 }
 
-extern "C" DISCORD_EXPORT void Discord_Shutdown()
+extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
 {
     if (!Connection) {
         return;
@@ -325,7 +325,7 @@ extern "C" DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence*
     SignalIOActivity();
 }
 
-extern "C" DISCORD_EXPORT void Discord_ClearPresence()
+extern "C" DISCORD_EXPORT void Discord_ClearPresence(void)
 {
     Discord_UpdatePresence(nullptr);
 }
@@ -345,7 +345,7 @@ extern "C" DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_RE
     }
 }
 
-extern "C" DISCORD_EXPORT void Discord_RunCallbacks()
+extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
 {
     // Note on some weirdness: internally we might connect, get other signals, disconnect any number
     // of times inbetween calls here. Externally, we want the sequence to seem sane, so any other
