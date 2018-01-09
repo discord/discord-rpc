@@ -88,8 +88,30 @@ def for_unity(ctx):
 
 @cli.command()
 def unreal():
-    """ todo: build unreal project """
-    pass
+    """ build libs and copy them into the unreal project """
+    ctx.invoke(
+        libs,
+        clean=False,
+        static=False,
+        shared=True,
+        skip_formatter=True,
+        just_release=True
+    )
+
+    UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'plugins', 'discordrpc')
+    BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
+
+    UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Binaries', 'ThirdParty', 'discordrpcLibrary', 'Win64')
+    mkdir_p(UNREAL_DLL_PATH)
+    shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.dll'), UNREAL_DLL_PATH)
+
+    UNREAL_INCLUDE_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'discordrpcLibrary', 'Include')
+    mkdir_p(UNREAL_INCLUDE_PATH)
+    shutil.copy(os.path.join(SCRIPT_PATH, 'include', 'discord-rpc.h'), UNREAL_INCLUDE_PATH)
+
+    UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'discordrpcLibrary', 'x64', 'Release')
+    mkdir_p(UNREAL_LIB_PATH)
+    shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.lib'), UNREAL_LIB_PATH)
 
 
 def build_lib(build_name, generator, options, just_release):
