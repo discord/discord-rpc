@@ -14,6 +14,7 @@
 static const char* APPLICATION_ID = "345229890980937739";
 static int FrustrationLevel = 0;
 static int64_t StartTime;
+static int SendPresence = 1;
 
 static int prompt(char* line, size_t size)
 {
@@ -32,24 +33,28 @@ static int prompt(char* line, size_t size)
 
 static void updateDiscordPresence()
 {
-    char buffer[256];
-    DiscordRichPresence discordPresence;
-    memset(&discordPresence, 0, sizeof(discordPresence));
-    discordPresence.state = "West of House";
-    sprintf(buffer, "Frustration level: %d", FrustrationLevel);
-    discordPresence.details = buffer;
-    discordPresence.startTimestamp = StartTime;
-    discordPresence.endTimestamp = time(0) + 5 * 60;
-    discordPresence.largeImageKey = "canary-large";
-    discordPresence.smallImageKey = "ptb-small";
-    discordPresence.partyId = "party1234";
-    discordPresence.partySize = 1;
-    discordPresence.partyMax = 6;
-    discordPresence.matchSecret = "xyzzy";
-    discordPresence.joinSecret = "join";
-    discordPresence.spectateSecret = "look";
-    discordPresence.instance = 0;
-    Discord_UpdatePresence(&discordPresence);
+    if (SendPresence) {
+        char buffer[256];
+        DiscordRichPresence discordPresence;
+        memset(&discordPresence, 0, sizeof(discordPresence));
+        discordPresence.state = "West of House";
+        sprintf(buffer, "Frustration level: %d", FrustrationLevel);
+        discordPresence.details = buffer;
+        discordPresence.startTimestamp = StartTime;
+        discordPresence.endTimestamp = time(0) + 5 * 60;
+        discordPresence.largeImageKey = "canary-large";
+        discordPresence.smallImageKey = "ptb-small";
+        discordPresence.partyId = "party1234";
+        discordPresence.partySize = 1;
+        discordPresence.partyMax = 6;
+        discordPresence.matchSecret = "xyzzy";
+        discordPresence.joinSecret = "join";
+        discordPresence.spectateSecret = "look";
+        discordPresence.instance = 0;
+        Discord_UpdatePresence(&discordPresence);
+    } else {
+        Discord_ClearPresence();
+    }
 }
 
 static void handleDiscordReady()
@@ -140,6 +145,18 @@ static void gameLoop()
             if (line[0] == 't') {
                 printf("Shutting off Discord.\n");
                 Discord_Shutdown();
+                continue;
+            }
+
+            if (line[0] == 'c') {
+                if (SendPresence) {
+                    printf("Clearing presence information.\n");
+                    SendPresence = 0;
+                } else {
+                    printf("Restoring presence information.\n");
+                    SendPresence = 1;
+                }
+                updateDiscordPresence();
                 continue;
             }
 
