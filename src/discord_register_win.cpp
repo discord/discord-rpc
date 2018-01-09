@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <psapi.h>
 #include <cwchar>
-#include <stdio.h>
+#include <cstdio>
 
 /**
  * Updated fixes for MinGW and WinXP
@@ -20,11 +20,16 @@
  */
 #ifdef __MINGW32__
 /// strsafe.h fixes
-#define StringCbPrintfW snwprintf
-LPWSTR StringCbCopyW(LPWSTR a, size_t l, LPCWSTR b)
+HRESULT StringCbPrintfW(LPWSTR pszDest, size_t cbDest, LPCWSTR pszFormat, ...)
 {
-	a[l-1] = 0;
-	return wcsncpy(a, b, l - 1); // does not set the last byte to 0 on overflow, so it's set to 0 above
+    HRESULT ret;
+    va_list va;
+    va_start(va, pszFormat);
+    cbDest /= 2; // Size is divided by 2 to convert from bytes to wide characters - causes segfault othervise
+    ret = vsnwprintf(pszDest, cbDest, pszFormat, va);
+    pszDest[cbDest - 1] = 0; // Terminate the string in case a buffer overflow; -1 will be returned
+    va_end(va);
+    return ret;
 }
 #else
 #include <strsafe.h>
@@ -40,16 +45,16 @@ LPWSTR StringCbCopyW(LPWSTR a, size_t l, LPCWSTR b)
 #define RegSetKeyValueW regset
 LSTATUS regset(HKEY hkey, LPCWSTR subkey, LPCWSTR name, DWORD type, const void *data, DWORD len)
 {
-	HKEY hsubkey = NULL;
-	LSTATUS ret;
-	if (subkey && subkey[0])  /* need to create the subkey */
-	{
-		if ((ret = RegCreateKeyW( hkey, subkey, &hsubkey )) != ERROR_SUCCESS) return ret;
-		hkey = hsubkey;
-	}
-	ret = RegSetValueExW( hkey, name, 0, type, (const BYTE*)data, len );
-	if (hsubkey) RegCloseKey( hsubkey );
-	return ret;
+    HKEY htkey = hkey, hsubkey = nullptr;
+    LSTATUS ret;
+    if (subkey && subkey[0])
+    {
+        if((ret = RegCreateKeyExW(hkey, subkey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hsubkey, 0)) != ERROR_SUCCESS) return ret;
+        htkey = hsubkey;
+    }
+    ret = RegSetValueExW(htkey, name, 0, type, (const BYTE*)data, len);
+    if (hsubkey && hsubkey != hkey) RegCloseKey(hsubkey);
+    return ret;
 }
 
 void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
@@ -66,7 +71,8 @@ void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
         StringCbPrintfW(openCommand, sizeof(openCommand), L"%s", command);
     }
     else {
-        StringCbCopyW(openCommand, sizeof(openCommand), exeFilePath);
+        //StringCbCopyW(openCommand, sizeof(openCommand), exeFilePath);
+        StringCbPrintfW(openCommand, sizeof(openCommand), L"%s", exeFilePath);
     }
 
     wchar_t protocolName[64];
