@@ -130,5 +130,6 @@ install(
 install(
     FILES
         "../include/discord-rpc.h"
+		"../include/discord_register.h"
     DESTINATION "include"
 )
