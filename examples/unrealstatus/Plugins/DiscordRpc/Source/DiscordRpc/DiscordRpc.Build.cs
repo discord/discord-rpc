@@ -1,10 +1,15 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using System.IO;
 
-public class discordrpc : ModuleRules
+public class DiscordRpc : ModuleRules
 {
-    public discordrpc(ReadOnlyTargetRules Target) : base(Target)
+#if WITH_FORWARDED_MODULE_RULES_CTOR
+    public DiscordRpc(ReadOnlyTargetRules Target) : base(Target)
+#else
+    public DiscordRpc(TargetInfo Target)
+#endif
     {
         Definitions.Add("DISCORD_DYNAMIC_LIB=1");
 
@@ -24,6 +29,7 @@ public class discordrpc : ModuleRules
             new string[]
             {
                 "Core",
+                "DiscordRpcLibrary"
             }
             );
 
@@ -45,7 +51,7 @@ public class discordrpc : ModuleRules
 			}
             );
 
-        string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty", "DiscordRpcLibrary"));
+        string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "Source", "ThirdParty", "DiscordRpcLibrary"));
         PublicIncludePaths.Add(Path.Combine(BaseDirectory, "Include"));
     }
 }

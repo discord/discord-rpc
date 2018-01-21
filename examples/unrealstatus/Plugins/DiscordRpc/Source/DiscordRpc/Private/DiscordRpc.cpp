@@ -12,7 +12,7 @@ void FDiscordRpcModule::StartupModule()
 #if defined(DISCORD_DYNAMIC_LIB)
     // Get the base directory of this plugin
     FString BaseDir = IPluginManager::Get().FindPlugin("DiscordRpc")->GetBaseDir();
-	const FString SDKDir = FPaths::Combine(*BaseDir, TEXT("ThirdParty"), TEXT("DiscordRpcLibrary"));
+	const FString SDKDir = FPaths::Combine(*BaseDir, TEXT("Source"), TEXT("ThirdParty"), TEXT("DiscordRpcLibrary"));
 #if PLATFORM_WINDOWS
 	const FString LibName = TEXT("discord-rpc");
 	const FString LibDir = FPaths::Combine(*SDKDir, TEXT("Win64"));
@@ -42,7 +42,7 @@ void FDiscordRpcModule::ShutdownModule()
 #endif
 }
 
-bool FDiscordAPIModule::LoadDependency(const FString& Dir, const FString& Name, void*& Handle)
+bool FDiscordRpcModule::LoadDependency(const FString& Dir, const FString& Name, void*& Handle)
 {
 	FString Lib = Name + TEXT(".") + FPlatformProcess::GetModuleExtension();
 	FString Path = Dir.IsEmpty() ? *Lib : FPaths::Combine(*Dir, *Lib);
@@ -57,7 +57,7 @@ bool FDiscordAPIModule::LoadDependency(const FString& Dir, const FString& Name, 
 	return true;
 }
 
-void FDiscordAPIModule::FreeDependency(void*& Handle)
+void FDiscordRpcModule::FreeDependency(void*& Handle)
 {
 	if (Handle != nullptr)
 	{

@@ -1,4 +1,4 @@
-#include "DicordRpcPrivatePCH"
+#include "DiscordRpcPrivatePCH.h"
 #include "DiscordRpcBlueprint.h"
 #include "discord-rpc.h"
 
