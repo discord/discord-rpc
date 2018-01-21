@@ -21,7 +21,7 @@ void FDiscordRpcModule::StartupModule()
 		FreeDependency(DiscordRpcLibraryHandle);
 	}
 #elif PLATFORM_MAC
-	const FString LibName = TEXT("discord-rpc");
+	const FString LibName = TEXT("libdiscord-rpc");
 	const FString LibDir = FPaths::Combine(*SDKDir, TEXT("Mac"));
 	if (!LoadDependency(LibDir, LibName, DiscordRpcLibraryHandle)) {
 		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT(LOCTEXT_NAMESPACE, "Failed to load DiscordRpc plugin. Plug-in will not be functional."));
