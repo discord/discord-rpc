@@ -76,7 +76,7 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 | Name | Language |
 |------|----------|
 | [discord-rpc.jar](https://github.com/Vatuu/discord-rpc "Discord-RPC.jar") | Java |
-| [Java-DiscordRPC](https://github.com/MinnDevelopment/Java-DiscordRPC) | Java |
+| [java-discord-rpc](https://github.com/MinnDevelopment/java-discord-rpc) | Java |
 | [Discord-IPC](https://github.com/jagrosh/DiscordIPC) | Java |
 | [Discord Rich Presence](https://npmjs.org/discord-rich-presence) | JavaScript |
 | [drpc4k](https://github.com/Bluexin/drpc4k) | [Kotlin](https://kotlinlang.org/) |
