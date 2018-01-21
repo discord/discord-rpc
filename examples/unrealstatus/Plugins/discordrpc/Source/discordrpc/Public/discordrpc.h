@@ -4,7 +4,7 @@
 
 #include "ModuleManager.h"
 
-class FdiscordrpcModule : public IModuleInterface {
+class FDiscordRpcModule : public IModuleInterface {
 public:
     /** IModuleInterface implementation */
     virtual void StartupModule() override;
@@ -13,4 +13,8 @@ public:
 private:
     /** Handle to the test dll we will load */
     void* DiscordLibraryHandle;
+	
+	/** StartupModule is covered with defines, these functions are the place to put breakpoints */
+	static bool LoadDependency(const FString& Dir, const FString& Name, void*& Handle);
+	static void FreeDependency(void*& Handle);
 };

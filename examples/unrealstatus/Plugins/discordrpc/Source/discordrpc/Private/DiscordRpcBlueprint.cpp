@@ -1,7 +1,5 @@
-
-
+#include "DicordRpcPrivatePCH"
 #include "DiscordRpcBlueprint.h"
-
 #include "discord-rpc.h"
 
 DEFINE_LOG_CATEGORY(Discord)

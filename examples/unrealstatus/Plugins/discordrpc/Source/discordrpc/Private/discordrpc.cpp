@@ -1,50 +1,71 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
-#include "discordrpc.h"
-#include "Core.h"
+#include "DiscordRpcPrivatePCH.h"
 #include "IPluginManager.h"
 #include "ModuleManager.h"
 
-#define LOCTEXT_NAMESPACE "FdiscordrpcModule"
+#define LOCTEXT_NAMESPACE "FDiscordRpcModule"
 
-void FdiscordrpcModule::StartupModule()
-{
-    // This code will execute after your module is loaded into memory; the exact timing is specified
-    // in the .uplugin file per-module
-
+void FDiscordRpcModule::StartupModule()
+{	
+#if !PLATFORM_LINUX
+#if defined(DISCORD_DYNAMIC_LIB)
     // Get the base directory of this plugin
-    FString BaseDir = IPluginManager::Get().FindPlugin("discordrpc")->GetBaseDir();
-
-    // Add on the relative location of the third party dll and load it
-    FString LibraryPath;
+    FString BaseDir = IPluginManager::Get().FindPlugin("DiscordRpc")->GetBaseDir();
+	const FString SDKDir = FPaths::Combine(*BaseDir, TEXT("ThirdParty"), TEXT("DiscordRpcLibrary"));
 #if PLATFORM_WINDOWS
-    LibraryPath = FPaths::Combine(
-      *BaseDir, TEXT("Binaries/ThirdParty/discordrpcLibrary/Win64/discord-rpc.dll"));
+	const FString LibName = TEXT("discord-rpc");
+	const FString LibDir = FPaths::Combine(*SDKDir, TEXT("Win64"));
+	if (!LoadDependency(LibDir, LibName, DiscordRpcLibraryHandle)) {
+		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT(LOCTEXT_NAMESPACE, "Failed to load DiscordRpc plugin. Plug-in will not be functional."));
+		FreeDependency(DiscordRpcLibraryHandle);
+	}
 #elif PLATFORM_MAC
-    LibraryPath = FPaths::Combine(
-      *BaseDir, TEXT("Source/ThirdParty/discordrpcLibrary/Mac/Release/libdiscord-rpc.dylib"));
-#endif // PLATFORM_WINDOWS
-
-    DiscordLibraryHandle =
-      !LibraryPath.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
-
-    if (!DiscordLibraryHandle) {
-        FMessageDialog::Open(
-          EAppMsgType::Ok, LOCTEXT("ThirdPartyLibraryError", "Failed to load discord-rpc library"));
-    }
+	const FString LibName = TEXT("discord-rpc");
+	const FString LibDir = FPaths::Combine(*SDKDir, TEXT("Mac"));
+	if (!LoadDependency(LibDir, LibName, DiscordRpcLibraryHandle)) {
+		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT(LOCTEXT_NAMESPACE, "Failed to load DiscordRpc plugin. Plug-in will not be functional."));
+		FreeDependency(DiscordRpcLibraryHandle);
+	}
+#endif
+#endif
+#endif
 }
 
-void FdiscordrpcModule::ShutdownModule()
+void FDiscordRpcModule::ShutdownModule()
 {
-    // This function may be called during shutdown to clean up your module.  For modules that
-    // support dynamic reloading,
-    // we call this function before unloading the module.
-
     // Free the dll handle
-    FPlatformProcess::FreeDllHandle(DiscordLibraryHandle);
-    DiscordLibraryHandle = nullptr;
+#if !PLATFORM_LINUX
+#if defined(DISCORD_DYNAMIC_LIB)
+	FreeDependency(DiscordRpcLibraryHandle);
+#endif
+#endif
+}
+
+bool FDiscordAPIModule::LoadDependency(const FString& Dir, const FString& Name, void*& Handle)
+{
+	FString Lib = Name + TEXT(".") + FPlatformProcess::GetModuleExtension();
+	FString Path = Dir.IsEmpty() ? *Lib : FPaths::Combine(*Dir, *Lib);
+
+	Handle = FPlatformProcess::GetDllHandle(*Path);
+
+	if (Handle == nullptr)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void FDiscordAPIModule::FreeDependency(void*& Handle)
+{
+	if (Handle != nullptr)
+	{
+		FPlatformProcess::FreeDllHandle(Handle);
+		Handle = nullptr;
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
 
-IMPLEMENT_MODULE(FdiscordrpcModule, discordrpc)
+IMPLEMENT_MODULE(FDiscordRpcModule, DiscordRpc)

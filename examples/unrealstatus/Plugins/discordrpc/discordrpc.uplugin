@@ -15,9 +15,9 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "discordrpc",
-			"Type": "Developer",
-			"LoadingPhase": "Default"
+			"Name": "DiscordRpc",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
 		}
 	]
 }
