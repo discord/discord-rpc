@@ -100,7 +100,7 @@ def unreal(ctx):
     )
 
     click.echo('--- Copying libs and header into unreal example')
-
+    
     UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'DiscordRpcPlugin')
     UNREAL_INCLUDE_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLib', 'Include')
     mkdir_p(UNREAL_INCLUDE_PATH)
