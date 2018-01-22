@@ -29,7 +29,7 @@ public class DiscordRpc : ModuleRules
             new string[]
             {
                 "Core",
-                "DiscordRpcLibrary"
+                "DiscordRpcLib"
             }
             );
 

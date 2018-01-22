@@ -3,12 +3,12 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class DiscordRpcLibrary : ModuleRules
+public class DiscordRpcLib : ModuleRules
 {
 #if WITH_FORWARDED_MODULE_RULES_CTOR
-    public DiscordRpcLibrary(ReadOnlyTargetRules Target) : base(Target)
+    public DiscordRpcLib(ReadOnlyTargetRules Target) : base(Target)
 #else
-    public DiscordRpcLibrary(TargetInfo Target)
+    public DiscordRpcLib(TargetInfo Target)
 #endif
     {
         Type = ModuleType.External;
