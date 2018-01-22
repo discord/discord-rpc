@@ -101,7 +101,7 @@ def unreal(ctx):
 
     click.echo('--- Copying libs and header into unreal example')
 
-    UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'DiscordRpc')
+    UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'discordrpc')
     BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
 
     UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
