@@ -8,26 +8,33 @@
 
 void FDiscordRpcModule::StartupModule()
 {
-#if !PLATFORM_LINUX
+    // Not needed for Linux
+    // Should do nothing for static libs
 #if defined(DISCORD_DYNAMIC_LIB)
+#if !PLATFORM_LINUX
     // Get the base directory of this plugin
     FString BaseDir = IPluginManager::Get().FindPlugin("DiscordRpc")->GetBaseDir();
     const FString SDKDir = FPaths::Combine(*BaseDir, TEXT("Source"), TEXT("ThirdParty"), TEXT("DiscordRpcLib"));
+
+    // Windows
 #if PLATFORM_WINDOWS
     const FString LibName = TEXT("discord-rpc");
+#if PLATFORM_64BITS
     const FString LibDir = FPaths::Combine(*SDKDir, TEXT("Win64"));
-    if (!LoadDependency(LibDir, LibName, DiscordRpcLibraryHandle)) {
-        FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT(LOCTEXT_NAMESPACE, "Failed to load DiscordRpc plugin. Plug-in will not be functional."));
-        FreeDependency(DiscordRpcLibraryHandle);
-    }
+#elif
+    const FString LibDir = FPaths::Combine(*SDKDir, TEXT("Win32"));
+#endif
+
+    // Mac
 #elif PLATFORM_MAC
     const FString LibName = TEXT("libdiscord-rpc");
     const FString LibDir = FPaths::Combine(*SDKDir, TEXT("Mac"));
+#endif
+
     if (!LoadDependency(LibDir, LibName, DiscordRpcLibraryHandle)) {
         FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT(LOCTEXT_NAMESPACE, "Failed to load DiscordRpc plugin. Plug-in will not be functional."));
         FreeDependency(DiscordRpcLibraryHandle);
     }
-#endif
 #endif
 #endif
 }
@@ -44,13 +51,13 @@ void FDiscordRpcModule::ShutdownModule()
 
 bool FDiscordRpcModule::LoadDependency(const FString& Dir, const FString& Name, void*& Handle)
 {
-	// .dll, .so, .dylib
+    // .dll, .so, .dylib
     FString Lib = Name + TEXT(".") + FPlatformProcess::GetModuleExtension();
-	
-	// Get full path to dependency
+
+    // Get full path to dependency
     FString Path = Dir.IsEmpty() ? *Lib : FPaths::Combine(*Dir, *Lib);
 
-	// Load lib
+    // Load lib
     Handle = FPlatformProcess::GetDllHandle(*Path);
     if (Handle == nullptr)
     {
@@ -64,7 +71,7 @@ void FDiscordRpcModule::FreeDependency(void*& Handle)
 {
     if (Handle != nullptr)
     {
-		// Free lib
+        // Free lib
         FPlatformProcess::FreeDllHandle(Handle);
         Handle = nullptr;
     }

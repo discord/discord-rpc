@@ -102,19 +102,21 @@ def unreal(ctx):
     click.echo('--- Copying libs and header into unreal example')
 
     UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'DiscordRpcPlugin')
-    BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
-
-    UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLib', 'Win64')
-    mkdir_p(UNREAL_DLL_PATH)
-    shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.dll'), UNREAL_DLL_PATH)
-
     UNREAL_INCLUDE_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLib', 'Include')
     mkdir_p(UNREAL_INCLUDE_PATH)
     shutil.copy(os.path.join(SCRIPT_PATH, 'include', 'discord-rpc.h'), UNREAL_INCLUDE_PATH)
-
-    UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLib', 'Win64')
-    mkdir_p(UNREAL_LIB_PATH)
-    shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.lib'), UNREAL_LIB_PATH)
+    
+    BUILD_BASE_PATH_32 = os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic', 'src', 'Release')
+    BUILD_BASE_PATH_64 = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
+    UNREAL_BIN_PATH_32 = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLib', 'Win32')
+    UNREAL_BIN_PATH_64 = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLib', 'Win64')
+    
+    mkdir_p(UNREAL_BIN_PATH_32)
+    mkdir_p(UNREAL_BIN_PATH_64)
+    shutil.copy(os.path.join(BUILD_BASE_PATH_32, 'discord-rpc.dll'), UNREAL_BIN_PATH_32)
+    shutil.copy(os.path.join(BUILD_BASE_PATH_64, 'discord-rpc.dll'), UNREAL_BIN_PATH_64)
+    shutil.copy(os.path.join(BUILD_BASE_PATH_32, 'discord-rpc.lib'), UNREAL_BIN_PATH_32)
+    shutil.copy(os.path.join(BUILD_BASE_PATH_64, 'discord-rpc.lib'), UNREAL_BIN_PATH_64)
 
 
 def build_lib(build_name, generator, options, just_release):
