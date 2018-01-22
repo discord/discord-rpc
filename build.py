@@ -101,18 +101,18 @@ def unreal(ctx):
 
     click.echo('--- Copying libs and header into unreal example')
 
-    UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'plugins', 'discordrpc')
+    UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'DiscordRpc')
     BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
 
-    UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Binaries', 'ThirdParty', 'discordrpcLibrary', 'Win64')
+    UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
     mkdir_p(UNREAL_DLL_PATH)
     shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.dll'), UNREAL_DLL_PATH)
 
-    UNREAL_INCLUDE_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'discordrpcLibrary', 'Include')
+    UNREAL_INCLUDE_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Include')
     mkdir_p(UNREAL_INCLUDE_PATH)
     shutil.copy(os.path.join(SCRIPT_PATH, 'include', 'discord-rpc.h'), UNREAL_INCLUDE_PATH)
 
-    UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'discordrpcLibrary', 'x64', 'Release')
+    UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
     mkdir_p(UNREAL_LIB_PATH)
     shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.lib'), UNREAL_LIB_PATH)
 
