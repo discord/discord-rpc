@@ -73,3 +73,6 @@ Intermediate/
 
 # Cache files for the editor to use
 DerivedDataCache/
+
+# Library headers must be copied automatically by the build script (build.py unreal)
+Plugins/DiscordRpc/Source/ThirdParty/DiscordRpcLibrary/Include
