@@ -51,7 +51,7 @@ public class DiscordRpc : ModuleRules
             }
             );
 
-        string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "Source", "ThirdParty", "DiscordRpcLibrary"));
+        string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "Source", "ThirdParty", "DiscordRpcLib"));
         PublicIncludePaths.Add(Path.Combine(BaseDirectory, "Include"));
     }
 }

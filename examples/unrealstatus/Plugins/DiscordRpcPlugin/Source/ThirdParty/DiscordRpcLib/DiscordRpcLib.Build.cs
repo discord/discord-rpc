@@ -14,7 +14,7 @@ public class DiscordRpcLibrary : ModuleRules
         Type = ModuleType.External;
         Definitions.Add("DISCORD_DYNAMIC_LIB=1");
 
-        string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty", "DiscordRpcLibrary"));
+        string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty", "DiscordRpcLib"));
 
         if (Target.Platform == UnrealTargetPlatform.Win64)
         {
