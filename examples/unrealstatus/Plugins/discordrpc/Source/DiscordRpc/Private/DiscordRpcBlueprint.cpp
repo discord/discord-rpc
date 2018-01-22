@@ -1,7 +1,5 @@
-
-
+#include "DiscordRpcPrivatePCH.h"
 #include "DiscordRpcBlueprint.h"
-
 #include "discord-rpc.h"
 
 DEFINE_LOG_CATEGORY(Discord)
@@ -68,8 +66,8 @@ static void JoinRequestHandler(const DiscordJoinRequest* request)
 }
 
 void UDiscordRpc::Initialize(const FString& applicationId,
-                             bool autoRegister,
-                             const FString& optionalSteamId)
+    bool autoRegister,
+    const FString& optionalSteamId)
 {
     self = this;
     IsConnected = false;
@@ -89,7 +87,7 @@ void UDiscordRpc::Initialize(const FString& applicationId,
     auto appId = StringCast<ANSICHAR>(*applicationId);
     auto steamId = StringCast<ANSICHAR>(*optionalSteamId);
     Discord_Initialize(
-      (const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
+        (const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
 }
 
 void UDiscordRpc::Shutdown()
