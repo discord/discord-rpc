@@ -112,7 +112,7 @@ def unreal(ctx):
     mkdir_p(UNREAL_INCLUDE_PATH)
     shutil.copy(os.path.join(SCRIPT_PATH, 'include', 'discord-rpc.h'), UNREAL_INCLUDE_PATH)
 
-    UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
+    UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLib', 'Win64')
     mkdir_p(UNREAL_LIB_PATH)
     shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.lib'), UNREAL_LIB_PATH)
 
