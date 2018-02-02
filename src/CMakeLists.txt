@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(BASE_RPC_SRC
     ${PROJECT_SOURCE_DIR}/include/discord-rpc.h
     discord-rpc.cpp
-    discord_register.h
+    ${PROJECT_SOURCE_DIR}/include/discord_register.h
     rpc_connection.h
     rpc_connection.cpp
     serialization.h
@@ -130,5 +130,6 @@ install(
 install(
     FILES
         "../include/discord-rpc.h"
+		"../include/discord_register.h"
     DESTINATION "include"
 )
