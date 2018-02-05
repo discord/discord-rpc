@@ -80,14 +80,35 @@ def unity(ctx):
     )
 
     click.echo('--- Copying libs and header into unity example')
+    UNITY_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'button-clicker', 'Assets', 'Plugins')
 
-    if sys.platform.startswith('win'):
-        return 'win'
+    if sys.platform == 'win64':
+        BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
+        UNITY_DLL_PATH = os.path.join(UNITY_PROJECT_PATH, 'x86_64')
+        LIBRARY_NAME = 'discord-rpc.dll'
+
+    elif sys.platform == 'win32':
+        BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic', 'src', 'Release')
+        UNITY_DLL_PATH = os.path.join(UNITY_PROJECT_PATH, 'x86')
+        LIBRARY_NAME = 'discord-rpc.dll'
+
     elif sys.platform == 'darwin':
-        return 'osx'
+        BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'osx-dynamic', 'src')
+        UNITY_DLL_PATH = UNITY_PROJECT_PATH
+        os.rename(os.path.join(BUILD_BASE_PATH, 'libdiscord-rpc.dylib'), os.path.join(BUILD_BASE_PATH, 'discord-rpc.bundle'))
+        LIBRARY_NAME = 'discord-rpc.bundle'
+
     elif sys.platform.startswith('linux'):
-        return 'linux'
-    raise Exception('Unsupported platform ' + sys.platform)
+        BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'linux-dynamic', 'src')
+        UNITY_DLL_PATH = os.path.join(UNITY_PROJECT_PATH, 'x86')
+        os.rename(os.path.join(BUILD_BASE_PATH, 'libdiscord-rpc.so'), os.path.join(BUILD_BASE_PATH, 'discord-rpc.so'))
+        LIBRARY_NAME = 'discord-rpc.so'
+
+    else:
+        raise Exception('Unsupported platform ' + sys.platform)
+
+    mkdir_p(UNITY_DLL_PATH)
+    shutil.copy(os.path.join(BUILD_BASE_PATH, LIBRARY_NAME), UNITY_DLL_PATH)
 
 
 @cli.command()
