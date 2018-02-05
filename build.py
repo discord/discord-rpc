@@ -108,13 +108,11 @@ def unreal(ctx):
     if sys.platform.startswith('win'):
         BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
         UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
-        UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
         LIBRARY_NAME = 'discord-rpc.lib'
 
     elif sys.platform == 'darwin':
         BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'osx-dynamic', 'src')
         UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'OSX')
-        UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'OSX')
         LIBRARY_NAME = 'libdiscord-rpc.dylib'
 
     elif sys.platform.startswith('linux'):
@@ -123,15 +121,13 @@ def unreal(ctx):
     else:
         raise Exception('Unsupported platform ' + sys.platform)
 
-    mkdir_p(UNREAL_DLL_PATH)
     shutil.copy(os.path.join(BUILD_BASE_PATH, LIBRARY_NAME), UNREAL_DLL_PATH)
 
     UNREAL_INCLUDE_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Include')
     mkdir_p(UNREAL_INCLUDE_PATH)
     shutil.copy(os.path.join(SCRIPT_PATH, 'include', 'discord-rpc.h'), UNREAL_INCLUDE_PATH)
 
-    mkdir_p(UNREAL_LIB_PATH)
-    shutil.copy(os.path.join(BUILD_BASE_PATH, LIBRARY_NAME), UNREAL_LIB_PATH)
+    shutil.copy(os.path.join(BUILD_BASE_PATH, LIBRARY_NAME), UNREAL_DLL_PATH)
 
 
 def build_lib(build_name, generator, options, just_release):
