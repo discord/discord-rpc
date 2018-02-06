@@ -57,7 +57,7 @@ This is a text adventure "game" that inits/deinits the connection to Discord, an
 
 ## Sample: button-clicker
 
-This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version of the library, and sends presence updates when you click on a button. Run `python build.py unity` in the root directory to download the correct library files.
+This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version of the library, and sends presence updates when you click on a button. Run `python build.py unity` in the root directory to download the correct library files and place them in their respective folders.
 
 ## Sample: unrealstatus
 
