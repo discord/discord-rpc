@@ -59,9 +59,9 @@ static void JoinRequestHandler(const DiscordJoinRequest* request)
     jr.username = ANSI_TO_TCHAR(request->username);
     jr.discriminator = ANSI_TO_TCHAR(request->discriminator);
     jr.avatar = ANSI_TO_TCHAR(request->avatar);
-    UE_LOG(Discord, Log, TEXT("Discord join request from %s#%s"), *jr.username, *jr.discriminator);
+    UE_LOG(Discord, Log, TEXT("Discord join request from %s - %s#%s"), *jr.userId, *jr.username, *jr.discriminator);
     if (self) {
-        self->OnJoinRequest.Broadcast(jr);
+        self->OnJoinRequest.Broadcast(jr.userId, 1);
     }
 }
 
@@ -147,4 +147,11 @@ void UDiscordRpc::UpdatePresence()
 void UDiscordRpc::ClearPresence()
 {
     Discord_ClearPresence();
+}
+
+static void UDiscordRpc::Respond(const FString& userId, int reply)
+{
+    auto userid = StringCast<ANSICHAR>(*userId);
+    UE_LOG(Discord, Log, TEXT("Responding %s to join request from %s"), *reply, *userid)
+    Discord_Respond((const char*)userid.Get(), reply);
 }
