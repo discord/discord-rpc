@@ -135,8 +135,7 @@ void UDiscordRpc::UpdatePresence()
     auto spectateSecret = StringCast<ANSICHAR>(*RichPresence.spectateSecret);
     rp.spectateSecret = spectateSecret.Get();
 
-    rp.startTimestamp = RichPresence.startTimestamp;
-    rp.endTimestamp = RichPresence.endTimestamp;
+    rp.startTimestamp = 1518129515;
     rp.partySize = RichPresence.partySize;
     rp.partyMax = RichPresence.partyMax;
     rp.instance = RichPresence.instance;
@@ -151,7 +150,7 @@ void UDiscordRpc::ClearPresence()
 
 void UDiscordRpc::Respond(const FString& userId, int reply)
 {
-    UE_LOG(Discord, Log, TEXT("Responding %s to join request from %s"), reply, *userId);
+    UE_LOG(Discord, Log, TEXT("Responding %d to join request from %s"), reply, *userId);
     FTCHARToUTF8 utf8_userid(*userId);
     Discord_Respond(utf8_userid.Get(), reply);
 }
