@@ -30,7 +30,6 @@ DECLARE_LOG_CATEGORY_EXTERN(Discord, Log, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDiscordConnected);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordDisconnected, int, errorCode, const FString&, errorMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordErrored, int, errorCode, const FString&, errorMessage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordRespond, const FString&, userId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordJoin, const FString&, joinSecret);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordSpectate, const FString&, spectateSecret);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordJoinRequest, const FDiscordJoinRequestData&, joinRequest);
@@ -112,10 +111,10 @@ public:
               Category = "Discord")
     void ClearPresence();
 
-    UPROPERTY(BlueprintAssignable,
+    UFUNCTION(BlueprintCallable,
               meta = (DisplayName = "Respond to join request", Keywords = "Discord rpc"),
               Category = "Discord")
-    FDiscordRespond Respond;
+    void Respond(const FString& userId, int reply);
 
     UPROPERTY(BlueprintReadOnly,
               meta = (DisplayName = "Is Discord connected", Keywords = "Discord rpc"),
