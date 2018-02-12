@@ -57,11 +57,11 @@ This is a text adventure "game" that inits/deinits the connection to Discord, an
 
 ## Sample: button-clicker
 
-This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version of the library, and sends presence updates when you click on a button. Run `python build.py unity` in the root directory to download the correct library files and place them in their respective folders.
+This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version of the library, and sends presence updates when you click on a button. Run `python build.py unity` in the root directory to build the correct library files and place them in their respective folders.
 
 ## Sample: unrealstatus
 
-This is a sample [Unreal](https://www.unrealengine.com) project that wraps the DLL version of the library with an Unreal plugin, exposes a blueprint class for interacting with it, and uses that to make a very simple UI. Run `python build.py unreal` in the root directory to download the correct library files and place them in their respective folders.
+This is a sample [Unreal](https://www.unrealengine.com) project that wraps the DLL version of the library with an Unreal plugin, exposes a blueprint class for interacting with it, and uses that to make a very simple UI. Run `python build.py unreal` in the root directory to build the correct library files and place them in their respective folders.
 
 ## Wrappers and Implementations
 
