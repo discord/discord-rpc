@@ -2,3 +2,4 @@
 /.vscode/
 /thirdparty/
 .vs/
+.DS_Store
