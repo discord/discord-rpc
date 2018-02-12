@@ -11,7 +11,7 @@ public class DiscordJoinRequestEvent : UnityEngine.Events.UnityEvent<DiscordRpc.
 
 public class DiscordController : MonoBehaviour
 {
-    public DiscordRpc.RichPresence presence;
+    public DiscordRpc.RichPresence presence = new DiscordRpc.RichPresence();
     public string applicationId;
     public string optionalSteamId;
     public int callbackCalls;
@@ -33,7 +33,7 @@ public class DiscordController : MonoBehaviour
 
         presence.details = string.Format("Button clicked {0} times", clickCounter);
 
-        DiscordRpc.UpdatePresence(ref presence);
+        DiscordRpc.UpdatePresence(presence);
     }
 
     public void RequestRespondYes()
