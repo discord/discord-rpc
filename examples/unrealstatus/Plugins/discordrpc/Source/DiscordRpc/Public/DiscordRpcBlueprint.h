@@ -111,6 +111,11 @@ public:
               Category = "Discord")
     void ClearPresence();
 
+    UFUNCTION(BlueprintCallable,
+              meta = (DisplayName = "Respond to join request", Keywords = "Discord rpc"),
+              Category = "Discord")
+    void Respond(const FString& userId, int reply);
+
     UPROPERTY(BlueprintReadOnly,
               meta = (DisplayName = "Is Discord connected", Keywords = "Discord rpc"),
               Category = "Discord")

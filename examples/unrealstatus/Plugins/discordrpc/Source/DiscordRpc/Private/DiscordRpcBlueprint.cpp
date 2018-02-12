@@ -59,7 +59,7 @@ static void JoinRequestHandler(const DiscordJoinRequest* request)
     jr.username = ANSI_TO_TCHAR(request->username);
     jr.discriminator = ANSI_TO_TCHAR(request->discriminator);
     jr.avatar = ANSI_TO_TCHAR(request->avatar);
-    UE_LOG(Discord, Log, TEXT("Discord join request from %s#%s"), *jr.username, *jr.discriminator);
+    UE_LOG(Discord, Log, TEXT("Discord join request from %s - %s#%s"), *jr.userId, *jr.username, *jr.discriminator);
     if (self) {
         self->OnJoinRequest.Broadcast(jr);
     }
@@ -134,9 +134,6 @@ void UDiscordRpc::UpdatePresence()
 
     auto spectateSecret = StringCast<ANSICHAR>(*RichPresence.spectateSecret);
     rp.spectateSecret = spectateSecret.Get();
-
-    rp.startTimestamp = RichPresence.startTimestamp;
-    rp.endTimestamp = RichPresence.endTimestamp;
     rp.partySize = RichPresence.partySize;
     rp.partyMax = RichPresence.partyMax;
     rp.instance = RichPresence.instance;
@@ -147,4 +144,11 @@ void UDiscordRpc::UpdatePresence()
 void UDiscordRpc::ClearPresence()
 {
     Discord_ClearPresence();
+}
+
+void UDiscordRpc::Respond(const FString& userId, int reply)
+{
+    UE_LOG(Discord, Log, TEXT("Responding %d to join request from %s"), reply, *userId);
+    FTCHARToUTF8 utf8_userid(*userId);
+    Discord_Respond(utf8_userid.Get(), reply);
 }
