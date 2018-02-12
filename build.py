@@ -62,19 +62,13 @@ def cli(ctx, clean):
     if ctx.invoked_subcommand is None:
         ctx.invoke(libs, clean=clean)
         if IS_BUILD_MACHINE:
-            ctx.invoke(sign)    
+            ctx.invoke(sign)
         ctx.invoke(archive)
 
 
 @cli.command()
-def unity():
-    """ todo: build unity project """
-    pass
-
-
-@cli.command()
 @click.pass_context
-def for_unity(ctx):
+def unity(ctx):
     """ build just dynamic libs for use in unity project """
     ctx.invoke(
         libs,
@@ -84,6 +78,44 @@ def for_unity(ctx):
         skip_formatter=True,
         just_release=True
     )
+    BUILDS = []
+
+    click.echo('--- Copying libs and header into unity example')
+    UNITY_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'button-clicker', 'Assets', 'Plugins')
+
+    if sys.platform.startswith('win'):
+        LIBRARY_NAME = 'discord-rpc.dll'
+        BUILD_64_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
+        UNITY_64_DLL_PATH = os.path.join(UNITY_PROJECT_PATH, 'x86_64')
+        BUILDS.append({BUILD_64_BASE_PATH: UNITY_64_DLL_PATH})
+
+        BUILD_32_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic', 'src', 'Release')
+        UNITY_32_DLL_PATH = os.path.join(UNITY_PROJECT_PATH, 'x86')
+        BUILDS.append({BUILD_32_BASE_PATH: UNITY_32_DLL_PATH})
+
+    elif sys.platform == 'darwin':
+        LIBRARY_NAME = 'discord-rpc.bundle'
+        BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'osx-dynamic', 'src')
+        UNITY_DLL_PATH = UNITY_PROJECT_PATH
+        os.rename(os.path.join(BUILD_BASE_PATH, 'libdiscord-rpc.dylib'), os.path.join(BUILD_BASE_PATH, 'discord-rpc.bundle'))
+
+        BUILDS.append({BUILD_BASE_PATH: UNITY_DLL_PATH})
+
+    elif sys.platform.startswith('linux'):
+        LIBRARY_NAME = 'discord-rpc.so'
+        BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'linux-dynamic', 'src')
+        UNITY_DLL_PATH = os.path.join(UNITY_PROJECT_PATH, 'x86')
+        os.rename(os.path.join(BUILD_BASE_PATH, 'libdiscord-rpc.so'), os.path.join(BUILD_BASE_PATH, 'discord-rpc.so'))
+
+        BUILDS.append({BUILD_BASE_PATH: UNITY_DLL_PATH})
+
+    else:
+        raise Exception('Unsupported platform ' + sys.platform)
+
+    for build in BUILDS:
+        for i in build:
+            mkdir_p(build[i])
+            shutil.copy(os.path.join(i, LIBRARY_NAME), build[i])
 
 
 @cli.command()
@@ -98,23 +130,45 @@ def unreal(ctx):
         skip_formatter=True,
         just_release=True
     )
+    BUILDS = []
 
     click.echo('--- Copying libs and header into unreal example')
-
     UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'discordrpc')
-    BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
-
-    UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
-    mkdir_p(UNREAL_DLL_PATH)
-    shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.dll'), UNREAL_DLL_PATH)
-
     UNREAL_INCLUDE_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Include')
     mkdir_p(UNREAL_INCLUDE_PATH)
     shutil.copy(os.path.join(SCRIPT_PATH, 'include', 'discord-rpc.h'), UNREAL_INCLUDE_PATH)
 
-    UNREAL_LIB_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
-    mkdir_p(UNREAL_LIB_PATH)
-    shutil.copy(os.path.join(BUILD_BASE_PATH, 'discord-rpc.lib'), UNREAL_LIB_PATH)
+    if sys.platform.startswith('win'):
+        LIBRARY_NAME = 'discord-rpc.lib'
+        BUILD_64_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
+        UNREAL_64_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
+        BUILDS.append({BUILD_64_BASE_PATH: UNREAL_64_DLL_PATH})
+
+        BUILD_32_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic', 'src', 'Release')
+        UNREAL_32_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win32')
+        BUILDS.append({BUILD_32_BASE_PATH: UNREAL_32_DLL_PATH})
+
+    elif sys.platform == 'darwin':
+        LIBRARY_NAME = 'libdiscord-rpc.dylib'
+        BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'osx-dynamic', 'src')
+        UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Mac')
+
+        BUILDS.append({BUILD_BASE_PATH: UNREAL_DLL_PATH})
+
+    elif sys.platform.startswith('linux'):
+        LIBRARY_NAME = 'libdiscord-rpc.so'
+        BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'linux-dynamic', 'src')
+        UNREAL_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Linux')
+
+        BUILDS.append({BUILD_BASE_PATH: UNREAL_DLL_PATH})
+
+    else:
+        raise Exception('Unsupported platform ' + sys.platform)
+
+    for build in BUILDS:
+        for i in build:
+            mkdir_p(build[i])
+            shutil.copy(os.path.join(i, LIBRARY_NAME), build[i])
 
 
 def build_lib(build_name, generator, options, just_release):
@@ -190,7 +244,7 @@ def sign():
     else:
         click.secho('Not signing things on this platform yet', fg='red')
         return
-    
+
     click.echo('--- Signing')
     for path, _, filenames in os.walk(INSTALL_ROOT):
         for fname in filenames:
