@@ -1,4 +1,5 @@
 #include "discord-rpc.h"
+#include "discord_register.h"
 #include <stdio.h>
 
 #include <errno.h>
@@ -8,7 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-bool Mkdir(const char* path)
+static bool Mkdir(const char* path)
 {
     int result = mkdir(path, 0755);
     if (result == 0) {
