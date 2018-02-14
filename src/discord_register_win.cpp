@@ -1,4 +1,5 @@
 #include "discord-rpc.h"
+#include "discord_register.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMCX
@@ -20,7 +21,7 @@
  */
 #ifdef __MINGW32__
 /// strsafe.h fixes
-HRESULT StringCbPrintfW(LPWSTR pszDest, size_t cbDest, LPCWSTR pszFormat, ...)
+static HRESULT StringCbPrintfW(LPWSTR pszDest, size_t cbDest, LPCWSTR pszFormat, ...)
 {
     HRESULT ret;
     va_list va;
@@ -43,7 +44,7 @@ HRESULT StringCbPrintfW(LPWSTR pszDest, size_t cbDest, LPCWSTR pszFormat, ...)
 #undefine RegSetKeyValueW
 #endif
 #define RegSetKeyValueW regset
-LSTATUS regset(HKEY hkey, LPCWSTR subkey, LPCWSTR name, DWORD type, const void *data, DWORD len)
+static LSTATUS regset(HKEY hkey, LPCWSTR subkey, LPCWSTR name, DWORD type, const void *data, DWORD len)
 {
     HKEY htkey = hkey, hsubkey = nullptr;
     LSTATUS ret;
@@ -57,7 +58,7 @@ LSTATUS regset(HKEY hkey, LPCWSTR subkey, LPCWSTR name, DWORD type, const void *
     return ret;
 }
 
-void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
+static void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
 {
     // https://msdn.microsoft.com/en-us/library/aa767914(v=vs.85).aspx
     // we want to register games so we can run them as discord-<appid>://
