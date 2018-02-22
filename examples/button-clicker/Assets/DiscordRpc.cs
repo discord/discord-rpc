@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
 
 public class DiscordRpc
 {
@@ -118,17 +121,6 @@ public class DiscordRpc
         /// <returns><see cref="RichPresenceStruct"/> reprensentation of this instance</returns>
         internal RichPresenceStruct GetStruct()
         {
-            IntPtr StrToPtr(string input, int maxbytes)
-            {
-                if (string.IsNullOrEmpty(input)) return IntPtr.Zero;
-                var convstr = StrClampBytes(input, maxbytes);
-                var convbytecnt = Encoding.UTF8.GetByteCount(convstr);
-                var buffer = Marshal.AllocHGlobal(convbytecnt);
-                _buffers.Add(buffer);
-                Marshal.Copy(Encoding.UTF8.GetBytes(convstr), 0, buffer, convbytecnt);
-                return buffer;
-            }
-
             if (_buffers.Count > 0)
             {
                 FreeMem();
@@ -154,6 +146,23 @@ public class DiscordRpc
         }
 
         /// <summary>
+        /// Returns a pointer to a representation of the given string with a size of maxbytes
+        /// </summary>
+        /// <param name="input">String to convert</param>
+        /// <param name="maxbytes">Max number of bytes to use</param>
+        /// <returns>Pointer to the UTF-8 representation of <see cref="input"/></returns>
+        private IntPtr StrToPtr(string input, int maxbytes)
+        {
+            if (string.IsNullOrEmpty(input)) return IntPtr.Zero;
+            var convstr = StrClampBytes(input, maxbytes);
+            var convbytecnt = Encoding.UTF8.GetByteCount(convstr);
+            var buffer = Marshal.AllocHGlobal(convbytecnt);
+            _buffers.Add(buffer);
+            Marshal.Copy(Encoding.UTF8.GetBytes(convstr), 0, buffer, convbytecnt);
+            return buffer;
+        }
+
+        /// <summary>
         /// Convert string to UTF-8 and add null termination
         /// </summary>
         /// <param name="toconv">string to convert</param>
@@ -162,7 +171,7 @@ public class DiscordRpc
         {
             var str = toconv.Trim();
             var bytes = Encoding.Default.GetBytes(str);
-            if (bytes.Length > 0 && bytes.Last() != 0)
+            if (bytes.Length > 0 && bytes[bytes.Length - 1] != 0)
             {
                 str += "\0\0";
             }
