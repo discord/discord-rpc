@@ -9,7 +9,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "discord-rpc.h"
+#include "discord_rpc.h"
 
 static const char* APPLICATION_ID = "345229890980937739";
 static int FrustrationLevel = 0;

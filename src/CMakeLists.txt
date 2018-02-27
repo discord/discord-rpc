@@ -6,8 +6,8 @@ option(USE_STATIC_CRT "Use /MT[d] for dynamic library" OFF)
 set(CMAKE_CXX_STANDARD 14)
 
 set(BASE_RPC_SRC
-    ${PROJECT_SOURCE_DIR}/include/discord-rpc.h
-    discord-rpc.cpp
+    ${PROJECT_SOURCE_DIR}/include/discord_rpc.h
+    discord_rpc.cpp
     ${PROJECT_SOURCE_DIR}/include/discord_register.h
     rpc_connection.h
     rpc_connection.cpp
@@ -129,7 +129,7 @@ install(
 
 install(
     FILES
-        "../include/discord-rpc.h"
+        "../include/discord_rpc.h"
 		"../include/discord_register.h"
     DESTINATION "include"
 )

@@ -1,4 +1,4 @@
-#include "discord-rpc.h"
+#include "discord_rpc.h"
 #include "discord_register.h"
 #include <stdio.h>
 

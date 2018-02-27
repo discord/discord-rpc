@@ -1,4 +1,4 @@
-#include "discord-rpc.h"
+#include "discord_rpc.h"
 #include "discord_register.h"
 
 #define WIN32_LEAN_AND_MEAN

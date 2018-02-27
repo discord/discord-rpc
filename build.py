@@ -136,7 +136,7 @@ def unreal(ctx):
     UNREAL_PROJECT_PATH = os.path.join(SCRIPT_PATH, 'examples', 'unrealstatus', 'Plugins', 'discordrpc')
     UNREAL_INCLUDE_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Include')
     mkdir_p(UNREAL_INCLUDE_PATH)
-    shutil.copy(os.path.join(SCRIPT_PATH, 'include', 'discord-rpc.h'), UNREAL_INCLUDE_PATH)
+    shutil.copy(os.path.join(SCRIPT_PATH, 'include', 'discord_rpc.h'), UNREAL_INCLUDE_PATH)
 
     if sys.platform.startswith('win'):
         LIBRARY_NAME = 'discord-rpc.lib'
