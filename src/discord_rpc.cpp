@@ -267,12 +267,7 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
 
     Pid = GetProcessId();
 
-    if (handlers) {
-        Handlers = *handlers;
-    }
-    else {
-        Handlers = {};
-    }
+    Discord_UpdateHandlers(handlers);
 
     if (Connection) {
         return;
