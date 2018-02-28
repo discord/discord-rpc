@@ -60,6 +60,7 @@ static char LastErrorMessage[256];
 static int LastDisconnectErrorCode{0};
 static char LastDisconnectErrorMessage[256];
 static std::mutex PresenceMutex;
+static std::mutex HandlerMutex;
 static QueuedMessage QueuedPresence{};
 static MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
 static MsgQueue<JoinRequest, JoinQueueSize> JoinAskQueue;
@@ -282,17 +283,9 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         WasJustConnected.exchange(true);
         ReconnectTimeMs.reset();
 
-        if (Handlers.joinGame) {
-            RegisterForEvent("ACTIVITY_JOIN");
-        }
-
-        if (Handlers.spectateGame) {
-            RegisterForEvent("ACTIVITY_SPECTATE");
-        }
-
-        if (Handlers.joinRequest) {
-            RegisterForEvent("ACTIVITY_JOIN_REQUEST");
-        }
+        RegisterForEvent("ACTIVITY_JOIN");
+        RegisterForEvent("ACTIVITY_SPECTATE");
+        RegisterForEvent("ACTIVITY_JOIN_REQUEST");
     };
     Connection->onDisconnect = [](int err, const char* message) {
         LastDisconnectErrorCode = err;
@@ -358,6 +351,7 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     bool wasDisconnected = WasJustDisconnected.exchange(false);
     bool isConnected = Connection->IsOpen();
 
+    HandlerMutex.lock();
     if (isConnected) {
         // if we are connected, disconnect cb first
         if (wasDisconnected && Handlers.disconnected) {
@@ -401,4 +395,19 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
             Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
         }
     }
+    HandlerMutex.unlock();
+}
+
+extern "C" DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* handlers)
+{
+    HandlerMutex.lock();
+    if (handlers) {
+        Handlers = *handlers;
+    }
+    else
+    {
+        Handlers = {};
+    }
+    HandlerMutex.unlock();
+    return;
 }

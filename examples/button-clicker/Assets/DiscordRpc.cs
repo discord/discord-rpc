@@ -87,6 +87,9 @@ public class DiscordRpc
     [DllImport("discord-rpc", EntryPoint = "Discord_Respond", CallingConvention = CallingConvention.Cdecl)]
     public static extern void Respond(string userId, Reply reply);
 
+    [DllImport("discord-rpc", EntryPoint = "Discord_UpdateHandlers", CallingConvention = CallingConvention.Cdecl)]
+    public static extern void UpdateHandlers(ref EventHandlers handlers);
+
     public static void UpdatePresence(RichPresence presence)
     {
         var presencestruct = presence.GetStruct();

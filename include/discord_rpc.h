@@ -80,6 +80,8 @@ DISCORD_EXPORT void Discord_ClearPresence(void);
 
 DISCORD_EXPORT void Discord_Respond(const char* userid, /* DISCORD_REPLY_ */ int reply);
 
+DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* handlers);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
