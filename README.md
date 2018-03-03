@@ -81,3 +81,4 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 | [Discord Rich Presence](https://npmjs.org/discord-rich-presence) | JavaScript |
 | [drpc4k](https://github.com/Bluexin/drpc4k) | [Kotlin](https://kotlinlang.org/) |
 | [SwordRPC](https://github.com/Azoy/SwordRPC) | [Swift](https://swift.org) |
+| [discord-rpc.net](https://github.com/SubstituteCS/discord-rpc.net) | C# |
