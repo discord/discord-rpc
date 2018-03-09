@@ -213,15 +213,12 @@ static void Discord_UpdateConnection(void)
         // writes
         if (QueuedPresence.length) {
             QueuedMessage local;
-            PresenceMutex.lock();
+            std::lock_guard<std::mutex> guard(PresenceMutex);
             local.Copy(QueuedPresence);
             QueuedPresence.length = 0;
-            PresenceMutex.unlock();
             if (!Connection->Write(local.buffer, local.length)) {
                 // if we fail to send, requeue
-                PresenceMutex.lock();
                 QueuedPresence.Copy(local);
-                PresenceMutex.unlock();
             }
         }
 
@@ -244,6 +241,19 @@ static bool RegisterForEvent(const char* evtName)
     if (qmessage) {
         qmessage->length =
           JsonWriteSubscribeCommand(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, evtName);
+        SendQueue.CommitAdd();
+        SignalIOActivity();
+        return true;
+    }
+    return false;
+}
+
+static bool DeregisterForEvent(const char* evtName)
+{
+    auto qmessage = SendQueue.GetNextAddMessage();
+    if (qmessage) {
+        qmessage->length =
+          JsonWriteUnsubscribeCommand(qmessage->buffer, sizeof(qmessage->buffer), Nonce++, evtName);
         SendQueue.CommitAdd();
         SignalIOActivity();
         return true;
@@ -277,10 +287,6 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     Connection->onConnect = []() {
         WasJustConnected.exchange(true);
         ReconnectTimeMs.reset();
-
-        RegisterForEvent("ACTIVITY_JOIN");
-        RegisterForEvent("ACTIVITY_SPECTATE");
-        RegisterForEvent("ACTIVITY_JOIN_REQUEST");
     };
     Connection->onDisconnect = [](int err, const char* message) {
         LastDisconnectErrorCode = err;
@@ -306,10 +312,9 @@ extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
 
 extern "C" DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence)
 {
-    PresenceMutex.lock();
+    std::lock_guard<std::mutex> guard(PresenceMutex);
     QueuedPresence.length = JsonWriteRichPresenceObj(
       QueuedPresence.buffer, sizeof(QueuedPresence.buffer), Nonce++, Pid, presence);
-    PresenceMutex.unlock();
     SignalIOActivity();
 }
 
@@ -346,27 +351,31 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     bool wasDisconnected = WasJustDisconnected.exchange(false);
     bool isConnected = Connection->IsOpen();
 
-    HandlerMutex.lock();
     if (isConnected) {
         // if we are connected, disconnect cb first
         if (wasDisconnected && Handlers.disconnected) {
+            std::lock_guard<std::mutex> guard(HandlerMutex);
             Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
         }
     }
 
     if (WasJustConnected.exchange(false) && Handlers.ready) {
+        std::lock_guard<std::mutex> guard(HandlerMutex);
         Handlers.ready();
     }
 
     if (GotErrorMessage.exchange(false) && Handlers.errored) {
+        std::lock_guard<std::mutex> guard(HandlerMutex);
         Handlers.errored(LastErrorCode, LastErrorMessage);
     }
 
     if (WasJoinGame.exchange(false) && Handlers.joinGame) {
+        std::lock_guard<std::mutex> guard(HandlerMutex);;
         Handlers.joinGame(JoinGameSecret);
     }
 
     if (WasSpectateGame.exchange(false) && Handlers.spectateGame) {
+        std::lock_guard<std::mutex> guard(HandlerMutex);
         Handlers.spectateGame(SpectateGameSecret);
     }
 
@@ -378,6 +387,7 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     while (JoinAskQueue.HavePendingSends()) {
         auto req = JoinAskQueue.GetNextSendMessage();
         if (Handlers.joinRequest) {
+            std::lock_guard<std::mutex> guard(HandlerMutex);;
             DiscordJoinRequest djr{req->userId, req->username, req->discriminator, req->avatar};
             Handlers.joinRequest(&djr);
         }
@@ -387,22 +397,34 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     if (!isConnected) {
         // if we are not connected, disconnect message last
         if (wasDisconnected && Handlers.disconnected) {
+            std::lock_guard<std::mutex> guard(HandlerMutex);;
             Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
         }
     }
-    HandlerMutex.unlock();
 }
 
-extern "C" DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* handlers)
+extern "C" DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* newHandlers)
 {
-    HandlerMutex.lock();
-    if (handlers) {
-        Handlers = *handlers;
+    if (newHandlers) {
+
+#define HANDLE_EVENT_REGISTRATION(handler_name, event) \
+        if (!Handlers.handler_name && newHandlers->handler_name) { \
+            RegisterForEvent(event); \
+        } \
+        else if (Handlers.handler_name && !newHandlers->handler_name) { \
+            DeregisterForEvent(event); \
+        }
+
+        HANDLE_EVENT_REGISTRATION(joinGame, "ACTIVITY_JOIN")
+        HANDLE_EVENT_REGISTRATION(spectateGame, "ACTIVITY_SPECTATE")
+        HANDLE_EVENT_REGISTRATION(joinRequest, "ACTIVITY_JOIN_REQUEST")
+        std::lock_guard<std::mutex> guard(HandlerMutex);
+        Handlers = *newHandlers;
     }
     else
     {
+        std::lock_guard<std::mutex> guard(HandlerMutex);
         Handlers = {};
     }
-    HandlerMutex.unlock();
     return;
 }
