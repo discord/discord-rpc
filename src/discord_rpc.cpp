@@ -418,6 +418,9 @@ extern "C" DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* newH
         HANDLE_EVENT_REGISTRATION(joinGame, "ACTIVITY_JOIN")
         HANDLE_EVENT_REGISTRATION(spectateGame, "ACTIVITY_SPECTATE")
         HANDLE_EVENT_REGISTRATION(joinRequest, "ACTIVITY_JOIN_REQUEST")
+
+#undef HANDLE_EVENT_REGISTRATION
+
         std::lock_guard<std::mutex> guard(HandlerMutex);
         Handlers = *newHandlers;
     }
