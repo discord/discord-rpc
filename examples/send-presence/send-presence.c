@@ -1,5 +1,5 @@
 /*
-    This is a simple example in C of using the rich presence API asyncronously.
+    This is a simple example in C of using the rich presence API asynchronously.
 */
 
 #define _CRT_SECURE_NO_WARNINGS /* thanks Microsoft */
