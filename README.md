@@ -75,6 +75,7 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 
 | Name | Language |
 |------|----------|
+| [pypresence](https://github.com/qwertyquerty/pypresence) | Python |
 | [discord-rpc.jar](https://github.com/Vatuu/discord-rpc "Discord-RPC.jar") | Java |
 | [java-discord-rpc](https://github.com/MinnDevelopment/java-discord-rpc) | Java |
 | [Discord-IPC](https://github.com/jagrosh/DiscordIPC) | Java |
