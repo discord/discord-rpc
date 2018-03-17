@@ -124,3 +124,30 @@ In order to receive these events, you need to [subscribe](https://discordapp.com
     "cmd": "SUBSCRIBE"
 }
 ```
+
+To unsubscribe from these events, resend with the command `UNSUBSCRIBE`
+
+# Responding
+A discord user will request access to the game. If the ACTIVITY_JOIN_REQUEST has been subscribed too, the ACTIVITY_JOIN_REQUEST event will be sent to the host's game. Accept it with following model:
+```json
+{
+    "nonce": "5dc0c062-98c6-47a0-8922-15aerg126",
+    "cmd": "SEND_ACTIVITY_JOIN_INVITE",
+    "args": 
+    {
+        "user_id": "53908232506183680"
+    }
+}
+```
+
+To reject the request, use `CLOSE_ACTIVITY_REQUEST`:
+```json
+{
+    "nonce": "5dc0c062-98c6-47a0-8922-dasg256eafg",
+    "cmd": "CLOSE_ACTIVITY_REQUEST",
+    "args": 
+    {
+        "user_id": "53908232506183680"
+    }
+}
+```
