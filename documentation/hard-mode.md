@@ -127,7 +127,7 @@ In order to receive these events, you need to [subscribe](https://discordapp.com
 
 To unsubscribe from these events, resend with the command `UNSUBSCRIBE`
 
-# Responding
+## Responding
 A discord user will request access to the game. If the ACTIVITY_JOIN_REQUEST has been subscribed too, the ACTIVITY_JOIN_REQUEST event will be sent to the host's game. Accept it with following model:
 ```json
 {
