@@ -93,8 +93,7 @@ And third is the `ACTIVITY_JOIN_REQUEST` event:
       "username": "Mason",
       "discriminator": "1337",
       "avatar": "a_bab14f271d565501444b2ca3be944b25"
-    },
-    "secret": "e459ca99273f59909dd16ed97865f3ad"
+    }
   },
   "evt": "ACTIVITY_JOIN_REQUEST"
 }
