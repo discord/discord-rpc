@@ -93,8 +93,7 @@ And third is the `ACTIVITY_JOIN_REQUEST` event:
       "username": "Mason",
       "discriminator": "1337",
       "avatar": "a_bab14f271d565501444b2ca3be944b25"
-    },
-    "secret": "e459ca99273f59909dd16ed97865f3ad"
+    }
   },
   "evt": "ACTIVITY_JOIN_REQUEST"
 }
@@ -125,3 +124,41 @@ In order to receive these events, you need to [subscribe](https://discordapp.com
     "cmd": "SUBSCRIBE"
 }
 ```
+
+To unsubscribe from these events, resend with the command `UNSUBSCRIBE`
+
+## Responding
+A discord user will request access to the game. If the ACTIVITY_JOIN_REQUEST has been subscribed too, the ACTIVITY_JOIN_REQUEST event will be sent to the host's game. Accept it with following model:
+```json
+{
+    "nonce": "5dc0c062-98c6-47a0-8922-15aerg126",
+    "cmd": "SEND_ACTIVITY_JOIN_INVITE",
+    "args": 
+    {
+        "user_id": "53908232506183680"
+    }
+}
+```
+
+To reject the request, use `CLOSE_ACTIVITY_REQUEST`:
+```json
+{
+    "nonce": "5dc0c062-98c6-47a0-8922-dasg256eafg",
+    "cmd": "CLOSE_ACTIVITY_REQUEST",
+    "args": 
+    {
+        "user_id": "53908232506183680"
+    }
+}
+```
+
+## Notes
+Here are just some quick notes to help with some common troubleshooting problems.
+* IPC will echo back every command you send as a response. Use this as a lock-step feature to avoid flooding messages. Can be used to validate messages such as the Presence or Subscribes.
+* The pipe expects for frames to be written in a single byte array. You cannot do multiple `stream.Write(opcode);` `stream.Write(length);` as it will break the pipe. Instead create a buffer, write the data to the buffer, then send the entire buffer to the stream.
+* Discord can be on any pipe ranging from `discord-ipc-0` to `discord-ipc-9`. It is a good idea to try and connect to each one and keeping the first one you connect too. For multiple clients (eg Discord and Canary), you might want to add a feature to manually select the pipe so you can more easily debug the application.
+* All enums are `lower_snake_case`. 
+* The opcode and length in the header are `Little Endian Unsigned Integers (32bits)`. In some languages, you must convert them as they can be architecture specific.
+* [Discord Rich Presence How-To](https://discordapp.com/developers/docs/rich-presence/how-to) contains a lot of the information this document doesn't. For example, it will tell you about the response payload.
+* In the documentation, DISCORD_REPLY_IGNORE is just implemented the same as DISCORD_REPLY_NO.
+* You can test the Join / Spectate feature by enabling them in your profile and whitelisting a test account. Use Canary to run 2 accounts on the same machine.
