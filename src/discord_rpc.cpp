@@ -373,28 +373,28 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
         }
     }
 
-    if (WasJustConnected.exchange(false) && Handlers.ready) {
+    if (WasJustConnected.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.ready) {
             Handlers.ready();
         }
     }
 
-    if (GotErrorMessage.exchange(false) && Handlers.errored) {
+    if (GotErrorMessage.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.errored) {
             Handlers.errored(LastErrorCode, LastErrorMessage);
         }
     }
 
-    if (WasJoinGame.exchange(false) && Handlers.joinGame) {
+    if (WasJoinGame.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.joinGame) {
             Handlers.joinGame(JoinGameSecret);
         }
     }
 
-    if (WasSpectateGame.exchange(false) && Handlers.spectateGame) {
+    if (WasSpectateGame.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.spectateGame) {
             Handlers.spectateGame(SpectateGameSecret);
