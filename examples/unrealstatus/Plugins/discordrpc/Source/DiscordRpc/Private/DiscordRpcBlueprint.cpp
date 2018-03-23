@@ -134,6 +134,8 @@ void UDiscordRpc::UpdatePresence()
 
     auto spectateSecret = StringCast<ANSICHAR>(*RichPresence.spectateSecret);
     rp.spectateSecret = spectateSecret.Get();
+    rp.startTimestamp = RichPresence.startTimestamp;
+    rp.endTimestamp = RichPresence.endTimestamp;
     rp.partySize = RichPresence.partySize;
     rp.partyMax = RichPresence.partyMax;
     rp.instance = RichPresence.instance;

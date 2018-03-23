@@ -55,7 +55,7 @@ if(WIN32)
             /wd5027 # move assignment operator was implicitly defined as deleted
         )
     endif(MSVC)
-    target_link_libraries(discord-rpc PRIVATE psapi)
+    target_link_libraries(discord-rpc PRIVATE psapi advapi32)
 endif(WIN32)
 
 if(UNIX)
