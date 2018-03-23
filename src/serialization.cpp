@@ -197,6 +197,25 @@ size_t JsonWriteSubscribeCommand(char* dest, size_t maxLen, int nonce, const cha
     return writer.Size();
 }
 
+size_t JsonWriteUnsubscribeCommand(char* dest, size_t maxLen, int nonce, const char* evtName)
+{
+    JsonWriter writer(dest, maxLen);
+
+    {
+        WriteObject obj(writer);
+
+        JsonWriteNonce(writer, nonce);
+
+        WriteKey(writer, "cmd");
+        writer.String("UNSUBSCRIBE");
+
+        WriteKey(writer, "evt");
+        writer.String(evtName);
+    }
+
+    return writer.Size();
+}
+
 size_t JsonWriteJoinReply(char* dest, size_t maxLen, const char* userId, int reply, int nonce)
 {
     JsonWriter writer(dest, maxLen);
