@@ -224,7 +224,7 @@ def sign():
         sign_command_base = [
             tool,
             'sign',
-            '/n', 'Hammer & Chisel Inc.',
+            '/n', 'Discord Inc.',
             '/a',
             '/tr', 'http://timestamp.digicert.com/rfc3161',
             '/as',
