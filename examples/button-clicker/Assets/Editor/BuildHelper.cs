@@ -46,8 +46,8 @@ public class ScriptBatch
 		string[] srcDlls = { "../../builds/install/osx-dynamic/lib/libdiscord-rpc.dylib" };
 		#else
 		string[] dstDirs = { "Assets/Plugins", "Assets/Plugins/x86", "Assets/Plugins/x86_64" };
-		string[] dstDlls = { "Assets/Plugins/x86/discord-rpc.so", "Assets/Plugins/x86_64/discord-rpc.so" };
-		string[] srcDlls = { "../../builds/install/linux-dynamic/bin/discord-rpc.dll", "../../builds/install/win64-dynamic/bin/discord-rpc.dll" };
+		string[] dstDlls = { "Assets/Plugins/discord-rpc.so" };
+		string[] srcDlls = { "../../builds/install/linux-dynamic/lib/libdiscord-rpc.so" };
 		#endif
 
 		Debug.Assert(dstDlls.Length == srcDlls.Length);
