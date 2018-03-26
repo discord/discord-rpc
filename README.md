@@ -21,6 +21,10 @@ Download a release package for your platform(s) -- they have subdirs with variou
 
 ### From repo
 
+First-eth, you'll want `CMake`. There's a few different ways to install it on your system, and you should refer to [their website](https://cmake.org/install/). Many package managers provide ways of installing CMake as well.
+
+To make sure it's installed correctly, type `cmake --version` into your flavor of terminal/cmd. If you get a response with a version number, you're good to go!
+
 There's a [CMake](https://cmake.org/download/) file that should be able to generate the lib for you; Sometimes I use it like this:
 ```sh
     cd <path to discord-rpc>
