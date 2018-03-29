@@ -49,7 +49,7 @@ typedef struct DiscordJoinRequest {
 } DiscordJoinRequest;
 
 typedef struct DiscordEventHandlers {
-    void (*ready)(void);
+    void (*ready)(const DiscordJoinRequest* request);
     void (*disconnected)(int errorCode, const char* message);
     void (*errored)(int errorCode, const char* message);
     void (*joinGame)(const char* joinSecret);
