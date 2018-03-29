@@ -50,10 +50,10 @@ public class DiscordController : MonoBehaviour
         hasResponded.Invoke();
     }
 
-    public void ReadyCallback()
+    public void ReadyCallback(ref DiscordRpc.JoinRequest request)
     {
         ++callbackCalls;
-        Debug.Log("Discord: ready");
+        Debug.Log(string.Format("Discord: connected to {0}#{1}: {2}", request.username, request.discriminator, request.userId));
         onConnect.Invoke();
     }
 
@@ -113,7 +113,7 @@ public class DiscordController : MonoBehaviour
         handlers.joinCallback += JoinCallback;
         handlers.spectateCallback += SpectateCallback;
         handlers.requestCallback += RequestCallback;
-        DiscordRpc.Initialize(applicationId, ref handlers, true, optionalSteamId);
+        DiscordRpc.Initialize("422289129460465664", ref handlers, true, "9999");
     }
 
     void OnDisable()

@@ -6,7 +6,7 @@ using System.Text;
 public class DiscordRpc
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ReadyCallback();
+    public delegate void ReadyCallback(ref JoinRequest request);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void DisconnectedCallback(int errorCode, string message);
