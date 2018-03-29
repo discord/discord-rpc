@@ -47,6 +47,7 @@ struct JoinRequest {
 };
 
 static RpcConnection* Connection{nullptr};
+static DiscordEventHandlers QueuedHandlers{};
 static DiscordEventHandlers Handlers{};
 static std::atomic_bool WasJustConnected{false};
 static std::atomic_bool WasJustDisconnected{false};
@@ -282,12 +283,16 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
 
     {
         std::lock_guard<std::mutex> guard(HandlerMutex);
+
         if (handlers) {
-            Handlers = *handlers;
+            QueuedHandlers = *handlers;
         }
         else {
-            Handlers = {};
+            QueuedHandlers = {};
         }
+
+        Handlers = {};
+
     }
 
     if (Connection) {
@@ -296,13 +301,17 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
 
     Connection = RpcConnection::Create(applicationId);
     Connection->onConnect = []() {
-        Discord_UpdateHandlers(&Handlers);
+        Discord_UpdateHandlers(&QueuedHandlers);
         WasJustConnected.exchange(true);
         ReconnectTimeMs.reset();
     };
     Connection->onDisconnect = [](int err, const char* message) {
         LastDisconnectErrorCode = err;
         StringCopy(LastDisconnectErrorMessage, message);
+        {
+            std::lock_guard<std::mutex> guard(HandlerMutex);
+            Handlers = {};
+        }
         WasJustDisconnected.exchange(true);
         UpdateReconnectTime();
     };
