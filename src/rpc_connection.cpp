@@ -42,7 +42,7 @@ void RpcConnection::Open()
             if (cmd && evt && !strcmp(cmd, "DISPATCH") && !strcmp(evt, "READY")) {
                 state = State::Connected;
                 if (onConnect) {
-                    onConnect();
+                    onConnect(message);
                 }
             }
         }

@@ -328,8 +328,9 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     }
 
     Connection = RpcConnection::Create(applicationId);
-    Connection->onConnect = []() {
+    Connection->onConnect = [](JsonMessage const& readyMessage) {
         Discord_UpdateHandlers(&QueuedHandlers);
+        // extract the user nice stuff
         WasJustConnected.exchange(true);
         ReconnectTimeMs.reset();
     };
