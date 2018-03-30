@@ -49,6 +49,7 @@ struct JoinRequest {
 static RpcConnection* Connection{nullptr};
 static DiscordEventHandlers Handlers{};
 static std::atomic_bool WasJustConnected{false};
+static std::atomic_bool ReceivedReady{false};
 static std::atomic_bool WasJustDisconnected{false};
 static std::atomic_bool GotErrorMessage{false};
 static std::atomic_bool WasJoinGame{false};
@@ -208,8 +209,8 @@ static void Discord_UpdateConnection(void)
                         JoinAskQueue.CommitAdd();
                     }
                 }
-
                 else if (strcmp(evtName, "READY") == 0) {
+                    ReceivedReady.exchange(true);
                     auto user = GetObjMember(data, "user");
                     auto userId = GetStrMember(user, "id");
                     auto username = GetStrMember(user, "username");
@@ -396,6 +397,17 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     }
 
     if (WasJustConnected.exchange(false)) {
+        std::lock_guard<std::mutex> guard(HandlerMutex);
+        if (Handlers.ready) {
+            DiscordJoinRequest djr{"1234",
+                                   "aaaaaaaa",
+                                   "qwdqd",
+                                   "qwqdqwdqd"};
+            Handlers.ready(&djr);
+        }
+    }
+
+    if (ReceivedReady.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.ready) {
             DiscordJoinRequest djr{connectedUser.userId,
