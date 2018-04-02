@@ -6,12 +6,17 @@ DEFINE_LOG_CATEGORY(Discord)
 
 static UDiscordRpc* self = nullptr;
 
-static void ReadyHandler()
+static void ReadyHandler(const DiscordJoinRequest* request)
 {
-    UE_LOG(Discord, Log, TEXT("Discord connected"));
+    FDiscordJoinRequestData jr;
+    jr.userId = ANSI_TO_TCHAR(request->userId);
+    jr.username = ANSI_TO_TCHAR(request->username);
+    jr.discriminator = ANSI_TO_TCHAR(request->discriminator);
+    jr.avatar = ANSI_TO_TCHAR(request->avatar);
+    UE_LOG(Discord, Log, TEXT("Discord connected to %s - %s#%s"), *jr.userId, *jr.username, *jr.discriminator);
     if (self) {
         self->IsConnected = true;
-        self->OnConnected.Broadcast();
+        self->OnConnected.Broadcast(jr);
     }
 }
 

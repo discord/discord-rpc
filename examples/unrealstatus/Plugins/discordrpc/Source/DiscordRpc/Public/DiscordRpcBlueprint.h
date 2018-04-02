@@ -27,7 +27,7 @@ struct FDiscordJoinRequestData {
 
 DECLARE_LOG_CATEGORY_EXTERN(Discord, Log, All);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDiscordConnected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordConnected, const FDiscordJoinRequestData&, joinRequest);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordDisconnected, int, errorCode, const FString&, errorMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDiscordErrored, int, errorCode, const FString&, errorMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordJoin, const FString&, joinSecret);
