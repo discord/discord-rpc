@@ -54,7 +54,6 @@ static std::atomic_bool WasJustDisconnected{false};
 static std::atomic_bool GotErrorMessage{false};
 static std::atomic_bool WasJoinGame{false};
 static std::atomic_bool WasSpectateGame{false};
-static std::atomic_bool ReceivedReady{false};
 static char JoinGameSecret[256];
 static char SpectateGameSecret[256];
 static int LastErrorCode{0};
@@ -210,32 +209,6 @@ static void Discord_UpdateConnection(void)
                         JoinAskQueue.CommitAdd();
                     }
                 }
-                else if (strcmp(evtName, "READY") == 0) {
-                    auto user = GetObjMember(data, "user");
-                    auto userId = GetStrMember(user, "id");
-                    auto username = GetStrMember(user, "username");
-                    auto avatar = GetStrMember(user, "avatar");
-                    if (userId && username) {
-                        StringCopy(connectedUser.userId, userId);
-                        StringCopy(connectedUser.username, username);
-                        auto discriminator = GetStrMember(user, "discriminator");
-                        if (discriminator) {
-                            StringCopy(connectedUser.discriminator, discriminator);
-                        }
-                        if (avatar) {
-                            StringCopy(connectedUser.avatar, avatar);
-                        }
-                        else {
-                            connectedUser.avatar[0] = 0;
-                        }
-                    }
-                    // Testing nonsense
-                    strcpy(connectedUser.userId, "userId");
-                    strcpy(connectedUser.username, "username");
-                    strcpy(connectedUser.discriminator, "discriminator");
-                    strcpy(connectedUser.avatar, "avatar");
-                    ReceivedReady.store(true);
-                }
             }
         }
 
@@ -328,8 +301,27 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     }
 
     Connection = RpcConnection::Create(applicationId);
-    Connection->onConnect = []() {
+    Connection->onConnect = [](JsonDocument& readyMessage) {
         Discord_UpdateHandlers(&QueuedHandlers);
+        auto data = GetObjMember(&readyMessage, "data");
+        auto user = GetObjMember(data, "user");
+        auto userId = GetStrMember(user, "id");
+        auto username = GetStrMember(user, "username");
+        auto avatar = GetStrMember(user, "avatar");
+        if (userId && username) {
+            StringCopy(connectedUser.userId, userId);
+            StringCopy(connectedUser.username, username);
+            auto discriminator = GetStrMember(user, "discriminator");
+            if (discriminator) {
+                StringCopy(connectedUser.discriminator, discriminator);
+            }
+            if (avatar) {
+                StringCopy(connectedUser.avatar, avatar);
+            }
+            else {
+                connectedUser.avatar[0] = 0;
+            }
+        }
         WasJustConnected.exchange(true);
         ReconnectTimeMs.reset();
     };
@@ -413,7 +405,10 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     if (WasJustConnected.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.ready) {
-            DiscordJoinRequest djr{"a", "b", "c", "d"};
+            DiscordJoinRequest djr{connectedUser.userId,
+                                   connectedUser.username,
+                                   connectedUser.discriminator,
+                                   connectedUser.avatar};
             Handlers.ready(&djr);
         }
     }
@@ -436,17 +431,6 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.spectateGame) {
             Handlers.spectateGame(SpectateGameSecret);
-        }
-    }
-
-    if (ReceivedReady.exchange(false)) {
-        std::lock_guard<std::mutex> guard(HandlerMutex);
-        if (Handlers.ready) {
-            DiscordJoinRequest djr{connectedUser.userId,
-                                   connectedUser.username,
-                                   connectedUser.discriminator,
-                                   connectedUser.avatar};
-            Handlers.ready(&djr);
         }
     }
 

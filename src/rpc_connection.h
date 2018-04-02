@@ -40,7 +40,7 @@ struct RpcConnection {
 
     BaseConnection* connection{nullptr};
     State state{State::Disconnected};
-    void (*onConnect)(){nullptr};
+    void (*onConnect)(JsonDocument& message){nullptr};
     void (*onDisconnect)(int errorCode, const char* message){nullptr};
     char appId[64]{};
     int lastErrorCode{0};
