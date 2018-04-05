@@ -7,7 +7,7 @@ public class DiscordJoinEvent : UnityEngine.Events.UnityEvent<string> { }
 public class DiscordSpectateEvent : UnityEngine.Events.UnityEvent<string> { }
 
 [System.Serializable]
-public class DiscordJoinRequestEvent : UnityEngine.Events.UnityEvent<DiscordRpc.JoinRequest> { }
+public class DiscordJoinRequestEvent : UnityEngine.Events.UnityEvent<DiscordRpc.DiscordUser> { }
 
 public class DiscordController : MonoBehaviour
 {
@@ -16,7 +16,7 @@ public class DiscordController : MonoBehaviour
     public string optionalSteamId;
     public int callbackCalls;
     public int clickCounter;
-    public DiscordRpc.JoinRequest joinRequest;
+    public DiscordRpc.DiscordUser joinRequest;
     public UnityEngine.Events.UnityEvent onConnect;
     public UnityEngine.Events.UnityEvent onDisconnect;
     public UnityEngine.Events.UnityEvent hasResponded;
@@ -50,10 +50,10 @@ public class DiscordController : MonoBehaviour
         hasResponded.Invoke();
     }
 
-    public void ReadyCallback(ref DiscordRpc.JoinRequest request)
+    public void ReadyCallback(ref DiscordRpc.DiscordUser connectedUser)
     {
         ++callbackCalls;
-        Debug.Log(string.Format("Discord: connected to {0}#{1}: {2}", request.username, request.discriminator, request.userId));
+        Debug.Log(string.Format("Discord: connected to {0}#{1}: {2}", connectedUser.username, connectedUser.discriminator, connectedUser.userId));
         onConnect.Invoke();
     }
 
@@ -84,7 +84,7 @@ public class DiscordController : MonoBehaviour
         onSpectate.Invoke(secret);
     }
 
-    public void RequestCallback(ref DiscordRpc.JoinRequest request)
+    public void RequestCallback(ref DiscordRpc.DiscordUser request)
     {
         ++callbackCalls;
         Debug.Log(string.Format("Discord: join request {0}#{1}: {2}", request.username, request.discriminator, request.userId));
@@ -113,7 +113,7 @@ public class DiscordController : MonoBehaviour
         handlers.joinCallback += JoinCallback;
         handlers.spectateCallback += SpectateCallback;
         handlers.requestCallback += RequestCallback;
-        DiscordRpc.Initialize("422289129460465664", ref handlers, true, "9999");
+        DiscordRpc.Initialize(applicationId, ref handlers, true, optionalSteamId);
     }
 
     void OnDisable()
