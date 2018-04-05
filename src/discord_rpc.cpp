@@ -32,7 +32,7 @@ struct QueuedMessage {
     }
 };
 
-struct JoinRequest {
+struct User {
     // snowflake (64bit int), turned into a ascii decimal string, at most 20 chars +1 null
     // terminator = 21
     char userId[32];
@@ -64,8 +64,8 @@ static std::mutex PresenceMutex;
 static std::mutex HandlerMutex;
 static QueuedMessage QueuedPresence{};
 static MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
-static MsgQueue<JoinRequest, JoinQueueSize> JoinAskQueue;
-static JoinRequest connectedUser;
+static MsgQueue<User, JoinQueueSize> JoinAskQueue;
+static User connectedUser;
 
 // We want to auto connect, and retry on failure, but not as fast as possible. This does expoential
 // backoff from 0.5 seconds to 1 minute
@@ -293,7 +293,6 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         }
 
         Handlers = {};
-
     }
 
     if (Connection) {
@@ -405,11 +404,11 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     if (WasJustConnected.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.ready) {
-            DiscordJoinRequest djr{connectedUser.userId,
-                                   connectedUser.username,
-                                   connectedUser.discriminator,
-                                   connectedUser.avatar};
-            Handlers.ready(&djr);
+            DiscordUser du{connectedUser.userId,
+                           connectedUser.username,
+                           connectedUser.discriminator,
+                           connectedUser.avatar};
+            Handlers.ready(&du);
         }
     }
 
@@ -444,8 +443,8 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
         {
             std::lock_guard<std::mutex> guard(HandlerMutex);
             if (Handlers.joinRequest) {
-                DiscordJoinRequest djr{req->userId, req->username, req->discriminator, req->avatar};
-                Handlers.joinRequest(&djr);
+                DiscordUser du{req->userId, req->username, req->discriminator, req->avatar};
+                Handlers.joinRequest(&du);
             }
         }
         JoinAskQueue.CommitSend();

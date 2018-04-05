@@ -52,14 +52,18 @@ static void updateDiscordPresence()
         discordPresence.spectateSecret = "look";
         discordPresence.instance = 0;
         Discord_UpdatePresence(&discordPresence);
-    } else {
+    }
+    else {
         Discord_ClearPresence();
     }
 }
 
-static void handleDiscordReady(void)
+static void handleDiscordReady(const DiscordUser* connectedUser)
 {
-    printf("\nDiscord: ready\n");
+    printf("\nDiscord: connected to user %s#%s - %s\n",
+           connectedUser->username,
+           connectedUser->discriminator,
+           connectedUser->userId);
 }
 
 static void handleDiscordDisconnected(int errcode, const char* message)
@@ -82,13 +86,13 @@ static void handleDiscordSpectate(const char* secret)
     printf("\nDiscord: spectate (%s)\n", secret);
 }
 
-static void handleDiscordJoinRequest(const DiscordJoinRequest* request)
+static void handleDiscordJoinRequest(const DiscordUser* request)
 {
     int response = -1;
     char yn[4];
-    printf("\nDiscord: join request from %s - %s - %s\n",
+    printf("\nDiscord: join request from %s#%s - %s\n",
            request->username,
-           request->avatar,
+           request->discriminator,
            request->userId);
     do {
         printf("Accept? (y/n)");
@@ -152,7 +156,8 @@ static void gameLoop()
                 if (SendPresence) {
                     printf("Clearing presence information.\n");
                     SendPresence = 0;
-                } else {
+                }
+                else {
                     printf("Restoring presence information.\n");
                     SendPresence = 1;
                 }
