@@ -27,6 +27,7 @@ void FDiscordRpcModule::StartupModule()
         FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT(LOCTEXT_NAMESPACE, "Failed to load DiscordRpc plugin. Plug-in will not be functional."));
         FreeDependency(DiscordRpcLibraryHandle);
     }
+#elif PLATFORM_ANDROID
 #endif
 #endif
 #endif
@@ -36,8 +37,10 @@ void FDiscordRpcModule::ShutdownModule()
 {
     // Free the dll handle
 #if !PLATFORM_LINUX
+#if !PLATFORM_ANDROID
 #if defined(DISCORD_DYNAMIC_LIB)
     FreeDependency(DiscordRpcLibraryHandle);
+#endif
 #endif
 #endif
 }
@@ -59,11 +62,13 @@ bool FDiscordRpcModule::LoadDependency(const FString& Dir, const FString& Name, 
 
 void FDiscordRpcModule::FreeDependency(void*& Handle)
 {
+#if !PLATFORM_ANDROID
     if (Handle != nullptr)
     {
         FPlatformProcess::FreeDllHandle(Handle);
         Handle = nullptr;
     }
+#endif
 }
 
 #undef LOCTEXT_NAMESPACE
