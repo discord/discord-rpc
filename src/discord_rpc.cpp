@@ -32,7 +32,7 @@ struct QueuedMessage {
     }
 };
 
-struct JoinRequest {
+struct User {
     // snowflake (64bit int), turned into a ascii decimal string, at most 20 chars +1 null
     // terminator = 21
     char userId[32];
@@ -64,7 +64,8 @@ static std::mutex PresenceMutex;
 static std::mutex HandlerMutex;
 static QueuedMessage QueuedPresence{};
 static MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
-static MsgQueue<JoinRequest, JoinQueueSize> JoinAskQueue;
+static MsgQueue<User, JoinQueueSize> JoinAskQueue;
+static User connectedUser;
 
 // We want to auto connect, and retry on failure, but not as fast as possible. This does expoential
 // backoff from 0.5 seconds to 1 minute
@@ -292,7 +293,6 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         }
 
         Handlers = {};
-
     }
 
     if (Connection) {
@@ -300,8 +300,27 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     }
 
     Connection = RpcConnection::Create(applicationId);
-    Connection->onConnect = []() {
+    Connection->onConnect = [](JsonDocument& readyMessage) {
         Discord_UpdateHandlers(&QueuedHandlers);
+        auto data = GetObjMember(&readyMessage, "data");
+        auto user = GetObjMember(data, "user");
+        auto userId = GetStrMember(user, "id");
+        auto username = GetStrMember(user, "username");
+        auto avatar = GetStrMember(user, "avatar");
+        if (userId && username) {
+            StringCopy(connectedUser.userId, userId);
+            StringCopy(connectedUser.username, username);
+            auto discriminator = GetStrMember(user, "discriminator");
+            if (discriminator) {
+                StringCopy(connectedUser.discriminator, discriminator);
+            }
+            if (avatar) {
+                StringCopy(connectedUser.avatar, avatar);
+            }
+            else {
+                connectedUser.avatar[0] = 0;
+            }
+        }
         WasJustConnected.exchange(true);
         ReconnectTimeMs.reset();
     };
@@ -336,7 +355,7 @@ extern "C" DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence*
     {
         std::lock_guard<std::mutex> guard(PresenceMutex);
         QueuedPresence.length = JsonWriteRichPresenceObj(
-            QueuedPresence.buffer, sizeof(QueuedPresence.buffer), Nonce++, Pid, presence);
+          QueuedPresence.buffer, sizeof(QueuedPresence.buffer), Nonce++, Pid, presence);
     }
     SignalIOActivity();
 }
@@ -385,7 +404,11 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     if (WasJustConnected.exchange(false)) {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (Handlers.ready) {
-            Handlers.ready();
+            DiscordUser du{connectedUser.userId,
+                           connectedUser.username,
+                           connectedUser.discriminator,
+                           connectedUser.avatar};
+            Handlers.ready(&du);
         }
     }
 
@@ -420,8 +443,8 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
         {
             std::lock_guard<std::mutex> guard(HandlerMutex);
             if (Handlers.joinRequest) {
-                DiscordJoinRequest djr{req->userId, req->username, req->discriminator, req->avatar};
-                Handlers.joinRequest(&djr);
+                DiscordUser du{req->userId, req->username, req->discriminator, req->avatar};
+                Handlers.joinRequest(&du);
             }
         }
         JoinAskQueue.CommitSend();
@@ -439,14 +462,13 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
 extern "C" DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* newHandlers)
 {
     if (newHandlers) {
-
-#define HANDLE_EVENT_REGISTRATION(handler_name, event) \
-        if (!Handlers.handler_name && newHandlers->handler_name) { \
-            RegisterForEvent(event); \
-        } \
-        else if (Handlers.handler_name && !newHandlers->handler_name) { \
-            DeregisterForEvent(event); \
-        }
+#define HANDLE_EVENT_REGISTRATION(handler_name, event)              \
+    if (!Handlers.handler_name && newHandlers->handler_name) {      \
+        RegisterForEvent(event);                                    \
+    }                                                               \
+    else if (Handlers.handler_name && !newHandlers->handler_name) { \
+        DeregisterForEvent(event);                                  \
+    }
 
         std::lock_guard<std::mutex> guard(HandlerMutex);
         HANDLE_EVENT_REGISTRATION(joinGame, "ACTIVITY_JOIN")
@@ -457,8 +479,7 @@ extern "C" DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* newH
 
         Handlers = *newHandlers;
     }
-    else
-    {
+    else {
         std::lock_guard<std::mutex> guard(HandlerMutex);
         Handlers = {};
     }
