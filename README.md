@@ -85,4 +85,5 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 | [Discord-IPC](https://github.com/jagrosh/DiscordIPC) | Java |
 | [Discord Rich Presence](https://npmjs.org/discord-rich-presence) | JavaScript |
 | [drpc4k](https://github.com/Bluexin/drpc4k) | [Kotlin](https://kotlinlang.org/) |
+| [lua-discordRPC](https://github.com/pfirsich/lua-discordRPC) | LuaJIT (FFI) |
 | [SwordRPC](https://github.com/Azoy/SwordRPC) | [Swift](https://swift.org) |
