@@ -6,12 +6,22 @@ DEFINE_LOG_CATEGORY(Discord)
 
 static UDiscordRpc* self = nullptr;
 
-static void ReadyHandler()
+static void ReadyHandler(const DiscordUser* connectedUser)
 {
-    UE_LOG(Discord, Log, TEXT("Discord connected"));
+    FDiscordUserData ud;
+    ud.userId = ANSI_TO_TCHAR(connectedUser->userId);
+    ud.username = ANSI_TO_TCHAR(connectedUser->username);
+    ud.discriminator = ANSI_TO_TCHAR(connectedUser->discriminator);
+    ud.avatar = ANSI_TO_TCHAR(connectedUser->avatar);
+    UE_LOG(Discord,
+           Log,
+           TEXT("Discord connected to %s - %s#%s"),
+           *ud.userId,
+           *ud.username,
+           *ud.discriminator);
     if (self) {
         self->IsConnected = true;
-        self->OnConnected.Broadcast();
+        self->OnConnected.Broadcast(ud);
     }
 }
 
@@ -52,22 +62,27 @@ static void SpectateGameHandler(const char* spectateSecret)
     }
 }
 
-static void JoinRequestHandler(const DiscordJoinRequest* request)
+static void JoinRequestHandler(const DiscordUser* request)
 {
-    FDiscordJoinRequestData jr;
-    jr.userId = ANSI_TO_TCHAR(request->userId);
-    jr.username = ANSI_TO_TCHAR(request->username);
-    jr.discriminator = ANSI_TO_TCHAR(request->discriminator);
-    jr.avatar = ANSI_TO_TCHAR(request->avatar);
-    UE_LOG(Discord, Log, TEXT("Discord join request from %s - %s#%s"), *jr.userId, *jr.username, *jr.discriminator);
+    FDiscordUserData ud;
+    ud.userId = ANSI_TO_TCHAR(request->userId);
+    ud.username = ANSI_TO_TCHAR(request->username);
+    ud.discriminator = ANSI_TO_TCHAR(request->discriminator);
+    ud.avatar = ANSI_TO_TCHAR(request->avatar);
+    UE_LOG(Discord,
+           Log,
+           TEXT("Discord join request from %s - %s#%s"),
+           *ud.userId,
+           *ud.username,
+           *ud.discriminator);
     if (self) {
-        self->OnJoinRequest.Broadcast(jr);
+        self->OnJoinRequest.Broadcast(ud);
     }
 }
 
 void UDiscordRpc::Initialize(const FString& applicationId,
-    bool autoRegister,
-    const FString& optionalSteamId)
+                             bool autoRegister,
+                             const FString& optionalSteamId)
 {
     self = this;
     IsConnected = false;
@@ -87,7 +102,7 @@ void UDiscordRpc::Initialize(const FString& applicationId,
     auto appId = StringCast<ANSICHAR>(*applicationId);
     auto steamId = StringCast<ANSICHAR>(*optionalSteamId);
     Discord_Initialize(
-        (const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
+      (const char*)appId.Get(), &handlers, autoRegister, (const char*)steamId.Get());
 }
 
 void UDiscordRpc::Shutdown()

@@ -6,7 +6,7 @@ using System.Text;
 public class DiscordRpc
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ReadyCallback();
+    public delegate void ReadyCallback(ref DiscordUser connectedUser);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void DisconnectedCallback(int errorCode, string message);
@@ -21,7 +21,7 @@ public class DiscordRpc
     public delegate void SpectateCallback(string secret);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void RequestCallback(ref JoinRequest request);
+    public delegate void RequestCallback(ref DiscordUser request);
 
     public struct EventHandlers
     {
@@ -54,7 +54,7 @@ public class DiscordRpc
     }
 
     [Serializable]
-    public struct JoinRequest
+    public struct DiscordUser
     {
         public string userId;
         public string username;
