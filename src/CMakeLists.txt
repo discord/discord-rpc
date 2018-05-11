@@ -2,6 +2,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 option(ENABLE_IO_THREAD "Start up a separate I/O thread, otherwise I'd need to call an update function" ON)
 option(USE_STATIC_CRT "Use /MT[d] for dynamic library" OFF)
+option(WARNINGS_AS_ERRORS "When enabled, compiles with `-Werror` (on *nix platforms)." OFF)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -76,7 +77,13 @@ if(UNIX)
         -Wall
         -Wextra
         -Wpedantic
-        -Werror
+    )
+
+    if (${WARNINGS_AS_ERRORS})
+      target_compile_options(discord-rpc PRIVATE -Werror)
+    endif (${WARNINGS_AS_ERRORS})
+
+    target_compile_options(discord-rpc PRIVATE
         -Wno-unknown-pragmas # pragma push thing doesn't work on clang
         -Wno-old-style-cast # it's fine
         -Wno-c++98-compat # that was almost 2 decades ago

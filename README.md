@@ -44,6 +44,7 @@ There are some CMake options you might care about:
 | `ENABLE_IO_THREAD` | `ON` | When enabled, we start up a thread to do io processing, if disabled you should call `Discord_UpdateConnection` yourself.
 | `USE_STATIC_CRT` | `OFF` | (Windows) Enable to statically link the CRT, avoiding requiring users install the redistributable package. (The prebuilt binaries enable this option)
 | [`BUILD_SHARED_LIBS`](https://cmake.org/cmake/help/v3.7/variable/BUILD_SHARED_LIBS.html) | `OFF` | Build library as a DLL
+| `WARNINGS_AS_ERRORS` | `OFF` | When enabled, compiles with `-Werror` (on *nix platforms). |
 
 ## Continuous Builds
 

@@ -286,6 +286,8 @@ def libs(clean, static, shared, skip_formatter, just_release):
 
     if IS_BUILD_MACHINE:
         just_release = True
+        static_options['WARNINGS_AS_ERRORS'] = True
+        dynamic_options['WARNINGS_AS_ERRORS'] = True
 
     if PLATFORM == 'win':
         generator32 = 'Visual Studio 14 2015'
