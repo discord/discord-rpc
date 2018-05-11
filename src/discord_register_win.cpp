@@ -26,7 +26,8 @@ static HRESULT StringCbPrintfW(LPWSTR pszDest, size_t cbDest, LPCWSTR pszFormat,
     HRESULT ret;
     va_list va;
     va_start(va, pszFormat);
-    cbDest /= 2; // Size is divided by 2 to convert from bytes to wide characters - causes segfault othervise
+    cbDest /= 2; // Size is divided by 2 to convert from bytes to wide characters - causes segfault
+                 // othervise
     ret = vsnwprintf(pszDest, cbDest, pszFormat, va);
     pszDest[cbDest - 1] = 0; // Terminate the string in case a buffer overflow; -1 will be returned
     va_end(va);
@@ -44,17 +45,24 @@ static HRESULT StringCbPrintfW(LPWSTR pszDest, size_t cbDest, LPCWSTR pszFormat,
 #undefine RegSetKeyValueW
 #endif
 #define RegSetKeyValueW regset
-static LSTATUS regset(HKEY hkey, LPCWSTR subkey, LPCWSTR name, DWORD type, const void *data, DWORD len)
+static LSTATUS regset(HKEY hkey,
+                      LPCWSTR subkey,
+                      LPCWSTR name,
+                      DWORD type,
+                      const void* data,
+                      DWORD len)
 {
     HKEY htkey = hkey, hsubkey = nullptr;
     LSTATUS ret;
-    if (subkey && subkey[0])
-    {
-        if((ret = RegCreateKeyExW(hkey, subkey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hsubkey, 0)) != ERROR_SUCCESS) return ret;
+    if (subkey && subkey[0]) {
+        if ((ret = RegCreateKeyExW(hkey, subkey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hsubkey, 0)) !=
+            ERROR_SUCCESS)
+            return ret;
         htkey = hsubkey;
     }
     ret = RegSetValueExW(htkey, name, 0, type, (const BYTE*)data, len);
-    if (hsubkey && hsubkey != hkey) RegCloseKey(hsubkey);
+    if (hsubkey && hsubkey != hkey)
+        RegCloseKey(hsubkey);
     return ret;
 }
 
@@ -72,7 +80,7 @@ static void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* comma
         StringCbPrintfW(openCommand, sizeof(openCommand), L"%s", command);
     }
     else {
-        //StringCbCopyW(openCommand, sizeof(openCommand), exeFilePath);
+        // StringCbCopyW(openCommand, sizeof(openCommand), exeFilePath);
         StringCbPrintfW(openCommand, sizeof(openCommand), L"%s", exeFilePath);
     }
 
@@ -138,7 +146,8 @@ extern "C" DISCORD_EXPORT void Discord_Register(const char* applicationId, const
     Discord_RegisterW(appId, wcommand);
 }
 
-extern "C" DISCORD_EXPORT void Discord_RegisterSteamGame(const char* applicationId, const char* steamId)
+extern "C" DISCORD_EXPORT void Discord_RegisterSteamGame(const char* applicationId,
+                                                         const char* steamId)
 {
     wchar_t appId[32];
     MultiByteToWideChar(CP_UTF8, 0, applicationId, -1, appId, 32);
