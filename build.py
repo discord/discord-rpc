@@ -30,7 +30,7 @@ INSTALL_ROOT = os.path.join(SCRIPT_PATH, 'builds', 'install')
 def get_signtool():
     """ get path to code signing tool """
     if PLATFORM == 'win':
-        sdk_dir = os.environ['WindowsSdkDir']
+        sdk_dir = 'c:\\Program Files (x86)\\Windows Kits\\10'  # os.environ['WindowsSdkDir']
         return os.path.join(sdk_dir, 'bin', 'x86', 'signtool.exe')
     elif PLATFORM == 'osx':
         return '/usr/bin/codesign'
@@ -70,14 +70,7 @@ def cli(ctx, clean):
 @click.pass_context
 def unity(ctx):
     """ build just dynamic libs for use in unity project """
-    ctx.invoke(
-        libs,
-        clean=False,
-        static=False,
-        shared=True,
-        skip_formatter=True,
-        just_release=True
-    )
+    ctx.invoke(libs, clean=False, static=False, shared=True, skip_formatter=True, just_release=True)
     BUILDS = []
 
     click.echo('--- Copying libs and header into unity example')
@@ -97,7 +90,8 @@ def unity(ctx):
         LIBRARY_NAME = 'discord-rpc.bundle'
         BUILD_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'osx-dynamic', 'src')
         UNITY_DLL_PATH = UNITY_PROJECT_PATH
-        os.rename(os.path.join(BUILD_BASE_PATH, 'libdiscord-rpc.dylib'), os.path.join(BUILD_BASE_PATH, 'discord-rpc.bundle'))
+        os.rename(
+            os.path.join(BUILD_BASE_PATH, 'libdiscord-rpc.dylib'), os.path.join(BUILD_BASE_PATH, 'discord-rpc.bundle'))
 
         BUILDS.append({BUILD_BASE_PATH: UNITY_DLL_PATH})
 
@@ -122,14 +116,7 @@ def unity(ctx):
 @click.pass_context
 def unreal(ctx):
     """ build libs and copy them into the unreal project """
-    ctx.invoke(
-        libs,
-        clean=False,
-        static=False,
-        shared=True,
-        skip_formatter=True,
-        just_release=True
-    )
+    ctx.invoke(libs, clean=False, static=False, shared=True, skip_formatter=True, just_release=True)
     BUILDS = []
 
     click.echo('--- Copying libs and header into unreal example')
@@ -178,11 +165,7 @@ def build_lib(build_name, generator, options, just_release):
     mkdir_p(build_path)
     mkdir_p(install_path)
     with cd(build_path):
-        initial_cmake = [
-            'cmake',
-            SCRIPT_PATH,
-            '-DCMAKE_INSTALL_PREFIX=%s' % os.path.join('..', 'install', build_name)
-        ]
+        initial_cmake = ['cmake', SCRIPT_PATH, '-DCMAKE_INSTALL_PREFIX=%s' % os.path.join('..', 'install', build_name)]
         if generator:
             initial_cmake.extend(['-G', generator])
         for key in options:
@@ -224,22 +207,28 @@ def sign():
         sign_command_base = [
             tool,
             'sign',
-            '/n', 'Discord Inc.',
+            '/n',
+            'Discord Inc.',
             '/a',
-            '/tr', 'http://timestamp.digicert.com/rfc3161',
+            '/tr',
+            'http://timestamp.digicert.com/rfc3161',
             '/as',
-            '/td', 'sha256',
-            '/fd', 'sha256',
+            '/td',
+            'sha256',
+            '/fd',
+            'sha256',
         ]
     elif PLATFORM == 'osx':
         signable_extensions.add('.dylib')
         sign_command_base = [
             tool,
-            '--keychain', os.path.expanduser('~/Library/Keychains/login.keychain'),
+            '--keychain',
+            os.path.expanduser('~/Library/Keychains/login.keychain'),
             '-vvvv',
             '--deep',
             '--force',
-            '--sign', 'Developer ID Application: Hammer & Chisel Inc. (53Q6R32WPB)',
+            '--sign',
+            'Developer ID Application: Hammer & Chisel Inc. (53Q6R32WPB)',
         ]
     else:
         click.secho('Not signing things on this platform yet', fg='red')
