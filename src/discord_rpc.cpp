@@ -118,7 +118,7 @@ public:
     void Notify() {}
 };
 #endif // DISCORD_DISABLE_IO_THREAD
-static IoThreadHolder IoThread;
+static IoThreadHolder* IoThread{nullptr};
 
 static void UpdateReconnectTime()
 {
@@ -237,7 +237,9 @@ static void Discord_UpdateConnection(void)
 
 static void SignalIOActivity()
 {
-    IoThread.Notify();
+    if (IoThread != nullptr) {
+        IoThread->Notify();
+    }
 }
 
 static bool RegisterForEvent(const char* evtName)
@@ -271,6 +273,11 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                                   int autoRegister,
                                                   const char* optionalSteamId)
 {
+    IoThread = new (std::nothrow) IoThreadHolder();
+    if (IoThread == nullptr) {
+        return;
+    }
+
     if (autoRegister) {
         if (optionalSteamId && optionalSteamId[0]) {
             Discord_RegisterSteamGame(applicationId, optionalSteamId);
@@ -335,7 +342,7 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         UpdateReconnectTime();
     };
 
-    IoThread.Start();
+    IoThread->Start();
 }
 
 extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
@@ -346,7 +353,12 @@ extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
     Handlers = {};
-    IoThread.Stop();
+    if (IoThread != nullptr) {
+        IoThread->Stop();
+        delete IoThread;
+        IoThread = nullptr;
+    }
+
     RpcConnection::Destroy(Connection);
 }
 
