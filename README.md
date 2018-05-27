@@ -72,16 +72,18 @@ This is a sample [Unreal](https://www.unrealengine.com) project that wraps the D
 
 This is how you use Discord Rich Presense with Unreal Engine Projects.
 
-1. Download latest [release](https://github.com/discordapp/discord-rpc/releases) for the operating system you are targeting, also download the source code to get the Unreal Engine Plugin.
-2. Inside the source code ZIP, find the plugin and copy it to your UE Project's Plugins directory, it can be found: `examples/unrealstatus/Plugins/discordrpc`.
-3. Create 2 folders inside `[YOUR UE PROJECT]\Plugins\discordrpc\Source\ThirdParty\DiscordRpcLibrary\` called `Include` and `Win64`.
+1. Download latest [release](https://github.com/discordapp/discord-rpc/releases) for each operating system you are targeting, and also download the zipped source code.
+2. Inside the source code ZIP, find the UE plugin and copy it to your UE Project's Plugins directory, it can be found here: `examples/unrealstatus/Plugins/discordrpc`.
+3. Create 2 folders inside `[YOUR UE PROJECT]\Plugins\discordrpc\Source\ThirdParty\DiscordRpcLibrary\` called `Include` and `Win64`. For linux: Create a `Linux` folder and inside create another folder named `x86_64-unknown-linux-gnu`)
 4. Inside the other ZIP file, you will find a win64-dynamic folder.
  - Copy `lib/discord-rpc.lib` to the Win64 directory.
  - Copy `bin/discord-rpc.dll` to the Win64 directory.
  - Copy `include/discord_rpc.h` to the Include directory.
+ - (LINUX) Copy `lib/libdiscord-rpc.so` (Found in `linux-dynamic` in the Linux release ZIP) to the `Linux\x86_64-unknown-linux-gnu\` directory.
 5. Build your UE4 project with Visual Studio.
 6. Launch the editor, and enable the Discord plugin.
-  
+
+
 ## Wrappers and Implementations
 
 Below is a table of unofficial, community-developed wrappers for and implementations of Rich Presence in various languages. If you would like to have yours added, please make a pull request adding your repository to the table. The repository should include:
