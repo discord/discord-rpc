@@ -68,6 +68,20 @@ This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version 
 
 This is a sample [Unreal](https://www.unrealengine.com) project that wraps the DLL version of the library with an Unreal plugin, exposes a blueprint class for interacting with it, and uses that to make a very simple UI. Run `python build.py unreal` in the root directory to build the correct library files and place them in their respective folders.
 
+### Using the Unreal Engine plugin with your own project
+
+This is how you use Discord Rich Presense with Unreal Engine Projects.
+
+1. Download latest [release](https://github.com/discordapp/discord-rpc/releases) for the operating system you are targeting, also download the source code to get the Unreal Engine Plugin.
+2. Inside the source code ZIP, find the plugin and copy it to your UE Project's Plugins directory, it can be found: `examples/unrealstatus/Plugins/discordrpc`.
+3. Create 2 folders inside `[YOUR UE PROJECT]\Plugins\discordrpc\Source\ThirdParty\DiscordRpcLibrary\` called `Include` and `Win64`.
+4. Inside the other ZIP file, you will find a win64-dynamic folder.
+ - Copy `lib/discord-rpc.lib` to the Win64 directory.
+ - Copy `bin/discord-rpc.dll` to the Win64 directory.
+ - Copy `include/discord_rpc.h` to the Include directory.
+5. Build your UE4 project with Visual Studio.
+6. Launch the editor, and enable the Discord plugin.
+  
 ## Wrappers and Implementations
 
 Below is a table of unofficial, community-developed wrappers for and implementations of Rich Presence in various languages. If you would like to have yours added, please make a pull request adding your repository to the table. The repository should include:
