@@ -31,32 +31,9 @@ static void RegisterCommand(const char* applicationId, const char* command)
 
 static void RegisterURL(const char* applicationId)
 {
-    char url[256];
-    snprintf(url, sizeof(url), "discord-%s", applicationId);
-    CFStringRef cfURL = CFStringCreateWithCString(NULL, url, kCFStringEncodingUTF8);
-
-    NSString* myBundleId = [[NSBundle mainBundle] bundleIdentifier];
-    if (!myBundleId) {
-        fprintf(stderr, "No bundle id found\n");
-        return;
-    }
-
-    NSURL* myURL = [[NSBundle mainBundle] bundleURL];
-    if (!myURL) {
-        fprintf(stderr, "No bundle url found\n");
-        return;
-    }
-
-    OSStatus status = LSSetDefaultHandlerForURLScheme(cfURL, (__bridge CFStringRef)myBundleId);
-    if (status != noErr) {
-        fprintf(stderr, "Error in LSSetDefaultHandlerForURLScheme: %d\n", (int)status);
-        return;
-    }
-
-    status = LSRegisterURL((__bridge CFURLRef)myURL, true);
-    if (status != noErr) {
-        fprintf(stderr, "Error in LSRegisterURL: %d\n", (int)status);
-    }
+    NSString *applicationPath = NSProcessInfo.processInfo.arguments[0];
+    const char *cStr = applicationPath.UTF8String;
+    RegisterCommand(applicationId, cStr);
 }
 
 void Discord_Register(const char* applicationId, const char* command)
