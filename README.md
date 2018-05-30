@@ -75,7 +75,7 @@ This is a sample [Unreal](https://www.unrealengine.com) project that wraps the D
 To use the Rich Presense plugin with Unreal Engine Projects:
 
 1.  Download the latest [release](https://github.com/discordapp/discord-rpc/releases) for each operating system you are targeting and the zipped source code
-2.  In the source code zip, copy the UE plugin—`DiscordRpc.uplugin`—from `examples/unrealstatus/Plugins/discordrpc` to your project's plugin directory
+2.  In the source code zip, copy the UE plugin—`examples/unrealstatus/Plugins/discordrpc`—to your project's plugin directory
 3.  At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create an `Include` folder and copy `discord_rpc.h` and `discord_register.h` to it from the zip
 4.  Follow the steps below for each OS
 5.  Build your UE4 project
