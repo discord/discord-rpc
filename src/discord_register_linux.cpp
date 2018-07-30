@@ -34,7 +34,7 @@ extern "C" DISCORD_EXPORT void Discord_Register(const char* applicationId, const
     char exePath[1024];
     if (!command || !command[0]) {
         ssize_t size = readlink("/proc/self/exe", exePath, sizeof(exePath));
-        if (size <= 0 || size >= sizeof(exePath)) {
+        if (size <= 0 || size >= (ssize_t)sizeof(exePath)) {
             return;
         }
         exePath[size] = '\0';
