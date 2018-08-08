@@ -13,9 +13,9 @@ def get_platform():
     """ a name for the platform """
     if sys.platform.startswith('win'):
         return 'win'
-    elif sys.platform == 'darwin':
+    if sys.platform == 'darwin':
         return 'osx'
-    elif sys.platform.startswith('linux'):
+    if sys.platform.startswith('linux'):
         return 'linux'
     raise Exception('Unsupported platform ' + sys.platform)
 
@@ -32,7 +32,7 @@ def get_signtool():
     if PLATFORM == 'win':
         sdk_dir = 'c:\\Program Files (x86)\\Windows Kits\\10'  # os.environ['WindowsSdkDir']
         return os.path.join(sdk_dir, 'bin', 'x86', 'signtool.exe')
-    elif PLATFORM == 'osx':
+    if PLATFORM == 'osx':
         return '/usr/bin/codesign'
 
 
@@ -287,12 +287,12 @@ def libs(clean, static, shared, skip_formatter, just_release):
         if shared:
             build_lib('win32-dynamic', generator32, dynamic_options, just_release)
             build_lib('win64-dynamic', generator64, dynamic_options, just_release)
-    elif PLATFORM == 'osx':
+    if PLATFORM == 'osx':
         if static:
             build_lib('osx-static', None, static_options, just_release)
         if shared:
             build_lib('osx-dynamic', None, dynamic_options, just_release)
-    elif PLATFORM == 'linux':
+    if PLATFORM == 'linux':
         if static:
             build_lib('linux-static', None, static_options, just_release)
         if shared:
