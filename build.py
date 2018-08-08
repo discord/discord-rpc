@@ -32,7 +32,7 @@ def get_signtool():
     if PLATFORM == 'win':
         sdk_dir = 'c:\\Program Files (x86)\\Windows Kits\\10'  # os.environ['WindowsSdkDir']
         return os.path.join(sdk_dir, 'bin', 'x86', 'signtool.exe')
-    elif PLATFORM == 'osx':
+    if PLATFORM == 'osx':
         return '/usr/bin/codesign'
 
 
