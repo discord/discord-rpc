@@ -13,9 +13,9 @@ def get_platform():
     """ a name for the platform """
     if sys.platform.startswith('win'):
         return 'win'
-    elif sys.platform == 'darwin':
+    if sys.platform == 'darwin':
         return 'osx'
-    elif sys.platform.startswith('linux'):
+    if sys.platform.startswith('linux'):
         return 'linux'
     raise Exception('Unsupported platform ' + sys.platform)
 
