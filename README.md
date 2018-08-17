@@ -15,6 +15,37 @@ Zeroith, you should be set up to build things because you are a game developer, 
 
 First, head on over to the [Discord developers site](https://discordapp.com/developers/applications/me) and make yourself an app. Keep track of `Client ID` -- you'll need it here to pass to the init function.
 
+### Unity Setup
+
+If you're a Unity developer looking to integrate Rich Presence into your game, follow this simple guide to get started towards success:
+
+1. Download the DLLs for any platform that you need from [our releases](https://github.com/discordapp/discord-rpc/releases)
+2. In your Unity project, create a `Plugins/` folder inside your `Assets/` folder if you don't already have one
+3. Copy the file `DiscordRpc.cs` from [here](https://github.com/discordapp/discord-rpc/blob/master/examples/button-clicker/Assets/DiscordRpc.cs) into your `Assets/` folder. This is basically your header file for the SDK
+
+We've got our `Plugins/` folder ready, so let's get platform-specific!
+
+#### Windows
+
+4. Create `x86/` and `x86_64` folders inside `Assets/Plugins/`
+5. Copy `discord-rpc-win/win64-dynamic/bin/discord-rpc.dll` to `Assets/Plugins/x86_64/`
+6. Copy `discord-rpc-win/win32-dynamic/bin/discord-rpc.dll` to `Assets/Plguins/x86/`
+7. Click on both DLLs and make sure they are targetting the correct architectures in the Unity editor properties pane
+8. Done!
+
+#### MacOS
+
+4. Copy `discord-rpc-osx/osx-dynamic/lib/libdiscord-rpc.dylib` to `Assets/Plugins/`
+5. Rename `libdiscord-rpc.dylib` to `libdiscord-rpc.bundle`
+6. Done!
+
+#### Linux
+
+4. Copy `discord-rpc-linux/linux-dynamic-lib/libdiscord-rpc.so` to `Assets/Plugins/`
+5. Done!
+
+You're ready to roll! For code examples on how to interact with the SDK using the `DiscordRpc.cs` header file, check out [our example](https://github.com/discordapp/discord-rpc/blob/master/examples/button-clicker/Assets/DiscordController.cs)
+
 ### From package
 
 Download a release package for your platform(s) -- they have subdirs with various prebuilt options, select the one you need add `/include` to your compile includes, `/lib` to your linker paths, and link with `discord-rpc`. For the dynamically linked builds, you'll need to ship the associated file along with your game.
@@ -83,27 +114,27 @@ To use the Rich Presense plugin with Unreal Engine Projects:
 
 #### Windows
 
-* At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Win64` folder
-* Copy `lib/discord-rpc.lib` and `bin/discord-rpc.dll` from `[RELEASE_ZIP]/win64-dynamic` to the `Win64` folder
+- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Win64` folder
+- Copy `lib/discord-rpc.lib` and `bin/discord-rpc.dll` from `[RELEASE_ZIP]/win64-dynamic` to the `Win64` folder
 
 #### Mac
 
-* At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Mac` folder
-* Copy `libdiscord-rpc.dylib` from `[RELEASE_ZIP]/osx-dynamic/lib` to the `Mac` folder
+- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Mac` folder
+- Copy `libdiscord-rpc.dylib` from `[RELEASE_ZIP]/osx-dynamic/lib` to the `Mac` folder
 
 #### Linux
 
-* At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Linux` folder
-* Inside, create another folder `x86_64-unknown-linux-gnu`
-* Copy `libdiscord-rpc.so` from `[RELEASE_ZIP]/linux-dynamic/lib` to `Linux/x86_64-unknown-linux-gnu`
+- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Linux` folder
+- Inside, create another folder `x86_64-unknown-linux-gnu`
+- Copy `libdiscord-rpc.so` from `[RELEASE_ZIP]/linux-dynamic/lib` to `Linux/x86_64-unknown-linux-gnu`
 
 ## Wrappers and Implementations
 
 Below is a table of unofficial, community-developed wrappers for and implementations of Rich Presence in various languages. If you would like to have yours added, please make a pull request adding your repository to the table. The repository should include:
 
-* The code
-* A brief ReadMe of how to use it
-* A working example
+- The code
+- A brief ReadMe of how to use it
+- A working example
 
 ###### Rich Presence Wrappers and Implementations
 
