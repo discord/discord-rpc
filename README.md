@@ -20,14 +20,14 @@ First, head on over to the [Discord developers site](https://discordapp.com/deve
 If you're a Unity developer looking to integrate Rich Presence into your game, follow this simple guide to get started towards success:
 
 1. Download the DLLs for any platform that you need from [our releases](https://github.com/discordapp/discord-rpc/releases)
-2. In your Unity project, create a `Plugins/` folder inside your `Assets/` folder if you don't already have one
-3. Copy the file `DiscordRpc.cs` from [here](https://github.com/discordapp/discord-rpc/blob/master/examples/button-clicker/Assets/DiscordRpc.cs) into your `Assets/` folder. This is basically your header file for the SDK
+2. In your Unity project, create a `Plugins` folder inside your `Assets` folder if you don't already have one
+3. Copy the file `DiscordRpc.cs` from [here](https://github.com/discordapp/discord-rpc/blob/master/examples/button-clicker/Assets/DiscordRpc.cs) into your `Assets` folder. This is basically your header file for the SDK
 
-We've got our `Plugins/` folder ready, so let's get platform-specific!
+We've got our `Plugins` folder ready, so let's get platform-specific!
 
 #### Windows
 
-4. Create `x86/` and `x86_64` folders inside `Assets/Plugins/`
+4. Create `x86` and `x86_64` folders inside `Assets/Plugins/`
 5. Copy `discord-rpc-win/win64-dynamic/bin/discord-rpc.dll` to `Assets/Plugins/x86_64/`
 6. Copy `discord-rpc-win/win32-dynamic/bin/discord-rpc.dll` to `Assets/Plguins/x86/`
 7. Click on both DLLs and make sure they are targetting the correct architectures in the Unity editor properties pane
