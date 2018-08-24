@@ -355,6 +355,8 @@ extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
     Handlers = {};
+    CurrentPresence.length = 0;
+    QueuedPresence.length = 0;
     if (IoThread != nullptr) {
         IoThread->Stop();
         delete IoThread;
