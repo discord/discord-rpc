@@ -62,6 +62,7 @@ static int LastDisconnectErrorCode{0};
 static char LastDisconnectErrorMessage[256];
 static std::mutex PresenceMutex;
 static std::mutex HandlerMutex;
+static DiscordRichPresence CurrentPresence{};
 static QueuedMessage QueuedPresence{};
 static MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
 static MsgQueue<User, JoinQueueSize> JoinAskQueue;
@@ -310,6 +311,7 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     Connection = RpcConnection::Create(applicationId);
     Connection->onConnect = [](JsonDocument& readyMessage) {
         Discord_UpdateHandlers(&QueuedHandlers);
+        Discord_UpdatePresence(&CurrentPresence);
         auto data = GetObjMember(&readyMessage, "data");
         auto user = GetObjMember(data, "user");
         auto userId = GetStrMember(user, "id");
@@ -335,10 +337,6 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     Connection->onDisconnect = [](int err, const char* message) {
         LastDisconnectErrorCode = err;
         StringCopy(LastDisconnectErrorMessage, message);
-        {
-            std::lock_guard<std::mutex> guard(HandlerMutex);
-            Handlers = {};
-        }
         WasJustDisconnected.exchange(true);
         UpdateReconnectTime();
     };
@@ -354,6 +352,7 @@ extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
     Handlers = {};
+    CurrentPresence = {};
     if (IoThread != nullptr) {
         IoThread->Stop();
         delete IoThread;
@@ -369,6 +368,12 @@ extern "C" DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence*
         std::lock_guard<std::mutex> guard(PresenceMutex);
         QueuedPresence.length = JsonWriteRichPresenceObj(
           QueuedPresence.buffer, sizeof(QueuedPresence.buffer), Nonce++, Pid, presence);
+    }
+    if (presence) {
+        CurrentPresence = *presence;
+    }
+    else {
+        CurrentPresence = {};
     }
     SignalIOActivity();
 }
