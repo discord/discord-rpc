@@ -141,7 +141,7 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 | Name                                                                      | Language                          |
 | ------------------------------------------------------------------------- | --------------------------------- |
 | [Discord RPC C#](https://github.com/Lachee/discord-rpc-csharp)            | C#                                |
-| [DerelictDiscordRPC](https://github.com/voidblaster/DerelictDiscordRPC)   | [D](https://dlang.org/)           |
+| [Discord RPC D](https://github.com/voidblaster/discord-rpc-d)             | [D](https://dlang.org/)           |
 | [discord-rpc.jar](https://github.com/Vatuu/discord-rpc 'Discord-RPC.jar') | Java                              |
 | [java-discord-rpc](https://github.com/MinnDevelopment/java-discord-rpc)   | Java                              |
 | [Discord-IPC](https://github.com/jagrosh/DiscordIPC)                      | Java                              |
