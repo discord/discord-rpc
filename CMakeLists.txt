@@ -3,7 +3,7 @@ project (DiscordRPC)
 
 include(GNUInstallDirs)
 
-option(BUILD_EXAMPLES "Build example apps" ON)
+option(DISCORD_BUILD_EXAMPLES "Build example apps" ON)
 
 # format
 file(GLOB_RECURSE ALL_SOURCE_FILES
@@ -51,6 +51,6 @@ add_library(rapidjson STATIC IMPORTED ${RAPIDJSON})
 # add subdirs
 
 add_subdirectory(src)
-if (BUILD_EXAMPLES)
+if (DISCORD_BUILD_EXAMPLES)
     add_subdirectory(examples/send-presence)
-endif(BUILD_EXAMPLES)
+endif(DISCORD_BUILD_EXAMPLES)
