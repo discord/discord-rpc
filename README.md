@@ -142,7 +142,7 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 | ------------------------------------------------------------------------- | --------------------------------- |
 | [Discord RPC C#](https://github.com/Lachee/discord-rpc-csharp)            | C#                                |
 | [Discord RPC D](https://github.com/voidblaster/discord-rpc-d)             | [D](https://dlang.org/)           |
-| [discord-rpc.jar](https://github.com/Vatuu/discord-rpc "Discord-RPC.jar") | Java                              |
+| [discord-rpc.jar](https://github.com/Vatuu/discord-rpc 'Discord-RPC.jar') | Java                              |
 | [java-discord-rpc](https://github.com/MinnDevelopment/java-discord-rpc)   | Java                              |
 | [Discord-IPC](https://github.com/jagrosh/DiscordIPC)                      | Java                              |
 | [Discord Rich Presence](https://npmjs.org/discord-rich-presence)          | JavaScript                        |
