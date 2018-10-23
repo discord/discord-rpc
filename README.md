@@ -29,7 +29,7 @@ We've got our `Plugins` folder ready, so let's get platform-specific!
 
 4. Create `x86` and `x86_64` folders inside `Assets/Plugins/`
 5. Copy `discord-rpc-win/win64-dynamic/bin/discord-rpc.dll` to `Assets/Plugins/x86_64/`
-6. Copy `discord-rpc-win/win32-dynamic/bin/discord-rpc.dll` to `Assets/Plguins/x86/`
+6. Copy `discord-rpc-win/win32-dynamic/bin/discord-rpc.dll` to `Assets/Plugins/x86/`
 7. Click on both DLLs and make sure they are targetting the correct architectures in the Unity editor properties pane
 8. Done!
 
