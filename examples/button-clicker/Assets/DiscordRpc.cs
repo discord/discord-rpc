@@ -2,35 +2,42 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using AOT;
 
 public class DiscordRpc
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ReadyCallback(ref DiscordUser connectedUser);
+    [MonoPInvokeCallback(typeof(OnReadyInfo))]
+    public static void ReadyCallback(ref DiscordUser user){}
+    public delegate void OnReadyInfo(ref DiscordUser connectedUser);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void DisconnectedCallback(int errorCode, string message);
+    [MonoPInvokeCallback(typeof(OnDisconnectedInfo))]
+    public static void DisconnectedCallback(int errorCode, string message){}
+    public delegate void OnDisconnectedInfo(int errorCode, string message);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ErrorCallback(int errorCode, string message);
+    [MonoPInvokeCallback(typeof(OnErrorInfo))]
+    public static void ErrorCallback(int errorCode, string message){}
+    public delegate void OnErrorInfo(int errorCode, string message);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void JoinCallback(string secret);
+    [MonoPInvokeCallback(typeof(OnJoinInfo))]
+    public static void JoinCallback(string secret){}
+    public delegate void OnJoinInfo(string secret);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SpectateCallback(string secret);
+    [MonoPInvokeCallback(typeof(OnSpectateInfo))]
+    public static void SpectateCallback(string secret){}
+    public delegate void OnSpectateInfo(string secret);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void RequestCallback(ref DiscordUser request);
+    [MonoPInvokeCallback(typeof(OnRequestInfo))]
+    public static void RequestCallback(ref DiscordUser request){}
+    public delegate void OnRequestInfo(ref DiscordUser request);
 
     public struct EventHandlers
     {
-        public ReadyCallback readyCallback;
-        public DisconnectedCallback disconnectedCallback;
-        public ErrorCallback errorCallback;
-        public JoinCallback joinCallback;
-        public SpectateCallback spectateCallback;
-        public RequestCallback requestCallback;
+        public OnReadyInfo readyCallback;
+        public OnDisconnectedInfo disconnectedCallback;
+        public OnErrorInfo errorCallback;
+        public OnJoinInfo joinCallback;
+        public OnSpectateInfo spectateCallback;
+        public OnRequestInfo requestCallback;
     }
 
     [Serializable, StructLayout(LayoutKind.Sequential)]
