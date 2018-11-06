@@ -43,5 +43,5 @@ before_install:
 script:
     - mkdir build
     - cd build
-    - cmake -DCLANG_FORMAT_SUFFIX=$CLANG_FORMAT_SUFFIX --config Release ..
+    - cmake -DCLANG_FORMAT_SUFFIX=$CLANG_FORMAT_SUFFIX -DWARNINGS_AS_ERRORS=On --config Release ..
     - cmake --build . -- -j2
