@@ -99,7 +99,8 @@ public:
               Category = "Discord")
     void Initialize(const FString& applicationId,
                     bool autoRegister,
-                    const FString& optionalSteamId);
+                    const FString& optionalSteamId,
+                    int optionalPipeNumber);
 
     UFUNCTION(BlueprintCallable,
               meta = (DisplayName = "Shut down connection", Keywords = "Discord rpc"),
