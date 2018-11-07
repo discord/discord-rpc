@@ -48,12 +48,12 @@ struct RpcConnection {
     char lastErrorMessage[256]{};
     RpcConnection::MessageFrame sendFrame;
 
-    static RpcConnection* Create(const char* applicationId, int optionalPipeNumber);
+    static RpcConnection* Create(const char* applicationId, int pipe);
     static void Destroy(RpcConnection*&);
 
     inline bool IsOpen() const { return state == State::Connected; }
 
-    void Open(int pipe);
+    void Open();
     void Close();
     bool Write(const void* data, size_t length);
     bool Read(JsonDocument& message);

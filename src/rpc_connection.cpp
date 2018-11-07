@@ -21,13 +21,13 @@ static RpcConnection Instance;
     c = nullptr;
 }
 
-void RpcConnection::Open(int pipe)
+void RpcConnection::Open()
 {
     if (state == State::Connected) {
         return;
     }
 
-    if (state == State::Disconnected && !connection->Open(pipe)) {
+    if (state == State::Disconnected && !connection->Open(Instance.pipe)) {
         return;
     }
 
