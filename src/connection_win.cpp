@@ -33,11 +33,9 @@ static BaseConnectionWin Connection;
 
 bool BaseConnection::Open(int pipe)
 {
-    std::wostringstream stream{};
-    stream << L"\\\\?\\pipe\\discord-ipc-" << pipe;
-    std::wstring asString = stream.str();
-    const WCHAR* pipeName = asString.c_str();
+    wchar_t pipeName[]{L"\\\\?\\pipe\\discord-ipc-0"};
     const size_t pipeDigit = sizeof(pipeName) / sizeof(wchar_t) - 2;
+    pipeName[pipeDigit] = (L'%d', pipe);
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
     for (;;) {
         self->pipe = ::CreateFileW(
