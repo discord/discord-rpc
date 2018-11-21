@@ -15,13 +15,13 @@ public class DiscordController : MonoBehaviour
     public string applicationId;
     public string optionalSteamId;
     public int clickCounter;
-    public DiscordJoinEvent onJoin;
-    public DiscordJoinEvent onSpectate;
-    public DiscordJoinRequestEvent onJoinRequest;
+    public DiscordRpc.DiscordUser joinRequest;
     public UnityEngine.Events.UnityEvent onConnect;
     public UnityEngine.Events.UnityEvent onDisconnect;
     public UnityEngine.Events.UnityEvent hasResponded;
-    public DiscordRpc.DiscordUser joinRequest;
+    public DiscordJoinEvent onJoin;
+    public DiscordJoinEvent onSpectate;
+    public DiscordJoinRequestEvent onJoinRequest;
 
     DiscordRpc.EventHandlers handlers;
 
@@ -29,7 +29,9 @@ public class DiscordController : MonoBehaviour
     {
         Debug.Log("Discord: on click!");
         clickCounter++;
+
         presence.details = string.Format("Button clicked {0} times", clickCounter);
+
         DiscordRpc.UpdatePresence(presence);
     }
 
