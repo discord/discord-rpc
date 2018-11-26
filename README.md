@@ -36,7 +36,7 @@ We've got our `Plugins` folder ready, so let's get platform-specific!
 #### MacOS
 
 4. Copy `discord-rpc-osx/osx-dynamic/lib/libdiscord-rpc.dylib` to `Assets/Plugins/`
-5. Rename `libdiscord-rpc.dylib` to `libdiscord-rpc.bundle`
+5. Rename `libdiscord-rpc.dylib` to `discord-rpc.bundle`
 6. Done!
 
 #### Linux
