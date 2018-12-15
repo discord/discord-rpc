@@ -7,28 +7,30 @@ using AOT;
 public class DiscordRpc
 {
     [MonoPInvokeCallback(typeof(OnReadyInfo))]
-    public static void ReadyCallback(ref DiscordUser connectedUser) { }
+    public static void ReadyCallback(ref DiscordUser connectedUser) { Callbacks.readyCallback(ref connectedUser); }
     public delegate void OnReadyInfo(ref DiscordUser connectedUser);
 
     [MonoPInvokeCallback(typeof(OnDisconnectedInfo))]
-    public static void DisconnectedCallback(int errorCode, string message) { }
+    public static void DisconnectedCallback(int errorCode, string message) { Callbacks.disconnectedCallback(errorCode, message); }
     public delegate void OnDisconnectedInfo(int errorCode, string message);
 
     [MonoPInvokeCallback(typeof(OnErrorInfo))]
-    public static void ErrorCallback(int errorCode, string message) { }
+    public static void ErrorCallback(int errorCode, string message) { Callbacks.errorCallback(errorCode, message); }
     public delegate void OnErrorInfo(int errorCode, string message);
 
     [MonoPInvokeCallback(typeof(OnJoinInfo))]
-    public static void JoinCallback(string secret) { }
+    public static void JoinCallback(string secret) { Callbacks.joinCallback(secret); }
     public delegate void OnJoinInfo(string secret);
 
     [MonoPInvokeCallback(typeof(OnSpectateInfo))]
-    public static void SpectateCallback(string secret) { }
+    public static void SpectateCallback(string secret) { Callbacks.spectateCallback(secret); }
     public delegate void OnSpectateInfo(string secret);
 
     [MonoPInvokeCallback(typeof(OnRequestInfo))]
-    public static void RequestCallback(ref DiscordUser request) { }
+    public static void RequestCallback(ref DiscordUser request) { Callbacks.requestCallback(ref request); }
     public delegate void OnRequestInfo(ref DiscordUser request);
+
+    static EventHandlers Callbacks { get; set; }
 
     public struct EventHandlers
     {
@@ -76,8 +78,23 @@ public class DiscordRpc
         Ignore = 2
     }
 
+    public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId)
+    {
+        Callbacks = handlers;
+
+        EventHandlers staticEventHandlers = new EventHandlers();
+        staticEventHandlers.readyCallback += DiscordRpc.ReadyCallback;
+        staticEventHandlers.disconnectedCallback += DiscordRpc.DisconnectedCallback;
+        staticEventHandlers.errorCallback += DiscordRpc.ErrorCallback;
+        staticEventHandlers.joinCallback += DiscordRpc.JoinCallback;
+        staticEventHandlers.spectateCallback += DiscordRpc.SpectateCallback;
+        staticEventHandlers.requestCallback += DiscordRpc.RequestCallback;
+
+        InitializeInternal(applicationId, ref staticEventHandlers, autoRegister, optionalSteamId);
+    }
+
     [DllImport("discord-rpc", EntryPoint = "Discord_Initialize", CallingConvention = CallingConvention.Cdecl)]
-    public static extern void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId);
+    static extern void InitializeInternal(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId);
 
     [DllImport("discord-rpc", EntryPoint = "Discord_Shutdown", CallingConvention = CallingConvention.Cdecl)]
     public static extern void Shutdown();
