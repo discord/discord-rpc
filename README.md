@@ -15,6 +15,33 @@ Zeroith, you should be set up to build things because you are a game developer, 
 
 First, head on over to the [Discord developers site](https://discordapp.com/developers/applications/me) and make yourself an app. Keep track of `Client ID` -- you'll need it here to pass to the init function.
 
+### Unreal Engine 4 Setup
+
+To use the Rich Presense plugin with Unreal Engine Projects:
+
+1.  Download the latest [release](https://github.com/discordapp/discord-rpc/releases) for each operating system you are targeting and the zipped source code
+2.  In the source code zip, copy the UE plugin—`examples/unrealstatus/Plugins/discordrpc`—to your project's plugin directory
+3.  At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create an `Include` folder and copy `discord_rpc.h` and `discord_register.h` to it from the zip
+4.  Follow the steps below for each OS
+5.  Build your UE4 project
+6.  Launch the editor, and enable the Discord plugin.
+
+#### Windows
+
+- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Win64` folder
+- Copy `lib/discord-rpc.lib` and `bin/discord-rpc.dll` from `[RELEASE_ZIP]/win64-dynamic` to the `Win64` folder
+
+#### Mac
+
+- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Mac` folder
+- Copy `libdiscord-rpc.dylib` from `[RELEASE_ZIP]/osx-dynamic/lib` to the `Mac` folder
+
+#### Linux
+
+- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Linux` folder
+- Inside, create another folder `x86_64-unknown-linux-gnu`
+- Copy `libdiscord-rpc.so` from `[RELEASE_ZIP]/linux-dynamic/lib` to `Linux/x86_64-unknown-linux-gnu`
+
 ### Unity Setup
 
 If you're a Unity developer looking to integrate Rich Presence into your game, follow this simple guide to get started towards success:
@@ -100,33 +127,6 @@ This is a sample [Unity](https://unity3d.com/) project that wraps a DLL version 
 ## Sample: unrealstatus
 
 This is a sample [Unreal](https://www.unrealengine.com) project that wraps the DLL version of the library with an Unreal plugin, exposes a blueprint class for interacting with it, and uses that to make a very simple UI. Run `python build.py unreal` in the root directory to build the correct library files and place them in their respective folders.
-
-### Using the Unreal Engine plugin with your own project
-
-To use the Rich Presense plugin with Unreal Engine Projects:
-
-1.  Download the latest [release](https://github.com/discordapp/discord-rpc/releases) for each operating system you are targeting and the zipped source code
-2.  In the source code zip, copy the UE plugin—`examples/unrealstatus/Plugins/discordrpc`—to your project's plugin directory
-3.  At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create an `Include` folder and copy `discord_rpc.h` and `discord_register.h` to it from the zip
-4.  Follow the steps below for each OS
-5.  Build your UE4 project
-6.  Launch the editor, and enable the Discord plugin.
-
-#### Windows
-
-- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Win64` folder
-- Copy `lib/discord-rpc.lib` and `bin/discord-rpc.dll` from `[RELEASE_ZIP]/win64-dynamic` to the `Win64` folder
-
-#### Mac
-
-- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Mac` folder
-- Copy `libdiscord-rpc.dylib` from `[RELEASE_ZIP]/osx-dynamic/lib` to the `Mac` folder
-
-#### Linux
-
-- At `[YOUR_UE_PROJECT]/Plugins/discordrpc/source/ThirdParty/DiscordRpcLibrary/`, create a `Linux` folder
-- Inside, create another folder `x86_64-unknown-linux-gnu`
-- Copy `libdiscord-rpc.so` from `[RELEASE_ZIP]/linux-dynamic/lib` to `Linux/x86_64-unknown-linux-gnu`
 
 ## Wrappers and Implementations
 
