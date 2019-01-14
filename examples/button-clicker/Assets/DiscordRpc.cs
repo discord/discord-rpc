@@ -78,7 +78,7 @@ public class DiscordRpc
         Ignore = 2
     }
 
-    public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId, int pipe)
+    public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId, int pipe = 0)
     {
         Callbacks = handlers;
 
@@ -114,11 +114,6 @@ public class DiscordRpc
     [DllImport("discord-rpc", EntryPoint = "Discord_UpdateHandlers", CallingConvention = CallingConvention.Cdecl)]
     public static extern void UpdateHandlers(ref EventHandlers handlers);
 
-
-    public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId, int pipe = 0)
-    {
-        Initialize(applicationId, ref handlers, autoRegister, optionalSteamId, pipe);
-    }
     public static void UpdatePresence(RichPresence presence)
     {
         var presencestruct = presence.GetStruct();
