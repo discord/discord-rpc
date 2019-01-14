@@ -6,10 +6,11 @@
 static const int RpcVersion = 1;
 static RpcConnection Instance;
 
-/*static*/ RpcConnection* RpcConnection::Create(const char* applicationId)
+/*static*/ RpcConnection* RpcConnection::Create(const char* applicationId, int pipe)
 {
     Instance.connection = BaseConnection::Create();
     StringCopy(Instance.appId, applicationId);
+    Instance.pipe = pipe;
     return &Instance;
 }
 
@@ -26,7 +27,7 @@ void RpcConnection::Open()
         return;
     }
 
-    if (state == State::Disconnected && !connection->Open()) {
+    if (state == State::Disconnected && !connection->Open(Instance.pipe)) {
         return;
     }
 

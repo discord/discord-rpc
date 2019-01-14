@@ -49,7 +49,7 @@ static const char* GetTempPath()
     c = nullptr;
 }
 
-bool BaseConnection::Open()
+bool BaseConnection::Open(int pipe)
 {
     const char* tempPath = GetTempPath();
     auto self = reinterpret_cast<BaseConnectionUnix*>(this);
@@ -62,8 +62,7 @@ bool BaseConnection::Open()
     int optval = 1;
     setsockopt(self->sock, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval));
 #endif
-
-    for (int pipeNum = 0; pipeNum < 10; ++pipeNum) {
+    for (int pipeNum = pipe; pipeNum < 10; ++pipeNum) {
         snprintf(
           PipeAddr.sun_path, sizeof(PipeAddr.sun_path), "%s/discord-ipc-%d", tempPath, pipeNum);
         int err = connect(self->sock, (const sockaddr*)&PipeAddr, sizeof(PipeAddr));

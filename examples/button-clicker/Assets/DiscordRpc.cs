@@ -78,7 +78,7 @@ public class DiscordRpc
         Ignore = 2
     }
 
-    public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId)
+    public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId, int pipe = 0)
     {
         Callbacks = handlers;
 
@@ -90,11 +90,11 @@ public class DiscordRpc
         staticEventHandlers.spectateCallback += DiscordRpc.SpectateCallback;
         staticEventHandlers.requestCallback += DiscordRpc.RequestCallback;
 
-        InitializeInternal(applicationId, ref staticEventHandlers, autoRegister, optionalSteamId);
+        InitializeInternal(applicationId, ref staticEventHandlers, autoRegister, optionalSteamId, pipe);
     }
 
     [DllImport("discord-rpc", EntryPoint = "Discord_Initialize", CallingConvention = CallingConvention.Cdecl)]
-    static extern void InitializeInternal(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId);
+    static extern void InitializeInternal(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId, int pipe);
 
     [DllImport("discord-rpc", EntryPoint = "Discord_Shutdown", CallingConvention = CallingConvention.Cdecl)]
     public static extern void Shutdown();
