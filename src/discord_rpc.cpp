@@ -273,8 +273,7 @@ static bool DeregisterForEvent(const char* evtName)
 extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                                   DiscordEventHandlers* handlers,
                                                   int autoRegister,
-                                                  const char* optionalSteamId,
-                                                  int pipe)
+                                                  const char* optionalSteamId)
 {
     IoThread = new (std::nothrow) IoThreadHolder();
     if (IoThread == nullptr) {
@@ -309,7 +308,7 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
         return;
     }
 
-    Connection = RpcConnection::Create(applicationId, pipe);
+    Connection = RpcConnection::Create(applicationId);
     Connection->onConnect = [](JsonDocument& readyMessage) {
         Discord_UpdateHandlers(&QueuedHandlers);
         if (QueuedPresence.length > 0) {

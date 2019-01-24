@@ -6,7 +6,6 @@
 #define NOIME
 #include <assert.h>
 #include <windows.h>
-#include <sstream>
 
 int GetProcessId()
 {
@@ -31,11 +30,11 @@ static BaseConnectionWin Connection;
     c = nullptr;
 }
 
-bool BaseConnection::Open(int pipe)
+bool BaseConnection::Open()
 {
     wchar_t pipeName[]{L"\\\\?\\pipe\\discord-ipc-0"};
     const size_t pipeDigit = sizeof(pipeName) / sizeof(wchar_t) - 2;
-    pipeName[pipeDigit] += pipe;
+    pipeName[pipeDigit] = L'0';
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
     for (;;) {
         self->pipe = ::CreateFileW(
