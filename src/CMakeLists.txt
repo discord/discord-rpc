@@ -71,7 +71,6 @@ if(UNIX)
     endif(APPLE)
 
     add_library(discord-rpc ${BASE_RPC_SRC})
-    target_include_directories(discord-rpc INTERFACE ${PROJECT_SOURCE_DIR}/include)
     target_link_libraries(discord-rpc PUBLIC pthread)
 
     if (APPLE)
@@ -110,6 +109,7 @@ if(UNIX)
     endif (APPLE)
 endif(UNIX)
 
+target_include_directories(discord-rpc INTERFACE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)
 
 if (NOT ${ENABLE_IO_THREAD})
