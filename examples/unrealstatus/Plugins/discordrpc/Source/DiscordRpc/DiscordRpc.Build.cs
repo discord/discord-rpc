@@ -11,7 +11,7 @@ public class DiscordRpc : ModuleRules
     public DiscordRpc(TargetInfo Target)
 #endif
     {
-        Definitions.Add("DISCORD_DYNAMIC_LIB=1");
+        PublicDefinitions.Add("DISCORD_DYNAMIC_LIB=1");
 
         PublicIncludePaths.AddRange(
             new string[] {
