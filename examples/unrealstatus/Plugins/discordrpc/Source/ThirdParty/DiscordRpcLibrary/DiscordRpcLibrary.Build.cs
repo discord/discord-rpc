@@ -12,7 +12,7 @@ public class DiscordRpcLibrary : ModuleRules
 #endif
     {
         Type = ModuleType.External;
-        Definitions.Add("DISCORD_DYNAMIC_LIB=1");
+        PublicDefinitions.Add("DISCORD_DYNAMIC_LIB=1");
 
         string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty", "DiscordRpcLibrary"));
 
