@@ -35,6 +35,16 @@ enum class EDiscordJoinResponseCodes : uint8
 	DISCORD_REPLY_IGNORE	UMETA(DisplayName="Ignore")
 };
 
+/**
+* Valid party privacy values
+*/
+UENUM(BlueprintType)
+enum class EDiscordPartyPrivacy: uint8
+{
+    DISCORD_PARTY_PRIVATE   UMETA(DisplayName="Private"),
+    DISCORD_PARTY_PUBLIC    UMETA(DisplayName="Public")
+};
+
 DECLARE_LOG_CATEGORY_EXTERN(Discord, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiscordConnected, const FDiscordUserData&, joinRequest);
@@ -76,6 +86,8 @@ struct FDiscordRichPresence {
     int partySize;
     UPROPERTY(BlueprintReadWrite)
     int partyMax;
+    UPROPERTY(BlueprintReadWrite)
+    EDiscordPartyPrivacy partyPrivacy;
     UPROPERTY(BlueprintReadWrite)
     FString matchSecret;
     UPROPERTY(BlueprintReadWrite)

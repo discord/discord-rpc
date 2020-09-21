@@ -47,6 +47,7 @@ static void updateDiscordPresence()
         discordPresence.partyId = "party1234";
         discordPresence.partySize = 1;
         discordPresence.partyMax = 6;
+        discordPresence.partyPrivacy = DISCORD_PARTY_PUBLIC;
         discordPresence.matchSecret = "xyzzy";
         discordPresence.joinSecret = "join";
         discordPresence.spectateSecret = "look";
