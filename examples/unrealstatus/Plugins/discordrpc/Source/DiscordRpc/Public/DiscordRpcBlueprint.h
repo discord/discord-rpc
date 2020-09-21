@@ -77,6 +77,8 @@ struct FDiscordRichPresence {
     UPROPERTY(BlueprintReadWrite)
     int partyMax;
     UPROPERTY(BlueprintReadWrite)
+    int partyPrivacy;
+    UPROPERTY(BlueprintReadWrite)
     FString matchSecret;
     UPROPERTY(BlueprintReadWrite)
     FString joinSecret;

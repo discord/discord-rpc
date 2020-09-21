@@ -31,6 +31,11 @@ public class DiscordController : MonoBehaviour
         clickCounter++;
 
         presence.details = string.Format("Button clicked {0} times", clickCounter);
+        presence.joinSecret = "aSecret";
+        presence.partyId = "aPartyId";
+        presence.partySize = 1;
+        presence.partyMax = 3;
+        presence.partyPrivacy = DiscordRpc.PartyPrivacy.Public;
 
         DiscordRpc.UpdatePresence(presence);
     }

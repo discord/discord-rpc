@@ -56,6 +56,7 @@ public class DiscordRpc
         public IntPtr partyId; /* max 128 bytes */
         public int partySize;
         public int partyMax;
+        public int partyPrivacy;
         public IntPtr matchSecret; /* max 128 bytes */
         public IntPtr joinSecret; /* max 128 bytes */
         public IntPtr spectateSecret; /* max 128 bytes */
@@ -76,6 +77,12 @@ public class DiscordRpc
         No = 0,
         Yes = 1,
         Ignore = 2
+    }
+
+    public enum PartyPrivacy
+    {
+        Private = 0,
+        Public = 1
     }
 
     public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId)
@@ -137,6 +144,7 @@ public class DiscordRpc
         public string partyId; /* max 128 bytes */
         public int partySize;
         public int partyMax;
+        public PartyPrivacy partyPrivacy;
         public string matchSecret; /* max 128 bytes */
         public string joinSecret; /* max 128 bytes */
         public string spectateSecret; /* max 128 bytes */
@@ -164,6 +172,7 @@ public class DiscordRpc
             _presence.partyId = StrToPtr(partyId);
             _presence.partySize = partySize;
             _presence.partyMax = partyMax;
+            _presence.partyPrivacy = (int)partyPrivacy;
             _presence.matchSecret = StrToPtr(matchSecret);
             _presence.joinSecret = StrToPtr(joinSecret);
             _presence.spectateSecret = StrToPtr(spectateSecret);
