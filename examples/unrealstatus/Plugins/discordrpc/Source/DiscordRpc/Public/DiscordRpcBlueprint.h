@@ -87,11 +87,7 @@ struct FDiscordRichPresence {
     UPROPERTY(BlueprintReadWrite)
     int partyMax;
     UPROPERTY(BlueprintReadWrite)
-<<<<<<< Updated upstream
-    int partyPrivacy;
-=======
     EDiscordPartyPrivacy partyPrivacy;
->>>>>>> Stashed changes
     UPROPERTY(BlueprintReadWrite)
     FString matchSecret;
     UPROPERTY(BlueprintReadWrite)

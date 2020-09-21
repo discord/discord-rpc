@@ -153,7 +153,7 @@ void UDiscordRpc::UpdatePresence()
     rp.endTimestamp = RichPresence.endTimestamp;
     rp.partySize = RichPresence.partySize;
     rp.partyMax = RichPresence.partyMax;
-    rp.partyPrivacy = RichPresence.partyPrivacy;
+    rp.partyPrivacy = (int)RichPresence.partyPrivacy;
     rp.instance = RichPresence.instance;
 
     Discord_UpdatePresence(&rp);
