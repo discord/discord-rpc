@@ -78,11 +78,11 @@ def unity(ctx):
 
     if sys.platform.startswith('win'):
         LIBRARY_NAME = 'discord-rpc.dll'
-        BUILD_64_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
+        BUILD_64_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'RelWithDebInfo')
         UNITY_64_DLL_PATH = os.path.join(UNITY_PROJECT_PATH, 'x86_64')
         BUILDS.append({BUILD_64_BASE_PATH: UNITY_64_DLL_PATH})
 
-        BUILD_32_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic', 'src', 'Release')
+        BUILD_32_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic', 'src', 'RelWithDebInfo')
         UNITY_32_DLL_PATH = os.path.join(UNITY_PROJECT_PATH, 'x86')
         BUILDS.append({BUILD_32_BASE_PATH: UNITY_32_DLL_PATH})
 
@@ -127,11 +127,11 @@ def unreal(ctx):
 
     if sys.platform.startswith('win'):
         LIBRARY_NAME = 'discord-rpc.lib'
-        BUILD_64_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'Release')
+        BUILD_64_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win64-dynamic', 'src', 'RelWithDebInfo')
         UNREAL_64_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win64')
         BUILDS.append({BUILD_64_BASE_PATH: UNREAL_64_DLL_PATH})
 
-        BUILD_32_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic', 'src', 'Release')
+        BUILD_32_BASE_PATH = os.path.join(SCRIPT_PATH, 'builds', 'win32-dynamic', 'src', 'RelWithDebInfo')
         UNREAL_32_DLL_PATH = os.path.join(UNREAL_PROJECT_PATH, 'Source', 'ThirdParty', 'DiscordRpcLibrary', 'Win32')
         BUILDS.append({BUILD_32_BASE_PATH: UNREAL_32_DLL_PATH})
 
@@ -177,7 +177,7 @@ def build_lib(build_name, generator, options, just_release):
         subprocess.check_call(initial_cmake)
         if not just_release:
             subprocess.check_call(['cmake', '--build', '.', '--config', 'Debug'])
-        subprocess.check_call(['cmake', '--build', '.', '--config', 'Release', '--target', 'install'])
+        subprocess.check_call(['cmake', '--build', '.', '--config', 'RelWithDebInfo', '--target', 'install'])
 
 
 @cli.command()
