@@ -145,3 +145,12 @@ install(
 		"../include/discord_register.h"
     DESTINATION "include"
 )
+
+if (${BUILD_SHARED_LIBS})
+    if(WIN32)
+        install(
+            FILES $<TARGET_PDB_FILE:discord-rpc>
+            DESTINATION "bin"
+            OPTIONAL)
+    endif(WIN32)
+endif(${BUILD_SHARED_LIBS})
