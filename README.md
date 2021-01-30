@@ -155,4 +155,5 @@ Below is a table of unofficial, community-developed wrappers for and implementat
 | [drpc4k](https://github.com/Bluexin/drpc4k)                               | [Kotlin](https://kotlinlang.org/) |
 | [lua-discordRPC](https://github.com/pfirsich/lua-discordRPC)              | LuaJIT (FFI)                      |
 | [pypresence](https://github.com/qwertyquerty/pypresence)                  | [Python](https://python.org/)     |
+| [RPCord](https://github.com/DjDeveloperr/RPCord)                          | TypeScript                        |
 | [SwordRPC](https://github.com/Azoy/SwordRPC)                              | [Swift](https://swift.org)        |
