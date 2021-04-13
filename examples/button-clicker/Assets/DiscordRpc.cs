@@ -132,6 +132,8 @@ public class DiscordRpc
     {
         private RichPresenceStruct _presence;
         private readonly List<IntPtr> _buffers = new List<IntPtr>(10);
+        private char[] _chrBuffer = new char[128];
+        private byte[] _byteBuffer = new byte[385]; // utf8 char max 4 bytes in worst case
 
         public string state; /* max 128 bytes */
         public string details; /* max 128 bytes */
@@ -189,14 +191,13 @@ public class DiscordRpc
         private IntPtr StrToPtr(string input)
         {
             if (string.IsNullOrEmpty(input)) return IntPtr.Zero;
-            var convbytecnt = Encoding.UTF8.GetByteCount(input);
-            var buffer = Marshal.AllocHGlobal(convbytecnt + 1);
-            for (int i = 0; i < convbytecnt + 1; i++)
-            {
-                Marshal.WriteByte(buffer, i, 0);
-            }
+            var len = input.Length > 128 ? 128 : input.Length;
+            input.CopyTo(0, _chrBuffer, 0, len);
+            var convbytecnt = Encoding.UTF8.GetBytes(_chrBuffer, 0, len, _byteBuffer, 0);
+            IntPtr buffer = Marshal.AllocHGlobal(convbytecnt + 1);
+            Marshal.WriteByte(buffer, convbytecnt, 0);
             _buffers.Add(buffer);
-            Marshal.Copy(Encoding.UTF8.GetBytes(input), 0, buffer, convbytecnt);
+            Marshal.Copy(_byteBuffer, 0, buffer, convbytecnt);
             return buffer;
         }
 
