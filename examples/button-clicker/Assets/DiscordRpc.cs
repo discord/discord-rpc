@@ -195,6 +195,7 @@ public class DiscordRpc
             input.CopyTo(0, _chrBuffer, 0, len);
             var convbytecnt = Encoding.UTF8.GetBytes(_chrBuffer, 0, len, _byteBuffer, 0);
             IntPtr buffer = Marshal.AllocHGlobal(convbytecnt + 1);
+            Marshal.WriteByte(buffer, convbytecnt, 0);
             _buffers.Add(buffer);
             Marshal.Copy(_byteBuffer, 0, buffer, convbytecnt);
             return buffer;
