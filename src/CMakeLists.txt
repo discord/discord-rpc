@@ -128,7 +128,7 @@ endif(CLANG_FORMAT_CMD)
 
 install(
     TARGETS discord-rpc
-    EXPORT "discord-rpc"
+    EXPORT "${PROJECT_NAME}Targets"
     RUNTIME
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY
@@ -140,8 +140,34 @@ install(
 )
 
 install(
+    EXPORT "${PROJECT_NAME}Targets"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+    NAMESPACE "${PROJECT_NAME}::"
+)
+
+install(
     FILES
         "../include/discord_rpc.h"
 		"../include/discord_register.h"
     DESTINATION "include"
+)
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file("../cmake/Config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    COMPATIBILITY SameMajorVersion
+)
+
+install(
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    DESTINATION
+        "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
 )
