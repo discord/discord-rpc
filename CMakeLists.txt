@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 3.2.0)
 project (DiscordRPC)
+set(DRPC_VERSION 3.4.0)
 
 include(GNUInstallDirs)
 

@@ -71,6 +71,7 @@ if(UNIX)
     endif(APPLE)
 
     add_library(discord-rpc ${BASE_RPC_SRC})
+    set_target_properties(discord-rpc PROPERTIES SOVERSION ${DRPC_VERSION})
     target_link_libraries(discord-rpc PUBLIC pthread)
 
     if (APPLE)
