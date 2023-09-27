@@ -34,6 +34,9 @@ static int prompt(char* line, size_t size)
 static void updateDiscordPresence()
 {
     if (SendPresence) {
+        DiscordPresenceButton btn2 = {"DuckDuckGo", "https://duckduckgo.com", NULL};
+        DiscordPresenceButton btn1 = {"Google", "https://google.com", &btn2};
+
         char buffer[256];
         DiscordRichPresence discordPresence;
         memset(&discordPresence, 0, sizeof(discordPresence));
@@ -48,10 +51,11 @@ static void updateDiscordPresence()
         discordPresence.partySize = 1;
         discordPresence.partyMax = 6;
         discordPresence.partyPrivacy = DISCORD_PARTY_PUBLIC;
-        discordPresence.matchSecret = "xyzzy";
-        discordPresence.joinSecret = "join";
-        discordPresence.spectateSecret = "look";
+        // discordPresence.matchSecret = "xyzzy";
+        // discordPresence.joinSecret = "join";
+        // discordPresence.spectateSecret = "look";
         discordPresence.instance = 0;
+        discordPresence.buttons = &btn1;
         Discord_UpdatePresence(&discordPresence);
     }
     else {
