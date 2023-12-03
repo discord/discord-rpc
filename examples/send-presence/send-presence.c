@@ -44,14 +44,20 @@ static void updateDiscordPresence()
         discordPresence.endTimestamp = time(0) + 5 * 60;
         discordPresence.largeImageKey = "canary-large";
         discordPresence.smallImageKey = "ptb-small";
-        discordPresence.partyId = "party1234";
-        discordPresence.partySize = 1;
-        discordPresence.partyMax = 6;
-        discordPresence.partyPrivacy = DISCORD_PARTY_PUBLIC;
-        discordPresence.matchSecret = "xyzzy";
-        discordPresence.joinSecret = "join";
-        discordPresence.spectateSecret = "look";
-        discordPresence.instance = 0;
+        // TEMP DISABLE (Join and Spectate)
+        //discordPresence.partyId = "party1234";
+        //discordPresence.partySize = 1;
+        //discordPresence.partyMax = 6;
+        //discordPresence.partyPrivacy = DISCORD_PARTY_PUBLIC;
+        //discordPresence.matchSecret = "xyzzy";
+        //discordPresence.joinSecret = "join";
+        //discordPresence.spectateSecret = "look";
+        //discordPresence.instance = 0;
+        // EXAMPLE BUTTONS
+        discordPresence.button1Label = "Example 1 button";
+        discordPresence.button1Url = "https://example.com";
+        discordPresence.button2Label = "Example 2 button";
+        discordPresence.button2Url = "https://example.com";
         Discord_UpdatePresence(&discordPresence);
     }
     else {
