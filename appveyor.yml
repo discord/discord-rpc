@@ -1,6 +1,7 @@
 version: '{build}'
 install:
   - python -m pip install click
+  - python -m pip install build.py
 
 build_script:
   - mkdir examples\unrealstatus\Plugins\discordrpc\Binaries\ThirdParty\discordrpcLibrary\Win64
